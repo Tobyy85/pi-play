@@ -7,7 +7,7 @@ export const createWindow = (isDev: boolean) => {
         height: 600,
         autoHideMenuBar: true,
         webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, '..', 'preload.js'),
         },
     })
 
