@@ -1,3 +1,5 @@
 declare global {
-    interface Window {}
+    interface Window {
+        api: {}
+    }
 }

@@ -1,3 +1,3 @@
 import { contextBridge } from 'electron'
 
-contextBridge.exposeInMainWorld('', {})
+contextBridge.exposeInMainWorld('api', {})
