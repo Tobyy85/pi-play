@@ -2,7 +2,7 @@
     "name": "pi-play",
     "private": true,
     "version": "0.0.0",
-    "main": "dist-electron/main.js",
+    "main": "dist-electron/main/main.js",
     "scripts": {
         "lint": "eslint .",
         "preview": "vite preview",
@@ -10,9 +10,9 @@
         "dev": "concurrently \"npm:vite:dev\" \"npm:electron:watch\" \"npm:electron:start\"",
         "build": "npm run build:electron && vite build",
         "vite:dev": "vite",
-        "electron:watch": "tsc -w -p src/main/tsconfig.json",
-        "electron:start": "wait-on tcp:3000 dist-electron/main.js && nodemon --watch dist-electron --ext js,mjs,cjs --delay 200ms --exec \"electron .\"",
-        "build:electron": "tsc -p src/main/tsconfig.json",
+        "electron:watch": "tsc -w -p tsconfig.electron.json",
+        "electron:start": "wait-on tcp:3000 dist-electron/main/main.js && nodemon --watch dist-electron --ext js,mjs,cjs --delay 200ms --exec \"electron .\"",
+        "build:electron": "tsc -p tsconfig.electron.json",
         "dist": "npm run build && electron-builder"
     },
     "build": {

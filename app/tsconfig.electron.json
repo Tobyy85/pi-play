@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.electron.tsbuildinfo",
         "target": "ES2020",
         "module": "CommonJS",
         "lib": ["ES2020"],
@@ -7,10 +8,10 @@
         "esModuleInterop": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
-        "outDir": "../../dist-electron",
-        "rootDir": "./",
+        "outDir": "./dist-electron",
+        "rootDir": "./src/",
         "composite": true
     },
-    "include": ["./**/*"],
+    "include": ["./src/main/**/*", "./src/shared/**/*"],
     "exclude": ["node_modules"]
 }

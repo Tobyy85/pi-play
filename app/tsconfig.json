@@ -8,7 +8,7 @@
             "path": "./tsconfig.node.json"
         },
         {
-            "path": "./src/main/tsconfig.json"
+            "path": "./tsconfig.electron.json"
         }
     ]
 }
