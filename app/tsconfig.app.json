@@ -21,10 +21,11 @@
         "noFallthroughCasesInSwitch": true,
         "noUncheckedSideEffectImports": true,
         /* aliases */
-        "baseUrl": "./src/renderer",
+        "baseUrl": "./src/",
         "paths": {
-            "@/*": ["*"]
+            "@renderer/*": ["renderer/*"],
+            "@shared/*": ["shared/*"]
         }
     },
-    "include": ["src/renderer", "src/main/types/electron.d.ts"]
+    "include": ["src/renderer", "src/shared", "src/main/types/electron.d.ts"]
 }

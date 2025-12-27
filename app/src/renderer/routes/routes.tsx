@@ -1,5 +1,5 @@
-import HomeRoute from '@/routes/Home'
-import NotFoundRoute from '@/routes/NotFound'
+import HomeRoute from '@renderer/routes/Home'
+import NotFoundRoute from '@renderer/routes/NotFound'
 
 export const routes = [
     {
