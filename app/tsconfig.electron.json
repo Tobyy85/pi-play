@@ -10,7 +10,14 @@
         "forceConsistentCasingInFileNames": true,
         "outDir": "./dist-electron",
         "rootDir": "./src/",
-        "composite": true
+        "composite": true,
+        "noEmit": false,
+        /* aliases */
+        "baseUrl": "./",
+        "paths": {
+            "@main/*": ["src/main/*"],
+            "@shared/*": ["src/shared/*"]
+        }
     },
     "include": ["./src/main/**/*", "./src/shared/**/*"],
     "exclude": ["node_modules"]

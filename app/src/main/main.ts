@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 
-import { createWindow } from './managers/windowManager'
+import { createWindow } from '@main/managers/windowManager'
 
 const isDev = !app.isPackaged
 
