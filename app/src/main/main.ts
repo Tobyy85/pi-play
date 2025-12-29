@@ -1,15 +1,14 @@
 import { app, BrowserWindow } from 'electron'
 
-import { createWindow } from '@main/managers/windowManager'
-
-const isDev = !app.isPackaged
+import WindowManager from '@main/managers/windowManager'
 
 app.whenReady().then(() => {
-    createWindow(isDev)
+    const windowManager = new WindowManager()
+    windowManager.createWindow()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow(isDev)
+            windowManager.createWindow()
         }
     })
 })
