@@ -2,7 +2,7 @@ import { ReadlineParser } from '@serialport/parser-readline'
 import { BrowserWindow } from 'electron'
 import { SerialPort } from 'serialport'
 
-import type { ArduinoData } from '@shared/types/arduino'
+import type { ArduinoData, BoardInfo } from '@shared/types/arduino'
 
 export class ArduinoService {
     private port: SerialPort | null = null
@@ -13,8 +13,13 @@ export class ArduinoService {
         this.window = window
     }
 
-    public connect(path: string, baudRate: number) {
+    public async connect(boardInfo: BoardInfo, baudRate: number) {
         try {
+            const path = await this.getArduinoPath(boardInfo)
+            if (!path) {
+                console.error('Arduino not found')
+                return
+            }
             this.port = new SerialPort({ path, baudRate })
             this.parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
             this.initListeners()
@@ -45,5 +50,14 @@ export class ArduinoService {
         } catch {
             return null
         }
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    private getArduinoPath = async (boardInfo: BoardInfo): Promise<string | null> => {
+        const ports = await SerialPort.list()
+        const arduinoPort = ports.find(
+            port => port.vendorId === boardInfo.vendorId && port.productId === boardInfo.productId
+        )
+        return arduinoPort ? arduinoPort.path : null
     }
 }
