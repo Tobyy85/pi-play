@@ -1,13 +1,10 @@
-import { app, BrowserWindow } from 'electron'
+import { BrowserWindow, app } from 'electron'
 import path from 'path'
 
+import { isDev } from '@main/utils/isDev'
+
 class WindowManager {
-    private isDev: boolean
-
-    constructor() {
-        this.isDev = !app.isPackaged
-    }
-
+    // eslint-disable-next-line class-methods-use-this
     public createWindow(): BrowserWindow {
         const mainWindow = new BrowserWindow({
             width: 800,
@@ -18,7 +15,7 @@ class WindowManager {
             },
         })
 
-        if (this.isDev) {
+        if (isDev) {
             mainWindow.loadURL('http://localhost:3000')
             mainWindow.webContents.openDevTools()
         } else {
