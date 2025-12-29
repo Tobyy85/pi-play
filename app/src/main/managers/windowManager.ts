@@ -4,9 +4,10 @@ import path from 'path'
 import { isDev } from '@main/utils/isDev'
 
 class WindowManager {
-    // eslint-disable-next-line class-methods-use-this
+    private browserWindow: BrowserWindow | null = null
+
     public createWindow(): BrowserWindow {
-        const mainWindow = new BrowserWindow({
+        this.browserWindow = new BrowserWindow({
             width: 800,
             height: 600,
             autoHideMenuBar: true,
@@ -16,14 +17,14 @@ class WindowManager {
         })
 
         if (isDev) {
-            mainWindow.loadURL('http://localhost:3000')
-            mainWindow.webContents.openDevTools()
+            this.browserWindow.loadURL('http://localhost:3000')
+            this.browserWindow.webContents.openDevTools()
         } else {
             const indexHtml = path.join(app.getAppPath(), 'dist', 'index.html')
-            mainWindow.loadFile(indexHtml)
+            this.browserWindow.loadFile(indexHtml)
         }
 
-        return mainWindow
+        return this.browserWindow
     }
 }
 
