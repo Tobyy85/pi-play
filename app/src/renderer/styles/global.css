@@ -1,0 +1,4 @@
+.rounded-squircle {
+    corner-shape: squircle;
+    border-radius: 9999px;
+}

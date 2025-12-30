@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 
 import { AppRouter } from '@renderer/routes/router'
 
+import './styles/global.css'
 import './styles/tailwind.css'
 
 createRoot(document.getElementById('root')!).render(
