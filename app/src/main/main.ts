@@ -1,16 +1,21 @@
 import { app, BrowserWindow } from 'electron'
 
+import CONFIG from '@main/config'
 import WindowManager from '@main/managers/windowManager'
+import { ArduinoService } from '@main/services/arduinoService'
 
 app.whenReady().then(() => {
     const windowManager = new WindowManager()
-    windowManager.createWindow()
+    let mainWindow = windowManager.createWindow()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
-            windowManager.createWindow()
+            mainWindow = windowManager.createWindow()
         }
     })
+
+    const arduinoService = new ArduinoService(mainWindow)
+    arduinoService.connect(CONFIG.arduino.boardInfo, CONFIG.arduino.baudRate)
 })
 
 app.on('window-all-closed', () => {
