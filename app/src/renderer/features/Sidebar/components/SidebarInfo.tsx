@@ -1,3 +1,4 @@
+import DisplayTemperature from '@renderer/features/Sidebar/components/DisplayTemperature'
 import DisplayTime from '@renderer/features/Sidebar/components/DisplayTime'
 
 const SidebarInfo = () => {
@@ -7,7 +8,10 @@ const SidebarInfo = () => {
                 <SidebarInfoText>
                     <DisplayTime />
                 </SidebarInfoText>
-                <SidebarInfoText className='my-[-0.25rem]'>10°C</SidebarInfoText>
+                <SidebarInfoText className='my-[-0.25rem]'>
+                    <DisplayTemperature sensorType='temperature' />
+                    °C
+                </SidebarInfoText>
             </div>
         </>
     )
