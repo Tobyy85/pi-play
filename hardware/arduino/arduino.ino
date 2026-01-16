@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "serial_communication.h"
+#include "src/serialCommunication.h"
 #include "src/ChangeDetector.h"
 
 #include "src/sensors/Thermistor.h"
