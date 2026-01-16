@@ -3,7 +3,7 @@
 #include "serial_communication.h"
 #include "src/ChangeDetector.h"
 
-#include "src/Thermistor.h"
+#include "src/sensors/Thermistor.h"
 
 Thermistor thermistor(A0, 100000.0f, 100000.0f, 25.0f, 3950.0f);
 ChangeDetector<float> thermistorChangeDetector(0.5f);
