@@ -9,15 +9,15 @@ export interface ArduinoConfig {
 export const ARDUINO_CONFIG: EnvConfig<ArduinoConfig> = {
     dev: {
         boardInfo: {
-            vendorId: '2341',
-            productId: '1002',
+            vendorId: '1A86',
+            productId: '7523',
         },
         baudRate: 115200,
     },
     prod: {
         boardInfo: {
-            vendorId: '2341',
-            productId: '1002',
+            vendorId: '1A86',
+            productId: '7523',
         },
         baudRate: 115200,
     },
