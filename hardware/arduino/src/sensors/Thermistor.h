@@ -25,7 +25,7 @@ public:
 
 
     float readTemperatureCelsius();
-    float readTemperatureCelsiusAvg(uint8_t samples = 10, uint16_t delayMs = 10);
+    float readTemperatureCelsiusAvg(uint8_t samples = 10, uint16_t delayMs = 5);
 
 
 private:
