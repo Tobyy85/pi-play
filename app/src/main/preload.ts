@@ -9,9 +9,12 @@ const electronApi = {
                 callback(data)
             })
         },
-        subscribeToType: (type: ArduinoData['type'], callback: (value: ArduinoData['value']) => void) => {
+        subscribeToSensorId: (
+            sensorId: ArduinoData['sensorId'],
+            callback: (value: ArduinoData['value']) => void
+        ) => {
             ipcRenderer.on('arduino:change', (_event, data: ArduinoData) => {
-                if (data.type === type) {
+                if (data.sensorId === sensorId) {
                     callback(data.value)
                 }
             })

@@ -1,21 +1,21 @@
 import { useEffect, useState } from 'react'
 
 interface DisplayTemperatureProps {
-    sensorType: string
+    sensorId: string
 }
 
-const DisplayTemperature = ({ sensorType }: DisplayTemperatureProps) => {
+const DisplayTemperature = ({ sensorId }: DisplayTemperatureProps) => {
     const [temperature, setTemperature] = useState<string>('')
 
     useEffect(() => {
         try {
-            window.api.arduino.subscribeToType(sensorType, newTemperature => {
+            window.api.arduino.subscribeToSensorId(sensorId, newTemperature => {
                 setTemperature(newTemperature)
             })
         } catch (error) {
             console.error('Error fetching temperature:', error)
         }
-    }, [sensorType])
+    }, [sensorId])
 
     return <>{parseInt(temperature)}</>
 }

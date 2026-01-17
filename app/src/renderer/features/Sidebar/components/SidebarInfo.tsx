@@ -9,7 +9,7 @@ const SidebarInfo = () => {
                     <DisplayTime />
                 </SidebarInfoText>
                 <SidebarInfoText className='my-[-0.25rem]'>
-                    <DisplayTemperature sensorType='temperature' />
+                    <DisplayTemperature sensorId='temperature' />
                     °C
                 </SidebarInfoText>
             </div>
