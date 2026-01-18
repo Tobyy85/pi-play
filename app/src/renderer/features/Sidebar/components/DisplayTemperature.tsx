@@ -1,21 +1,20 @@
-import { useEffect, useState } from 'react'
+import useArduinoSensor from '@renderer/hooks/useArduinoSensor'
 
 interface DisplayTemperatureProps {
     sensorId: string
 }
 
 const DisplayTemperature = ({ sensorId }: DisplayTemperatureProps) => {
-    const [temperature, setTemperature] = useState<string>('')
+    const { value: temperature, isLoading, error } = useArduinoSensor(sensorId, null)
 
-    useEffect(() => {
-        try {
-            window.api.arduino.subscribeToSensorId(sensorId, newTemperature => {
-                setTemperature(newTemperature)
-            })
-        } catch (error) {
-            console.error('Error fetching temperature:', error)
-        }
-    }, [sensorId])
+    if (isLoading) {
+        return <>--</>
+    }
+
+    if (error || temperature === null) {
+        console.error('DisplayTemperature error:', error)
+        return <>ERR</>
+    }
 
     return <>{parseInt(temperature)}</>
 }
