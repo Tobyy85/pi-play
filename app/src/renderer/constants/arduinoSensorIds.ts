@@ -1,1 +1,1 @@
-export const TEMPERATURE_SENSOR_ID = 'temperature'
+export const TEMPERATURE_SENSOR_ID = 'temperatureSensor'

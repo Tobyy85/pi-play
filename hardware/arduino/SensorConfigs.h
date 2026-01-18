@@ -7,7 +7,7 @@
 
 
 SensorConfig<ThermistorConfig> thermCfg = {
-    "temperature",
+    "temperatureSensor",
     0.5f,
     {
         A0,
