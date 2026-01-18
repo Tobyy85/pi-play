@@ -19,6 +19,9 @@ const electronApi = {
                 }
             })
         },
+        requestSensorValue: (sensorId: string): Promise<ArduinoData> => {
+            return ipcRenderer.invoke('arduino:requestSensorValue', sensorId)
+        },
     },
 }
 
