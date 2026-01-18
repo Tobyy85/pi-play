@@ -1,6 +1,8 @@
 import DisplayTemperature from '@renderer/features/Sidebar/components/DisplayTemperature'
 import DisplayTime from '@renderer/features/Sidebar/components/DisplayTime'
 
+import { TEMPERATURE_SENSOR_ID } from '@renderer/constants/arduinoSensorIds'
+
 const SidebarInfo = () => {
     return (
         <>
@@ -9,7 +11,7 @@ const SidebarInfo = () => {
                     <DisplayTime />
                 </SidebarInfoText>
                 <SidebarInfoText className='my-[-0.25rem]'>
-                    <DisplayTemperature sensorId='temperature' />
+                    <DisplayTemperature sensorId={TEMPERATURE_SENSOR_ID} />
                     °C
                 </SidebarInfoText>
             </div>
