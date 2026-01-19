@@ -38,11 +38,11 @@ const useArduinoSensor = (
     }, [refresh])
 
     useEffect(() => {
-        window.api.arduino.subscribeToSensorId(sensorId, newValue => {
+        const unsubscribe = window.api.arduino.subscribeToSensorId(sensorId, newValue => {
             setValue(newValue)
             setError(null)
         })
-        // TODO: Unsubscribe on unmount
+        return unsubscribe
     }, [sensorId])
 
     return { value, isLoading, error, refresh }
