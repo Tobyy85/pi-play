@@ -1,5 +1,5 @@
 export interface ArduinoData {
-    type: string
+    sensorId: string
     value: string
 }
 

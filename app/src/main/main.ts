@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 
 import CONFIG from '@main/config'
 import WindowManager from '@main/managers/windowManager'
@@ -16,6 +16,10 @@ app.whenReady().then(() => {
 
     const arduinoService = new ArduinoService(mainWindow)
     arduinoService.connect(CONFIG.arduino.boardInfo, CONFIG.arduino.baudRate)
+
+    ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
+        return arduinoService.requestSensorValue(sensorId)
+    })
 })
 
 app.on('window-all-closed', () => {

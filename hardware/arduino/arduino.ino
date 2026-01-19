@@ -1,23 +1,38 @@
 #include <Arduino.h>
 
 #include "src/serialCommunication.h"
-#include "src/ChangeDetector.h"
+#include "src/SensorHandler.h"
+#include "src/SensorManager.h"
+#include "SensorConfigs.h"  
 
 #include "src/sensors/Thermistor.h"
 
-Thermistor thermistor(A0, 100000.0f, 100000.0f, 25.0f, 3950.0f);
-ChangeDetector<float> thermistorChangeDetector(0.5f);
+SensorManager sensorManager;
+
+
+// Main Thermistor Sensor Setup
+Thermistor thermistor(thermCfg.hw.pin,
+    thermCfg.hw.seriesResistor,
+    thermCfg.hw.nominalResistance,
+    thermCfg.hw.nominalTemperature,
+    thermCfg.hw.bCoefficient
+);
+float readTemperature() {
+    return thermistor.readTemperatureCelsiusAvg();
+}
+SensorHandler tempHandler(thermCfg.id, readTemperature, thermCfg.changeThreshold);
 
 
 
 void setup() {
     SerialCommunication::begin(115200);
     Serial.begin(115200);
+
+    sensorManager.addSensor(&tempHandler);
 }
 
 void loop() {
-    float temperatureC = thermistor.readTemperatureCelsiusAvg(10, 5);
-    if (!isnan(temperatureC) && thermistorChangeDetector.hasChanged(temperatureC)) {
-        SerialCommunication::sendJson("temperature", String(temperatureC, 2));
-    }
+    sensorManager.updateAll();
+
+    sensorManager.checkSerialRequests();
 }

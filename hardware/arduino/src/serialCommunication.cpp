@@ -8,6 +8,6 @@ void SerialCommunication::begin(unsigned long baudRate) {
     Serial.begin(baudRate);
 }
 
-void SerialCommunication::sendJson(String type, String value) {
-    Serial.println("{\"type\":\"" + type + "\",\"value\":\"" + value + "\"}");
+void SerialCommunication::sendJson(String sensorId, String value) {
+    Serial.println("{\"sensorId\":\"" + sensorId + "\",\"value\":\"" + value + "\"}");
 }
