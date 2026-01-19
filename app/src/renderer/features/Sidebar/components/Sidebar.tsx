@@ -1,4 +1,4 @@
-import AppList from '@renderer/features/Sidebar/components/AppList'
+import AppList from '@renderer/features/apps/components/AppList'
 import SidebarInfo from '@renderer/features/Sidebar/components/SidebarInfo'
 
 const Sidebar = () => {

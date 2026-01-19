@@ -1,7 +1,7 @@
-import DisplayTemperature from '@renderer/features/Sidebar/components/DisplayTemperature'
-import DisplayTime from '@renderer/features/Sidebar/components/DisplayTime'
+import DisplayTemperature from '@renderer/components/DisplayTemperature'
+import DisplayTime from '@renderer/components/DisplayTime'
 
-import { TEMPERATURE_SENSOR_ID } from '@renderer/constants/arduinoSensorIds'
+import { TEMPERATURE_SENSOR_ID } from '@renderer/features/arduino/constants/arduinoSensorIds'
 
 const SidebarInfo = () => {
     return (

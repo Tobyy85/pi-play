@@ -1,4 +1,4 @@
-import useArduinoSensor from '@renderer/hooks/useArduinoSensor'
+import useArduinoSensor from '@renderer/features/arduino/hooks/useArduinoSensor'
 
 interface DisplayTemperatureProps {
     sensorId: string

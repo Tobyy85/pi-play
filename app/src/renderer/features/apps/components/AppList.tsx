@@ -1,6 +1,6 @@
-import AppIcon from '@renderer/features/Sidebar/components/AppIcon'
+import AppIcon from '@renderer/features/apps/components/AppIcon'
 
-import { appList } from '@renderer/features/Sidebar/constants/appList'
+import { appList } from '@renderer/features/apps/constants/appList'
 
 const AppList = () => {
     return (
