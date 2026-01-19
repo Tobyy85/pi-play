@@ -1,4 +1,4 @@
-import Sidebar from '@renderer/features/Sidebar/components/Sidebar'
+import Sidebar from '@renderer/features/sidebar/components/Sidebar'
 
 interface SidebarLayoutProps {
     background: React.ReactNode
