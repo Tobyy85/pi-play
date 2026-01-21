@@ -17,4 +17,12 @@ struct ThermistorConfig {
     float nominalTemperature;
     float bCoefficient;
 };
+
+struct ButtonConfig
+{
+    uint8_t pin;
+    bool inputPullup;
+};
+
+
 #endif
