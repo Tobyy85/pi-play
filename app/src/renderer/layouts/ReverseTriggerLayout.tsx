@@ -5,8 +5,7 @@ import { IS_REVERSE_SENSOR_ID } from '@renderer/features/arduino/constants/ardui
 import useArduinoSensor from '@renderer/features/arduino/hooks/useArduinoSensor'
 
 const ReverseTriggerLayout = () => {
-    const { value: isReversingString } = useArduinoSensor(IS_REVERSE_SENSOR_ID, null)
-    const isReversing = Boolean(Number(isReversingString))
+    const { value: isReversing } = useArduinoSensor<boolean>(IS_REVERSE_SENSOR_ID, null)
     const navigate = useNavigate()
     const location = useLocation()
 

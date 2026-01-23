@@ -1,6 +1,6 @@
 export interface ArduinoData {
     sensorId: string
-    value: string
+    value: number | boolean
 }
 
 export interface BoardInfo {

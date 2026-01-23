@@ -5,7 +5,7 @@ interface DisplayTemperatureProps {
 }
 
 const DisplayTemperature = ({ sensorId }: DisplayTemperatureProps) => {
-    const { value: temperature, isLoading, error } = useArduinoSensor(sensorId, null)
+    const { value: temperature, isLoading, error } = useArduinoSensor<number>(sensorId, null)
 
     if (isLoading) {
         return <>- -°C</>
@@ -16,6 +16,6 @@ const DisplayTemperature = ({ sensorId }: DisplayTemperatureProps) => {
         return <>ERR</>
     }
 
-    return <>{parseInt(temperature)}°C</>
+    return <>{temperature.toFixed(0)}°C</>
 }
 export default DisplayTemperature
