@@ -7,6 +7,7 @@
 class SerialCommunication {
 public:
     static void begin(unsigned long baudRate);
-    static void sendJson(String type, String value);
+    static void sendJson(String type, float value);
+    static void sendJson(String type, bool value);
 };
 #endif
