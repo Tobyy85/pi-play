@@ -26,7 +26,7 @@ SensorHandler tempHandler(thermCfg.id, readTemperature, thermCfg.changeThreshold
 
 // Reverse Signal Button Setup
 Button reverseSignal(reverseSignalCfg.hw.pin, reverseSignalCfg.hw.inputPullup);
-float readReverseSignal() {
+bool readReverseSignal() {
     return reverseSignal.getState();
 }
 SensorHandler reverseHandler(reverseSignalCfg.id, readReverseSignal, reverseSignalCfg.changeThreshold);
