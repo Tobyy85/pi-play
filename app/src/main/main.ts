@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 
-import CONFIG from '@main/config'
 import WindowManager from '@main/managers/windowManager'
 import { ArduinoService } from '@main/services/arduinoService'
+import CONFIG from '@shared/config'
 
 app.whenReady().then(() => {
     const windowManager = new WindowManager()
