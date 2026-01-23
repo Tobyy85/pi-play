@@ -2,18 +2,18 @@ import type { ArduinoData } from '@shared/types/arduino'
 
 import { useCallback, useEffect, useState } from 'react'
 
-type UseArduinoSensorReturn = {
-    value: ArduinoData['value'] | null
+type UseArduinoSensorReturn<T extends ArduinoData['value']> = {
+    value: T | null
     isLoading: boolean
     error: string | null
     refresh: () => Promise<void>
 }
 
-const useArduinoSensor = (
+const useArduinoSensor = <T extends ArduinoData['value']>(
     sensorId: ArduinoData['sensorId'],
-    initialValue: ArduinoData['value'] | null = null
-): UseArduinoSensorReturn => {
-    const [value, setValue] = useState<ArduinoData['value'] | null>(initialValue)
+    initialValue: T | null = null
+): UseArduinoSensorReturn<T> => {
+    const [value, setValue] = useState<T | null>(initialValue)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
@@ -22,7 +22,7 @@ const useArduinoSensor = (
         setError(null)
         try {
             const data = await window.api.arduino.requestSensorValue(sensorId)
-            setValue(data.value)
+            setValue(data.value as T | null)
         } catch (err) {
             const message = err instanceof Error ? err.message : 'Unknown error'
             setError(message)
@@ -39,7 +39,7 @@ const useArduinoSensor = (
 
     useEffect(() => {
         const unsubscribe = window.api.arduino.subscribeToSensorId(sensorId, newValue => {
-            setValue(newValue)
+            setValue(newValue as T | null)
             setError(null)
         })
         return unsubscribe
