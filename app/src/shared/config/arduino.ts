@@ -1,6 +1,6 @@
 import type { BoardInfo } from '@shared/types/arduino'
 
-export interface ArduinoConfig {
+interface ArduinoConfig {
     boardInfo: BoardInfo
     baudRate: number
 }

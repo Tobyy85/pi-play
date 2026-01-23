@@ -2,7 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
 import { ArduinoService } from '@main/services/arduinoService'
-import CONFIG from '@shared/config'
+import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
 app.whenReady().then(() => {
     const windowManager = new WindowManager()
@@ -15,7 +15,7 @@ app.whenReady().then(() => {
     })
 
     const arduinoService = new ArduinoService(mainWindow)
-    arduinoService.connect(CONFIG.arduino.boardInfo, CONFIG.arduino.baudRate)
+    arduinoService.connect(ARDUINO_CONFIG.boardInfo, ARDUINO_CONFIG.baudRate)
 
     ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
         return arduinoService.requestSensorValue(sensorId)
