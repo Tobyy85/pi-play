@@ -1,6 +1,7 @@
-import AppReverseCamera from '@renderer/features/appReverseCamera'
 import HomeRoute from '@renderer/routes/Home'
 import NotFoundRoute from '@renderer/routes/NotFound'
+
+import { appsRoutes } from '@renderer/features/apps/routes'
 
 import ReverseTriggerLayout from '@renderer/layouts/ReverseTriggerLayout'
 
@@ -15,12 +16,7 @@ export const routes = [
             },
             {
                 path: 'apps',
-                children: [
-                    {
-                        path: 'reverse-camera',
-                        element: <AppReverseCamera />,
-                    },
-                ],
+                children: appsRoutes,
             },
         ],
     },
