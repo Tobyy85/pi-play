@@ -1,7 +1,7 @@
 import SidebarLayout from '@renderer/layouts/SidebarLayout'
 
 const HomeBackground = () => {
-    return <div className='h-full w-full bg-blue-500' />
+    return <div className='size-full bg-blue-500' />
 }
 
 const HomeRoute = () => {

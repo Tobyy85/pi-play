@@ -65,7 +65,7 @@ const Camera = ({ deviceId, isMirrored }: CameraProps) => {
                         autoPlay
                         playsInline
                         muted
-                        className={`h-full w-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}`}
+                        className={`size-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}`}
                     />
                 )}
             </div>

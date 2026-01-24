@@ -12,7 +12,7 @@ const AppIcon = ({ iconSource: icon, name, path }: AppIconProps) => {
             <NavLink
                 to={path}
                 className={({ isActive }) =>
-                    `rounded-squircle flex h-20 w-20 shrink-0 flex-col items-center justify-center
+                    `rounded-squircle flex size-20 shrink-0 flex-col items-center justify-center
                     overflow-hidden bg-white ${isActive ? 'brightness-100' : 'brightness-90'}`
                 }
             >
