@@ -14,10 +14,7 @@ export const routes = [
                 element: <HomeRoute />,
                 errorElement: <NotFoundRoute />,
             },
-            {
-                path: 'apps',
-                children: appsRoutes,
-            },
+            appsRoutes,
         ],
     },
 ]
