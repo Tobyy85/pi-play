@@ -2,6 +2,8 @@ import AppIcon from '@renderer/features/apps/components/AppIcon'
 
 import APP_REGISTRY from '@renderer/features/apps/config/appRegistry'
 
+import { BASE_PATH } from '@renderer/features/apps/routes'
+
 const AppList = () => {
     return (
         <div className='no-scrollbar rounded-squircle h-full overflow-y-scroll'>
@@ -10,7 +12,7 @@ const AppList = () => {
                     <AppIcon
                         iconSource={app.icon}
                         name={app.name}
-                        path={app.id}
+                        path={`/${BASE_PATH}/${app.id}`}
                         key={app.id}
                     />
                 ))}
