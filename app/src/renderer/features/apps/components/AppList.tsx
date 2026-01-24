@@ -2,7 +2,7 @@ import AppIcon from '@renderer/features/apps/components/AppIcon'
 
 import APP_REGISTRY from '@renderer/features/apps/config/appRegistry'
 
-import { BASE_PATH } from '@renderer/features/apps/routes'
+import { BASE_PATH } from '@renderer/features/apps/config/route'
 
 const AppList = () => {
     return (
