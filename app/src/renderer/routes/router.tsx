@@ -1,8 +1,15 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, createHashRouter, RouterProvider } from 'react-router-dom'
 
 import { routes } from './routes'
 
-const createAppRouter = () => createBrowserRouter(routes, { basename: import.meta.env.BASE_URL || '/' })
+const createAppRouter = () => {
+    const isDev = import.meta.env.DEV
+    if (isDev) {
+        // In development, use browser router for better debugging experience
+        return createBrowserRouter(routes, { basename: '/' })
+    }
+    return createHashRouter(routes)
+}
 
 export const AppRouter = () => {
     const router = createAppRouter()
