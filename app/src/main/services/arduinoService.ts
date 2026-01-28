@@ -21,7 +21,12 @@ export class ArduinoService {
         this.window = window
     }
 
-    public async connect(boardInfo: BoardInfo, baudRate: number) {
+    /**
+     * Connect to the Arduino board with the given BoardInfo and baud rate.
+     * @param boardInfo - The BoardInfo containing vendorId and productId.
+     * @param baudRate - The baud rate for the serial connection.
+     */
+    public async connect(boardInfo: BoardInfo, baudRate: number): Promise<void> {
         try {
             const path = await this.getArduinoPath(boardInfo)
             if (!path) {
@@ -36,7 +41,10 @@ export class ArduinoService {
         }
     }
 
-    private initListeners() {
+    /**
+     * Initialize event listeners for the serial port and parser.
+     */
+    private initListeners(): void {
         if (!this.parser) return
 
         this.parser.on('data', (line: string) => {
@@ -61,6 +69,11 @@ export class ArduinoService {
         })
     }
 
+    /**
+     * Request the value of a sensor by its ID.
+     * @param sensorId - The ID of the sensor to request.
+     * @returns A promise that resolves with the ArduinoData.
+     */
     public requestSensorValue(sensorId: string): Promise<ArduinoData> {
         return new Promise((resolve, reject) => {
             if (!this.port || !this.port.isOpen) {
@@ -94,6 +107,11 @@ export class ArduinoService {
         })
     }
 
+    /**
+     * Remove a pending request for a given sensorId.
+     * @param sensorId - The ID of the sensor.
+     * @param request - The pending request to remove.
+     */
     private removePendingRequest(sensorId: string, request: PendingRequest): void {
         const requests = this.pendingRequests.get(sensorId)
         if (!requests) return
@@ -107,6 +125,11 @@ export class ArduinoService {
         }
     }
 
+    /**
+     * Parse a JSON string safely.
+     * @param line - The JSON string to parse.
+     * @returns The parsed object or null if parsing fails.
+     */
     // eslint-disable-next-line class-methods-use-this
     private parseJson(line: string): unknown | null {
         try {
@@ -116,6 +139,11 @@ export class ArduinoService {
         }
     }
 
+    /**
+     * Get the Arduino path based on BoardInfo.
+     * @param boardInfo - The board information containing vendorId and productId.
+     * @returns The path of the Arduino port or null if not found.
+     */
     // eslint-disable-next-line class-methods-use-this
     private getArduinoPath = async (boardInfo: BoardInfo): Promise<string | null> => {
         const ports = await SerialPort.list()

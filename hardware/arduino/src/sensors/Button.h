@@ -3,10 +3,22 @@
 
 #include <Arduino.h>
 
-
+/**
+ * @brief Class for handling digital button/switch inputs
+ */
 class Button {
 public:
+    /**
+     * @param pin Digital pin number where button is connected
+     * @param input_pullup If true, enables internal pull-up resistor (active LOW)
+     */
     Button(int pin, bool input_pullup = false);
+
+    /**
+     * @brief Read current button state
+     * @return true if button is pressed, false otherwise
+     * @note When using INPUT_PULLUP, the logic is inverted automatically
+     */
     bool getState();
 
 private:
