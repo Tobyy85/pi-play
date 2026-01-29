@@ -45,8 +45,8 @@ SerialCommunication::sendJson("temperatureSensor", 23.5f);
 // Output: {"sensorId":"temperatureSensor","value":23.50}
 
 // Send boolean value
-SerialCommunication::sendJson("isReverse", true);
-// Output: {"sensorId":"isReverse","value":true}
+SerialCommunication::sendJson("reverseSignal", true);
+// Output: {"sensorId":"reverseSignal","value":true}
 ```
 
 ### Automatic Sending via SensorHandler

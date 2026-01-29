@@ -19,7 +19,7 @@ SensorConfig<ThermistorConfig> thermCfg = {
 };
 
 SensorConfig<ButtonConfig> reverseSignalCfg = {
-    "isReverse",
+    "reverseSignal",
     0.0f,
     {
         2,
