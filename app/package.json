@@ -3,6 +3,12 @@
     "private": true,
     "version": "0.0.0",
     "main": "dist-electron/main/main.js",
+    "homepage": "https://github.com/Tobyy85/pi-play",
+    "description": "",
+    "author": {
+        "name": "Tobyy85",
+        "email": "154422539+Tobyy85@users.noreply.github.com"
+    },
     "scripts": {
         "lint": "eslint .",
         "preview": "vite preview",
