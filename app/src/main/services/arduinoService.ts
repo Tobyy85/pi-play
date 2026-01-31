@@ -148,7 +148,9 @@ export class ArduinoService {
     private getArduinoPath = async (boardInfo: BoardInfo): Promise<string | null> => {
         const ports = await SerialPort.list()
         const arduinoPort = ports.find(
-            port => port.vendorId === boardInfo.vendorId && port.productId === boardInfo.productId
+            port =>
+                port.vendorId?.toLowerCase() === boardInfo.vendorId?.toLowerCase() &&
+                port.productId?.toLowerCase() === boardInfo.productId?.toLowerCase()
         )
         return arduinoPort ? arduinoPort.path : null
     }
