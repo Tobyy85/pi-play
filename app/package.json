@@ -19,7 +19,9 @@
         "electron:watch": "concurrently \"tsc -w -p tsconfig.electron.json\" \"tsc-alias -w -p tsconfig.electron.json\"",
         "electron:start": "wait-on tcp:3000 dist-electron/main/main.js && nodemon --watch dist-electron --ext js --exec \"electron .\"",
         "build:electron": "tsc -p tsconfig.electron.json && tsc-alias -p tsconfig.electron.json",
-        "dist": "npm run build && electron-builder"
+        "dist": "npm run build && electron-builder",
+        "dist:win": "npm run build && electron-builder --win",
+        "dist:linux": "npm run build && electron-builder --linux"
     },
     "build": {
         "appId": "com.pi-play.pi-play",
@@ -31,6 +33,35 @@
         "directories": {
             "buildResources": "assets",
             "output": "release"
+        },
+        "linux": {
+            "target": [
+                {
+                    "target": "AppImage",
+                    "arch": [
+                        "arm64"
+                    ]
+                }
+            ],
+            "icon": "assets/icon.png",
+            "category": "Utility",
+            "maintainer": "Tobyy85"
+        },
+        "win": {
+            "target": [
+                {
+                    "target": "nsis",
+                    "arch": [
+                        "x64"
+                    ]
+                }
+            ],
+            "icon": "assets/icon.ico"
+        },
+        "nsis": {
+            "oneClick": false,
+            "allowToChangeInstallationDirectory": true,
+            "createStartMenuShortcut": true
         }
     },
     "dependencies": {
