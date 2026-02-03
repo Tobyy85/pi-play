@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 import type { ArduinoData } from '@shared/types/arduino'
+import type { GPSData } from '@shared/types/gps'
 
 const electronApi = {
     arduino: {
@@ -29,6 +30,23 @@ const electronApi = {
         },
         requestSensorValue: (sensorId: string): Promise<ArduinoData> => {
             return ipcRenderer.invoke('arduino:requestSensorValue', sensorId)
+        },
+    },
+    gps: {
+        subscribe: (callback: (gpsData: GPSData) => void): (() => void) => {
+            const handler = (_event: IpcRendererEvent, data: GPSData) => {
+                callback(data)
+            }
+            ipcRenderer.on('gps:change', handler)
+            return () => {
+                ipcRenderer.off('gps:change', handler)
+            }
+        },
+        getData: (): Promise<GPSData> => {
+            return ipcRenderer.invoke('gps:getData')
+        },
+        getConnectionStatus: (): Promise<boolean> => {
+            return ipcRenderer.invoke('gps:getConnectionStatus')
         },
     },
 }
