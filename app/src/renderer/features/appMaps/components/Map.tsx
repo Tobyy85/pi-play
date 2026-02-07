@@ -3,8 +3,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import MapGL, { type MapRef } from 'react-map-gl/maplibre'
 
-import FollowModeButton from '@renderer/features/appMaps/FollowModeButton'
-import MapMarker from '@renderer/features/appMaps/MapMarker'
+import FollowModeButton from '@renderer/features/appMaps/components/FollowModeButton'
+import MapMarker from '@renderer/features/appMaps/components/MapMarker'
 
 import { MAP_STYLE } from '@shared/config/maps/mapStyle'
 

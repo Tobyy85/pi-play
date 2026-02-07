@@ -1,4 +1,4 @@
-import Map from '@renderer/features/appMaps/Map'
+import Map from '@renderer/features/appMaps/components/Map'
 import useGps from '@renderer/features/gps/hooks/useGps'
 
 export const AppMapsBackground = () => {

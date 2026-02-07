@@ -1,4 +1,4 @@
-import Camera from '@renderer/features/appReverseCamera/Camera'
+import Camera from '@renderer/features/appReverseCamera/components/Camera'
 
 import { CAMERA_CONFIG } from '@shared/config/camera'
 
