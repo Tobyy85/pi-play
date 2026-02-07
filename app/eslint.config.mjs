@@ -48,10 +48,10 @@ export default tseslint.config([
             'id-length': ['warn', { min: 2, max: 30, exceptions: ['e', 'i', 'j', 'k', 'a', 'b'] }],
             'id-denylist': ['warn', 'foo', 'bar', 'baz', 'x', 'y', 'z', 'c'],
             'logical-assignment-operators': 'warn',
-            'max-depth': ['warn', 4], // eslint-disable-line no-magic-numbers
+            'max-depth': ['warn', 4],
             'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
             'max-lines-per-function': ['warn', { max: 50, skipBlankLines: true, skipComments: true }],
-            'max-nested-callbacks': ['warn', 5], // eslint-disable-line no-magic-numbers
+            'max-nested-callbacks': ['warn', 5],
             'new-cap': 'warn',
             'no-alert': 'warn',
             'no-bitwise': 'warn',
