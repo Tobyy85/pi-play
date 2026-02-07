@@ -8,7 +8,7 @@ class WindowManager {
 
     public createWindow(): BrowserWindow {
         this.browserWindow = new BrowserWindow({
-            width: 800,
+            width: 1024,
             height: 600,
             icon: path.join(__dirname, '..', '..', '..', 'assets', 'icon.png'),
             autoHideMenuBar: true,
