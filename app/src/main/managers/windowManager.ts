@@ -25,6 +25,14 @@ class WindowManager {
             this.browserWindow.loadFile(indexHtml)
         }
 
+        this.browserWindow.on('closed', () => {
+            this.browserWindow = null
+        })
+
+        return this.browserWindow
+    }
+
+    public getWindow(): BrowserWindow | null {
         return this.browserWindow
     }
 }
