@@ -6,9 +6,10 @@ import GPSService from '@main/services/gpsService'
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
 const windowManager = new WindowManager()
+const getWindow = () => windowManager.getWindow()
 
-const arduinoService = new ArduinoService(windowManager.getWindow)
-const gpsService = new GPSService(windowManager.getWindow)
+const arduinoService = new ArduinoService(getWindow)
+const gpsService = new GPSService(getWindow)
 
 app.whenReady().then(() => {
     windowManager.createWindow()
