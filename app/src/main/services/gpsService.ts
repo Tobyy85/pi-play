@@ -6,21 +6,36 @@ import { SerialPort } from 'serialport'
 import { GPS_CONFIG } from '@shared/config/gps'
 import type { GPSData } from '@shared/types/gps'
 
+const KNOTS_TO_KMH = 1.852
+const ROUND_PRECISION = 100
+
+const knotsToKmh = (knots: number | null): number | null => {
+    if (knots === null) return null
+    return Math.round(knots * KNOTS_TO_KMH * ROUND_PRECISION) / ROUND_PRECISION
+}
+
+const formatTimestamp = (datetime: Date | null): string | null => {
+    if (!datetime) return null
+    return datetime.toISOString()
+}
+
+const DEFAULT_GPS_DATA: GPSData = {
+    latitude: null,
+    longitude: null,
+    altitude: null,
+    speed: null,
+    course: null,
+    timestamp: null,
+    fix: false,
+    satellites: 0,
+}
+
 class GPSService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
     private getWindow: () => BrowserWindow | null
     private isConnected: boolean = false
-    private currentData: GPSData = {
-        latitude: null,
-        longitude: null,
-        altitude: null,
-        speed: null,
-        course: null,
-        timestamp: null,
-        fix: false,
-        satellites: 0,
-    }
+    private currentData: GPSData = { ...DEFAULT_GPS_DATA }
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -147,7 +162,7 @@ class GPSService {
         this.currentData.altitude = gga.altitudeMeters
         this.currentData.satellites = gga.satellitesInView
         this.currentData.fix = true
-        this.currentData.timestamp = this.formatTimestamp(gga.time)
+        this.currentData.timestamp = formatTimestamp(gga.time)
         return true
     }
 
@@ -163,9 +178,9 @@ class GPSService {
 
         this.currentData.latitude = rmc.latitude
         this.currentData.longitude = rmc.longitude
-        this.currentData.speed = this.knotsToKmh(rmc.speedKnots)
+        this.currentData.speed = knotsToKmh(rmc.speedKnots)
         this.currentData.course = rmc.trackTrue
-        this.currentData.timestamp = this.formatTimestamp(rmc.datetime)
+        this.currentData.timestamp = formatTimestamp(rmc.datetime)
         this.currentData.fix = true
         return true
     }
@@ -176,24 +191,6 @@ class GPSService {
 
     public getConnectionStatus(): boolean {
         return this.isConnected && (this.port?.isOpen ?? false)
-    }
-
-    /**
-     * Convert knots to km/h.
-     * @param knots - Speed in knots.
-     * @returns Speed in km/h.
-     */
-    // eslint-disable-next-line class-methods-use-this
-    private knotsToKmh(knots: number | null): number | null {
-        if (knots === null) return null
-        const KNOTS_TO_KMH = 1.852
-        return Math.round(knots * KNOTS_TO_KMH * 100) / 100
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    private formatTimestamp(datetime: Date | null): string | null {
-        if (!datetime) return null
-        return datetime.toISOString()
     }
 }
 
