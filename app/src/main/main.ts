@@ -14,13 +14,11 @@ const gpsService = new GPSService(getWindow)
 app.whenReady().then(() => {
     windowManager.createWindow()
 
-    // Arduino Service
-    arduinoService.connect(ARDUINO_CONFIG.boardInfo, ARDUINO_CONFIG.baudRate)
     arduinoService.registerIpcHandlers()
+    arduinoService.connect(ARDUINO_CONFIG.boardInfo, ARDUINO_CONFIG.baudRate)
 
-    // GPS Service
-    gpsService.connect()
     gpsService.registerIpcHandlers()
+    gpsService.connect()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
