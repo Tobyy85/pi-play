@@ -10,7 +10,7 @@ type PendingRequest = {
     timeout: NodeJS.Timeout
 }
 
-export class ArduinoService {
+class ArduinoService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
     private getWindow: () => BrowserWindow | null
@@ -155,3 +155,5 @@ export class ArduinoService {
         return arduinoPort ? arduinoPort.path : null
     }
 }
+
+export default ArduinoService

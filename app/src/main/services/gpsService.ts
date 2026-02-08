@@ -6,7 +6,7 @@ import { SerialPort } from 'serialport'
 import { GPS_CONFIG } from '@shared/config/gps'
 import type { GPSData } from '@shared/types/gps'
 
-export class GPSService {
+class GPSService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
     private getWindow: () => BrowserWindow | null
@@ -169,3 +169,5 @@ export class GPSService {
         return datetime.toISOString()
     }
 }
+
+export default GPSService

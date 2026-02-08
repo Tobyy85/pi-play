@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
-import { ArduinoService } from '@main/services/arduinoService'
-import { GPSService } from '@main/services/gpsService'
+import ArduinoService from '@main/services/arduinoService'
+import GPSService from '@main/services/gpsService'
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
 const windowManager = new WindowManager()
