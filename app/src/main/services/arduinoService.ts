@@ -79,6 +79,28 @@ class ArduinoService {
     }
 
     /**
+     * Disconnect from the Arduino and clean up resources.
+     */
+    public disconnect(): void {
+        // Reject all pending requests
+        for (const [, requests] of this.pendingRequests) {
+            for (const request of requests) {
+                clearTimeout(request.timeout)
+                request.reject(new Error('Arduino service disconnected'))
+            }
+        }
+        this.pendingRequests.clear()
+
+        this.parser?.removeAllListeners()
+        this.parser = null
+
+        if (this.port?.isOpen) {
+            this.port.close()
+        }
+        this.port = null
+    }
+
+    /**
      * Request the value of a sensor by its ID.
      * @param sensorId - The ID of the sensor to request.
      * @returns A promise that resolves with the ArduinoData.

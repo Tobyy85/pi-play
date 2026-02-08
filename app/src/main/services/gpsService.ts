@@ -82,6 +82,20 @@ class GPSService {
     }
 
     /**
+     * Disconnect from the GPS module and clean up resources.
+     */
+    public disconnect(): void {
+        this.parser?.removeAllListeners()
+        this.parser = null
+
+        if (this.port?.isOpen) {
+            this.port.close()
+        }
+        this.port = null
+        this.isConnected = false
+    }
+
+    /**
      * Parse an NMEA sentence and update the current GPS data.
      * @param sentence - The NMEA sentence to parse.
      */
