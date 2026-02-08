@@ -10,12 +10,31 @@ type PendingRequest = {
     timeout: NodeJS.Timeout
 }
 
+const REQUEST_TIMEOUT = 5000
+
+const parseJson = (line: string): unknown | null => {
+    try {
+        return JSON.parse(line.trim())
+    } catch {
+        return null
+    }
+}
+
+const findArduinoPath = async (boardInfo: BoardInfo): Promise<string | null> => {
+    const ports = await SerialPort.list()
+    const arduinoPort = ports.find(
+        port =>
+            port.vendorId?.toLowerCase() === boardInfo.vendorId?.toLowerCase() &&
+            port.productId?.toLowerCase() === boardInfo.productId?.toLowerCase()
+    )
+    return arduinoPort?.path ?? null
+}
+
 class ArduinoService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
     private getWindow: () => BrowserWindow | null
     private pendingRequests: Map<string, PendingRequest[]> = new Map()
-    private readonly REQUEST_TIMEOUT = 5000 // eslint-disable-line no-magic-numbers
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -28,7 +47,7 @@ class ArduinoService {
      */
     public async connect(boardInfo: BoardInfo, baudRate: number): Promise<void> {
         try {
-            const path = await this.getArduinoPath(boardInfo)
+            const path = await findArduinoPath(boardInfo)
             if (!path) {
                 console.error('Arduino not found')
                 return
@@ -48,7 +67,7 @@ class ArduinoService {
         if (!this.parser) return
 
         this.parser.on('data', (line: string) => {
-            const data = this.parseJson(line) as ArduinoData | null
+            const data = parseJson(line) as ArduinoData | null
             if (data) {
                 const pendingRequests = this.pendingRequests.get(data.sensorId)
                 if (pendingRequests && pendingRequests.length > 0) {
@@ -118,7 +137,7 @@ class ArduinoService {
                 timeout: setTimeout(() => {
                     this.removePendingRequest(sensorId, pendingRequest)
                     reject(new Error(`Request timeout for sensor: ${sensorId}`))
-                }, this.REQUEST_TIMEOUT),
+                }, REQUEST_TIMEOUT),
             }
 
             const existingRequests = this.pendingRequests.get(sensorId)
@@ -154,36 +173,6 @@ class ArduinoService {
                 this.pendingRequests.delete(sensorId)
             }
         }
-    }
-
-    /**
-     * Parse a JSON string safely.
-     * @param line - The JSON string to parse.
-     * @returns The parsed object or null if parsing fails.
-     */
-    // eslint-disable-next-line class-methods-use-this
-    private parseJson(line: string): unknown | null {
-        try {
-            return JSON.parse(line.trim())
-        } catch {
-            return null
-        }
-    }
-
-    /**
-     * Get the Arduino path based on BoardInfo.
-     * @param boardInfo - The board information containing vendorId and productId.
-     * @returns The path of the Arduino port or null if not found.
-     */
-    // eslint-disable-next-line class-methods-use-this
-    private getArduinoPath = async (boardInfo: BoardInfo): Promise<string | null> => {
-        const ports = await SerialPort.list()
-        const arduinoPort = ports.find(
-            port =>
-                port.vendorId?.toLowerCase() === boardInfo.vendorId?.toLowerCase() &&
-                port.productId?.toLowerCase() === boardInfo.productId?.toLowerCase()
-        )
-        return arduinoPort ? arduinoPort.path : null
     }
 }
 
