@@ -9,7 +9,7 @@ import type { GPSData } from '@shared/types/gps'
 export class GPSService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
-    private window: BrowserWindow
+    private getWindow: () => BrowserWindow | null
     private isConnected: boolean = false
     private currentData: GPSData = {
         latitude: null,
@@ -22,8 +22,8 @@ export class GPSService {
         satellites: 0,
     }
 
-    constructor(window: BrowserWindow) {
-        this.window = window
+    constructor(getWindow: () => BrowserWindow | null) {
+        this.getWindow = getWindow
     }
 
     /**
@@ -80,7 +80,7 @@ export class GPSService {
             const dataChanged = this.handleParsedSentence(parsed)
 
             if (dataChanged) {
-                this.window.webContents.send('gps:change', { ...this.currentData })
+                this.getWindow()?.webContents.send('gps:change', { ...this.currentData })
             }
         } catch (error) {
             // Invalid NMEA sentence - silently ignore

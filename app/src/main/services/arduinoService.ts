@@ -13,12 +13,12 @@ type PendingRequest = {
 export class ArduinoService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
-    private window: BrowserWindow
+    private getWindow: () => BrowserWindow | null
     private pendingRequests: Map<string, PendingRequest[]> = new Map()
     private readonly REQUEST_TIMEOUT = 5000 // eslint-disable-line no-magic-numbers
 
-    constructor(window: BrowserWindow) {
-        this.window = window
+    constructor(getWindow: () => BrowserWindow | null) {
+        this.getWindow = getWindow
     }
 
     /**
@@ -59,7 +59,7 @@ export class ArduinoService {
                         request.resolve(data)
                     })
                 } else {
-                    this.window.webContents.send('arduino:change', data)
+                    this.getWindow()?.webContents.send('arduino:change', data)
                 }
             }
         })
