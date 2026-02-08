@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
 import ArduinoService from '@main/services/arduinoService'
@@ -15,21 +15,11 @@ app.whenReady().then(() => {
 
     // Arduino Service
     arduinoService.connect(ARDUINO_CONFIG.boardInfo, ARDUINO_CONFIG.baudRate)
-
-    ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
-        return arduinoService.requestSensorValue(sensorId)
-    })
+    arduinoService.registerIpcHandlers()
 
     // GPS Service
     gpsService.connect()
-
-    ipcMain.handle('gps:getData', () => {
-        return gpsService.getData()
-    })
-
-    ipcMain.handle('gps:getConnectionStatus', () => {
-        return gpsService.getConnectionStatus()
-    })
+    gpsService.registerIpcHandlers()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

@@ -1,5 +1,5 @@
 import { ReadlineParser } from '@serialport/parser-readline'
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import * as nmea from 'nmea-simple'
 import { SerialPort } from 'serialport'
 
@@ -65,6 +65,19 @@ class GPSService {
 
         this.port.on('close', () => {
             this.isConnected = false
+        })
+    }
+
+    /**
+     * Register IPC handlers for the GPS service.
+     */
+    public registerIpcHandlers(): void {
+        ipcMain.handle('gps:getData', () => {
+            return this.getData()
+        })
+
+        ipcMain.handle('gps:getConnectionStatus', () => {
+            return this.getConnectionStatus()
         })
     }
 

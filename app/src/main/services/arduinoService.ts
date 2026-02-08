@@ -1,5 +1,5 @@
 import { ReadlineParser } from '@serialport/parser-readline'
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { SerialPort } from 'serialport'
 
 import type { ArduinoData, BoardInfo } from '@shared/types/arduino'
@@ -66,6 +66,15 @@ class ArduinoService {
 
         this.port?.on('error', (err: Error) => {
             console.error('SerialPort Error: ', err.message)
+        })
+    }
+
+    /**
+     * Register IPC handlers for the Arduino service.
+     */
+    public registerIpcHandlers(): void {
+        ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
+            return this.requestSensorValue(sensorId)
         })
     }
 
