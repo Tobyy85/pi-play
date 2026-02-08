@@ -5,18 +5,15 @@ import { ArduinoService } from '@main/services/arduinoService'
 import { GPSService } from '@main/services/gpsService'
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
-app.whenReady().then(() => {
-    const windowManager = new WindowManager()
-    let mainWindow = windowManager.createWindow()
+const windowManager = new WindowManager()
 
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            mainWindow = windowManager.createWindow()
-        }
-    })
+const arduinoService = new ArduinoService(windowManager.getWindow)
+const gpsService = new GPSService(windowManager.getWindow)
+
+app.whenReady().then(() => {
+    windowManager.createWindow()
 
     // Arduino Service
-    const arduinoService = new ArduinoService(mainWindow)
     arduinoService.connect(ARDUINO_CONFIG.boardInfo, ARDUINO_CONFIG.baudRate)
 
     ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
@@ -24,7 +21,6 @@ app.whenReady().then(() => {
     })
 
     // GPS Service
-    const gpsService = new GPSService(mainWindow)
     gpsService.connect()
 
     ipcMain.handle('gps:getData', () => {
@@ -33,6 +29,12 @@ app.whenReady().then(() => {
 
     ipcMain.handle('gps:getConnectionStatus', () => {
         return gpsService.getConnectionStatus()
+    })
+
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            windowManager.createWindow()
+        }
     })
 })
 
