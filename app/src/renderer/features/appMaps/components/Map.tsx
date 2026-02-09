@@ -78,8 +78,6 @@ const Map = ({ latitude, longitude, course }: MapProps) => {
                     <MapMarker
                         latitude={latitude}
                         longitude={longitude}
-                        rotation={(course || 0) - viewState.bearing}
-                        pitch={viewState.pitch}
                     />
                 )}
             </MapGL>
