@@ -61,6 +61,37 @@ class ArduinoService {
     }
 
     /**
+     * Disconnect from the Arduino and clean up resources.
+     */
+    public disconnect(): void {
+        // Reject all pending requests
+        for (const [, requests] of this.pendingRequests) {
+            for (const request of requests) {
+                clearTimeout(request.timeout)
+                request.reject(new Error('Arduino service disconnected'))
+            }
+        }
+        this.pendingRequests.clear()
+
+        this.parser?.removeAllListeners()
+        this.parser = null
+
+        if (this.port?.isOpen) {
+            this.port.close()
+        }
+        this.port = null
+    }
+
+    /**
+     * Register IPC handlers for the Arduino service.
+     */
+    public registerIpcHandlers(): void {
+        ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
+            return this.requestSensorValue(sensorId)
+        })
+    }
+
+    /**
      * Initialize event listeners for the serial port and parser.
      */
     private initListeners(): void {
@@ -86,37 +117,6 @@ class ArduinoService {
         this.port?.on('error', (err: Error) => {
             console.error('SerialPort Error: ', err.message)
         })
-    }
-
-    /**
-     * Register IPC handlers for the Arduino service.
-     */
-    public registerIpcHandlers(): void {
-        ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
-            return this.requestSensorValue(sensorId)
-        })
-    }
-
-    /**
-     * Disconnect from the Arduino and clean up resources.
-     */
-    public disconnect(): void {
-        // Reject all pending requests
-        for (const [, requests] of this.pendingRequests) {
-            for (const request of requests) {
-                clearTimeout(request.timeout)
-                request.reject(new Error('Arduino service disconnected'))
-            }
-        }
-        this.pendingRequests.clear()
-
-        this.parser?.removeAllListeners()
-        this.parser = null
-
-        if (this.port?.isOpen) {
-            this.port.close()
-        }
-        this.port = null
     }
 
     /**

@@ -64,6 +64,41 @@ class GPSService {
     }
 
     /**
+     * Disconnect from the GPS module and clean up resources.
+     */
+    public disconnect(): void {
+        this.parser?.removeAllListeners()
+        this.parser = null
+
+        if (this.port?.isOpen) {
+            this.port.close()
+        }
+        this.port = null
+        this.isConnected = false
+    }
+
+    /**
+     * Register IPC handlers for the GPS service.
+     */
+    public registerIpcHandlers(): void {
+        ipcMain.handle('gps:getData', () => {
+            return this.getData()
+        })
+
+        ipcMain.handle('gps:getConnectionStatus', () => {
+            return this.getConnectionStatus()
+        })
+    }
+
+    public getData(): GPSData {
+        return { ...this.currentData }
+    }
+
+    public getConnectionStatus(): boolean {
+        return this.isConnected && (this.port?.isOpen ?? false)
+    }
+
+    /**
      * Initialize event listeners for the serial port and parser.
      */
     private initListeners(): void {
@@ -81,33 +116,6 @@ class GPSService {
         this.port.on('close', () => {
             this.isConnected = false
         })
-    }
-
-    /**
-     * Register IPC handlers for the GPS service.
-     */
-    public registerIpcHandlers(): void {
-        ipcMain.handle('gps:getData', () => {
-            return this.getData()
-        })
-
-        ipcMain.handle('gps:getConnectionStatus', () => {
-            return this.getConnectionStatus()
-        })
-    }
-
-    /**
-     * Disconnect from the GPS module and clean up resources.
-     */
-    public disconnect(): void {
-        this.parser?.removeAllListeners()
-        this.parser = null
-
-        if (this.port?.isOpen) {
-            this.port.close()
-        }
-        this.port = null
-        this.isConnected = false
     }
 
     /**
@@ -183,14 +191,6 @@ class GPSService {
         this.currentData.timestamp = formatTimestamp(rmc.datetime)
         this.currentData.fix = true
         return true
-    }
-
-    public getData(): GPSData {
-        return { ...this.currentData }
-    }
-
-    public getConnectionStatus(): boolean {
-        return this.isConnected && (this.port?.isOpen ?? false)
     }
 }
 
