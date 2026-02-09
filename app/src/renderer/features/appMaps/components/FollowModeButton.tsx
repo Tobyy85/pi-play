@@ -1,4 +1,4 @@
-import { FaMapMarkerAlt } from 'react-icons/fa'
+import { PiGpsFixFill } from 'react-icons/pi'
 
 interface FollowModeButtonProps {
     followMode: boolean
@@ -10,11 +10,11 @@ const FollowModeButton = ({ followMode, toggleFollowMode }: FollowModeButtonProp
         <>
             <button
                 onClick={toggleFollowMode}
-                className={`absolute right-4 bottom-4 size-10 cursor-pointer rounded-full p-2.5 text-white
-                    shadow-lg transition-colors ${followMode ? 'bg-blue-400' : 'bg-black/75'}`}
+                className={`absolute right-4 bottom-4 size-10 cursor-pointer rounded-full p-2 text-white
+                    shadow-lg transition-colors duration-300 ${followMode ? 'bg-blue-400' : 'bg-black/75'}`}
                 title={followMode ? 'Following GPS position' : 'Click to follow GPS'}
             >
-                <FaMapMarkerAlt className='size-full' />
+                <PiGpsFixFill className='size-full' />
             </button>
         </>
     )
