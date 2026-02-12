@@ -13,7 +13,7 @@
         "lint": "eslint .",
         "preview": "vite preview",
         "format": "prettier --write .",
-        "dev": "npm run build:electron && concurrently \"npm:vite:dev\" \"npm:electron:watch\" \"npm:electron:start\"",
+        "dev": "npm run build:electron && concurrently -n \"Vite,TSC, \" -c \"green,blue,reset\" \"npm:vite:dev\" \"npm:electron:watch\" \"npm:electron:start\"",
         "build": "npm run build:electron && vite build",
         "vite:dev": "vite",
         "electron:watch": "concurrently \"tsc -w -p tsconfig.electron.json\" \"tsc-alias -w -p tsconfig.electron.json\"",
