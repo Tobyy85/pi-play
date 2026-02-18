@@ -5,8 +5,12 @@ import * as dbus from 'dbus-next'
 /* eslint-disable new-cap */
 class MediaPlayerService {
     private getWindow: () => BrowserWindow | null
+    private connectionStatus: boolean = false
+
     private bus: dbus.MessageBus
+    private objManager: dbus.ClientInterface | null = null
     private objects: any // eslint-disable-line @typescript-eslint/no-explicit-any
+
     private mediaPlayerProps: dbus.ClientInterface | null = null
     private mediaPlayerInterface: any = null // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -19,13 +23,10 @@ class MediaPlayerService {
         this.configureProperties()
 
         const bluez = await this.bus.getProxyObject('org.bluez', '/')
-        const objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
-        this.objects = await objManager.GetManagedObjects()
+        this.objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
+        this.objects = await this.objManager.GetManagedObjects()
 
-        if (!this.isAnyDeviceConnected()) {
-            console.warn('Žádné zařízení není připojeno. Čekám na připojení...')
-            return
-        }
+        this.listenForConnectionChanges()
 
         for (const path in this.objects) {
             if (this.objects[path]['org.bluez.MediaPlayer1']) {
@@ -35,6 +36,10 @@ class MediaPlayerService {
     }
 
     public registerIpcHandlers() {
+        ipcMain.handle('mediaPlayer:connectionStatus', () => {
+            return this.connectionStatus
+        })
+
         ipcMain.handle('mediaPlayer:getTrackInfo', async () => {
             const track = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Track')
             return {
@@ -74,12 +79,30 @@ class MediaPlayerService {
         this.bus.disconnect()
     }
 
-    private isAnyDeviceConnected(): boolean {
-        const connectedDevices = Object.keys(this.objects).filter(path => {
-            const device = this.objects[path]['org.bluez.Device1']
-            return device && device.Connected.value === true
+    private setConnected(connected: boolean) {
+        if (this.connectionStatus !== connected) {
+            this.connectionStatus = connected
+            this.getWindow()?.webContents.send('mediaPlayer:connectionStatus', connected)
+        }
+    }
+
+    private listenForConnectionChanges() {
+        if (!this.objManager) return
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.objManager.on('InterfacesAdded', (path: string, interfaces: any) => {
+            if (interfaces['org.bluez.MediaPlayer1']) {
+                this.mediaPlayerHandler(path)
+            }
         })
-        return connectedDevices.length > 0
+
+        this.objManager.on('InterfacesRemoved', (path: string, interfaces: string[]) => {
+            if (interfaces.includes('org.bluez.MediaPlayer1')) {
+                this.mediaPlayerInterface = null
+                this.mediaPlayerProps = null
+                this.setConnected(false)
+            }
+        })
     }
 
     private async configureProperties() {
@@ -96,7 +119,7 @@ class MediaPlayerService {
         const mediaPlayerObject = await this.bus.getProxyObject('org.bluez', path)
 
         this.mediaPlayerInterface = mediaPlayerObject.getInterface('org.bluez.MediaPlayer1')
-        // await this.mediaPlayerInterface.Play()
+        this.setConnected(true)
 
         this.mediaPlayerProps = mediaPlayerObject.getInterface('org.freedesktop.DBus.Properties')
         const allProperties = await this.mediaPlayerProps.GetAll('org.bluez.MediaPlayer1')
