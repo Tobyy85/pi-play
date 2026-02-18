@@ -23,7 +23,7 @@ class MediaPlayerService {
         this.objects = await objManager.GetManagedObjects()
 
         if (!this.isAnyDeviceConnected()) {
-            console.log('Žádné zařízení není připojeno. Čekám na připojení...')
+            console.warn('Žádné zařízení není připojeno. Čekám na připojení...')
             return
         }
 
@@ -35,9 +35,8 @@ class MediaPlayerService {
     }
 
     public registerIpcHandlers() {
-        ipcMain.handle('bluetooth:getTrackInfo', async () => {
+        ipcMain.handle('mediaPlayer:getTrackInfo', async () => {
             const track = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Track')
-            // console.log('Fetched track info:', track.value)
             return {
                 title: track?.value?.Title?.value ?? null,
                 artist: track?.value?.Artist?.value ?? null,
@@ -46,27 +45,27 @@ class MediaPlayerService {
             }
         })
 
-        ipcMain.handle('bluetooth:getPlaybackStatus', async () => {
+        ipcMain.handle('mediaPlayer:getPlaybackStatus', async () => {
             return (await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Status'))?.value ?? null
         })
 
-        ipcMain.handle('bluetooth:getPosition', async () => {
+        ipcMain.handle('mediaPlayer:getPosition', async () => {
             return (await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Position'))?.value ?? null
         })
 
-        ipcMain.handle('bluetooth:play', async () => {
+        ipcMain.handle('mediaPlayer:play', async () => {
             await this.mediaPlayerInterface?.Play()
         })
 
-        ipcMain.handle('bluetooth:pause', async () => {
+        ipcMain.handle('mediaPlayer:pause', async () => {
             await this.mediaPlayerInterface?.Pause()
         })
 
-        ipcMain.handle('bluetooth:next', async () => {
+        ipcMain.handle('mediaPlayer:next', async () => {
             await this.mediaPlayerInterface?.Next()
         })
 
-        ipcMain.handle('bluetooth:previous', async () => {
+        ipcMain.handle('mediaPlayer:previous', async () => {
             await this.mediaPlayerInterface?.Previous()
         })
     }
@@ -112,7 +111,7 @@ class MediaPlayerService {
     private sendMediaPlayerData(data: any) {
         if (data.Track) {
             const track = data.Track.value
-            this.getWindow()?.webContents.send('bluetooth:trackInfo', {
+            this.getWindow()?.webContents.send('mediaPlayer:trackInfo', {
                 title: track?.Title?.value ?? null,
                 artist: track?.Artist?.value ?? null,
                 album: track?.Album?.value ?? null,
@@ -120,10 +119,10 @@ class MediaPlayerService {
             })
         }
         if (data.Status) {
-            this.getWindow()?.webContents.send('bluetooth:playbackStatus', data.Status.value)
+            this.getWindow()?.webContents.send('mediaPlayer:playbackStatus', data.Status.value)
         }
         if (data.Position) {
-            this.getWindow()?.webContents.send('bluetooth:position', data.Position.value)
+            this.getWindow()?.webContents.send('mediaPlayer:position', data.Position.value)
         }
     }
 }
