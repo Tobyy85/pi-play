@@ -36,7 +36,7 @@ class MediaPlayerService {
     }
 
     public registerIpcHandlers() {
-        ipcMain.handle('mediaPlayer:connectionStatus', () => {
+        ipcMain.handle('mediaPlayer:getConnectionStatus', () => {
             return this.connectionStatus
         })
 
