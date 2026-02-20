@@ -141,19 +141,42 @@ class MediaPlayerService {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, class-methods-use-this
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private extractTrackInfo(track: any): TrackInfo {
         const title = track?.value?.Title?.value ?? null
         const artist = track?.value?.Artist?.value ?? null
         const album = track?.value?.Album?.value ?? null
         const duration = track?.value?.Duration?.value ?? null
 
-        return {
+        return this.cleanTrackInfo({
             title,
             artist,
             album,
             duration,
+        })
+    }
+
+    /**
+     * This is a hack to handle weird track info formats from certain players (like Spotify's "Listening on ...").
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private cleanTrackInfo(trackInfo: TrackInfo): TrackInfo {
+        const cleanTrackInfo = trackInfo
+
+        if (trackInfo.artist?.toLowerCase().includes('listening on')) {
+            const titleSegments = trackInfo.title?.split('•')
+            cleanTrackInfo.title = titleSegments?.[0]?.trim() ?? trackInfo.title
+            cleanTrackInfo.artist = titleSegments?.[1]?.trim() ?? trackInfo.artist
+            return cleanTrackInfo
         }
+
+        if (cleanTrackInfo.artist?.toLowerCase().includes('shuffle')) {
+            const artistSegments = cleanTrackInfo.artist.split('•')
+            cleanTrackInfo.artist = artistSegments?.[0]?.trim() ?? cleanTrackInfo.artist
+            return cleanTrackInfo
+        }
+
+        return trackInfo
     }
 }
 
