@@ -176,6 +176,12 @@ class MediaPlayerService {
             return cleanTrackInfo
         }
 
+        if (cleanTrackInfo.artist?.toLowerCase().includes('video')) {
+            const artistSegments = cleanTrackInfo.artist.split('•')
+            cleanTrackInfo.artist = artistSegments?.[0]?.trim() ?? cleanTrackInfo.artist
+            return cleanTrackInfo
+        }
+
         return trackInfo
     }
 }
