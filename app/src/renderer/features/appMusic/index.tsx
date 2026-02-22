@@ -1,4 +1,8 @@
-import { useEffect, useState } from 'react'
+import {
+    usePlaybackStatus,
+    usePosition,
+    useTrackInfo,
+} from '@renderer/features/appMusic/hooks/useMediaPlayerData'
 
 import NowPlaying from '@renderer/features/appMusic/components/NowPlaying'
 import PlaybackControls from '@renderer/features/appMusic/components/PlaybackControls'
@@ -6,43 +10,20 @@ import PlaybackProgress from '@renderer/features/appMusic/components/PlaybackPro
 
 import GradientBackground from '@renderer/features/appMusic/components/GradientBackground'
 
-import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
-
 export const AppMusicBackground = () => {
-    const [trackInfo, setTrackInfo] = useState<TrackInfo | null>(null)
+    const { data: trackInfo, isLoading } = useTrackInfo()
 
-    useEffect(() => {
-        window.api.mediaPlayer.trackInfo.get().then(setTrackInfo).catch(console.error)
-
-        const unsubscribeTrackInfo = window.api.mediaPlayer.trackInfo.subscribe(setTrackInfo)
-        return () => {
-            unsubscribeTrackInfo()
-        }
-    }, [])
+    if (isLoading) {
+        return null
+    }
 
     return <GradientBackground trackInfo={trackInfo} />
 }
 
 export const AppMusicContent = () => {
-    const [trackInfo, setTrackInfo] = useState<TrackInfo | null>(null)
-    const [status, setStatus] = useState<Status | null>(null)
-    const [position, setPosition] = useState<Position | null>(null)
-
-    useEffect(() => {
-        window.api.mediaPlayer.playbackStatus.get().then(setStatus).catch(console.error)
-        window.api.mediaPlayer.trackInfo.get().then(setTrackInfo).catch(console.error)
-        window.api.mediaPlayer.position.get().then(setPosition).catch(console.error)
-
-        const unsubscribePlaybackStatus = window.api.mediaPlayer.playbackStatus.subscribe(setStatus)
-        const unsubscribeTrackInfo = window.api.mediaPlayer.trackInfo.subscribe(setTrackInfo)
-        const unsubscribePosition = window.api.mediaPlayer.position.subscribe(setPosition)
-
-        return () => {
-            unsubscribePlaybackStatus()
-            unsubscribeTrackInfo()
-            unsubscribePosition()
-        }
-    }, [])
+    const { data: trackInfo } = useTrackInfo()
+    const { data: status } = usePlaybackStatus()
+    const { data: position } = usePosition()
 
     return (
         <div className='flex size-full flex-col items-center justify-center py-2 pr-8'>
