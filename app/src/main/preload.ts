@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 import type { ArduinoData } from '@shared/types/arduino'
+import { CallInfo } from '@shared/types/call'
 import type { GPSData } from '@shared/types/gps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
 
@@ -84,6 +85,18 @@ const electronApi = {
                 await ipcRenderer.invoke('mediaPlayer:previous')
             },
         },
+    },
+    call: {
+        answer: async () => {
+            return await ipcRenderer.invoke('call:answer')
+        },
+        hangup: async () => {
+            return await ipcRenderer.invoke('call:hangup')
+        },
+        dial: async (phoneNumber: string) => {
+            return await ipcRenderer.invoke('call:dial', phoneNumber)
+        },
+        callInfo: generateDataHandler<CallInfo>('call:getCallInfo', 'call:info'),
     },
 }
 
