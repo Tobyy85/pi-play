@@ -5,6 +5,7 @@ import * as dbus from 'dbus-next'
 import { parseVCards } from 'vcard4-ts'
 
 import type { Contact } from '@shared/types/phoneBook'
+import { formatPhoneNumber, normalizePhoneNumber } from '@shared/utils/phoneBook'
 
 /* eslint-disable new-cap */
 class PhoneBookService {
@@ -85,8 +86,8 @@ class PhoneBookService {
                 const phoneNumber = card.TEL?.[0]?.value
                 const photo = card.PHOTO?.[0]?.value
                 return {
-                    name: (name || phoneNumber) ?? 'Unknown',
-                    phoneNumber: phoneNumber ?? 'N/A',
+                    name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
+                    phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
                     photo: photo ?? undefined, // eslint-disable-line no-undefined
                 }
             })
