@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { readFileSync, unlinkSync } from 'fs'
 
 import * as dbus from 'dbus-next'
@@ -36,10 +36,10 @@ class PhoneBookService {
         })
     }
 
-    public disconnect() {
+    public async disconnect() {
+        await this.removeSession()
         this.sessionBus.disconnect()
         this.systemBus.disconnect()
-        this.removeSession()
     }
 
     private async pullContacts() {
@@ -139,9 +139,15 @@ class PhoneBookService {
     private async removeSession() {
         if (!this.sessionPath) return
 
-        const client = await this.sessionBus.getProxyObject('org.bluez.obex', '/org/bluez/obex')
-        const obexClient = client.getInterface('org.bluez.obex.Client1')
-        await obexClient.RemoveSession(this.sessionPath)
+        try {
+            const client = await this.sessionBus.getProxyObject('org.bluez.obex', '/org/bluez/obex')
+            const obexClient = client.getInterface('org.bluez.obex.Client1')
+            await obexClient.RemoveSession(this.sessionPath)
+        } catch (err) {
+            console.error('Failed to remove OBEX session:', err)
+        } finally {
+            this.sessionPath = null
+        }
     }
 
     private async getDeviceAddress(): Promise<string | null> {
