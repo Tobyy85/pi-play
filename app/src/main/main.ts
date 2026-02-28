@@ -6,6 +6,7 @@ import ArduinoService from '@main/services/arduinoService'
 import CallService from '@main/services/CallService'
 import GPSService from '@main/services/gpsService'
 import MediaPlayerService from '@main/services/MediaPlayerService'
+import PhoneBookService from '@main/services/PhoneBookService'
 
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
@@ -16,6 +17,7 @@ const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
 const mediaPlayerService = new MediaPlayerService(getWindow)
 const callService = new CallService(getWindow)
+const phoneBookService = new PhoneBookService()
 
 app.whenReady().then(() => {
     windowManager.createWindow()
@@ -32,6 +34,9 @@ app.whenReady().then(() => {
     callService.registerIpcHandlers()
     callService.initialize()
 
+    phoneBookService.registerIpcHandlers()
+    phoneBookService.initialize()
+
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             windowManager.createWindow()
@@ -44,6 +49,7 @@ app.on('before-quit', () => {
     gpsService.disconnect()
     mediaPlayerService.disconnect()
     callService.disconnect()
+    phoneBookService.disconnect()
 })
 
 app.on('window-all-closed', () => {
