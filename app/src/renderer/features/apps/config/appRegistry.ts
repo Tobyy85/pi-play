@@ -7,6 +7,9 @@ import { AppMapsBackground, AppMapsContent } from '@renderer/features/appMaps'
 import MusicIcon from '@renderer/assets/music-icon.png'
 import { AppMusicBackground, AppMusicContent } from '@renderer/features/appMusic'
 
+import PhoneIcon from '@renderer/assets/phone-icon.png'
+import { AppPhoneBackground, AppPhoneContent } from '@renderer/features/appPhone'
+
 interface AppRegistryItem {
     name: string
     id: string
@@ -36,6 +39,13 @@ const APP_REGISTRY: AppRegistryItem[] = [
         icon: MusicIcon,
         contentComponent: AppMusicContent,
         backgroundComponent: AppMusicBackground,
+    },
+    {
+        name: 'Phone',
+        id: 'phone',
+        icon: PhoneIcon,
+        contentComponent: AppPhoneContent,
+        backgroundComponent: AppPhoneBackground,
     },
 ]
 
