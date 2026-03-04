@@ -3,8 +3,10 @@ import { app, BrowserWindow } from 'electron'
 import WindowManager from '@main/managers/windowManager'
 
 import ArduinoService from '@main/services/ArduinoService'
-import CallService from '@main/services/CallService'
 import GPSService from '@main/services/GpsService'
+
+import BluetoothService from '@main/services/BluetoothService'
+import CallService from '@main/services/CallService'
 import MediaPlayerService from '@main/services/MediaPlayerService'
 import PhoneBookService from '@main/services/PhoneBookService'
 
@@ -15,6 +17,8 @@ const getWindow = () => windowManager.getWindow()
 
 const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
+
+const bluetoothService = new BluetoothService()
 const mediaPlayerService = new MediaPlayerService(getWindow)
 const callService = new CallService(getWindow)
 const phoneBookService = new PhoneBookService()
@@ -27,6 +31,8 @@ app.whenReady().then(() => {
 
     gpsService.registerIpcHandlers()
     gpsService.connect()
+
+    bluetoothService.configureProperties()
 
     mediaPlayerService.registerIpcHandlers()
     mediaPlayerService.initialize()
@@ -50,6 +56,7 @@ app.on('before-quit', () => {
     mediaPlayerService.disconnect()
     callService.disconnect()
     phoneBookService.disconnect()
+    bluetoothService.disconnect()
 })
 
 app.on('window-all-closed', () => {
