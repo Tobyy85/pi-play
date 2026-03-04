@@ -1,8 +1,10 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 import type { ArduinoData } from '@shared/types/arduino'
+import type { CallInfo } from '@shared/types/call'
 import type { GPSData } from '@shared/types/gps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
+import type { Contact } from '@shared/types/phoneBook'
 
 const subscribeToChannel = <T>(channel: string, callback: (data: T) => void) => {
     const cb = (_event: IpcRendererEvent, data: T) => {
@@ -83,6 +85,23 @@ const electronApi = {
             previous: async () => {
                 await ipcRenderer.invoke('mediaPlayer:previous')
             },
+        },
+    },
+    call: {
+        answer: async () => {
+            return await ipcRenderer.invoke('call:answer')
+        },
+        hangup: async () => {
+            return await ipcRenderer.invoke('call:hangup')
+        },
+        dial: async (phoneNumber: string) => {
+            return await ipcRenderer.invoke('call:dial', phoneNumber)
+        },
+        callInfo: generateDataHandler<CallInfo>('call:getCallInfo', 'call:info'),
+    },
+    phoneBook: {
+        getContacts: async (): Promise<Contact[]> => {
+            return await ipcRenderer.invoke('phoneBook:getContacts')
         },
     },
 }
