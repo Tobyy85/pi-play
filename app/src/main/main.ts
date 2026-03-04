@@ -2,9 +2,9 @@ import { app, BrowserWindow } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
 
-import ArduinoService from '@main/services/arduinoService'
+import ArduinoService from '@main/services/ArduinoService'
 import CallService from '@main/services/CallService'
-import GPSService from '@main/services/gpsService'
+import GPSService from '@main/services/GpsService'
 import MediaPlayerService from '@main/services/MediaPlayerService'
 import PhoneBookService from '@main/services/PhoneBookService'
 
