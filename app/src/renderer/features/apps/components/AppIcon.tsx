@@ -3,24 +3,33 @@ import { NavLink } from 'react-router-dom'
 export interface AppIconProps {
     iconSource: string
     name: string
+    showName?: boolean
     path: string
 }
 
-const AppIcon = ({ iconSource, name, path }: AppIconProps) => {
+const AppIcon = ({ iconSource, name, showName, path }: AppIconProps) => {
     return (
         <>
             <NavLink
                 to={path}
                 className={({ isActive }) =>
-                    `rounded-squircle flex size-20 shrink-0 flex-col items-center justify-center
-                    overflow-hidden bg-white ${isActive ? 'brightness-100' : 'brightness-90'}`
+                    `flex w-20 shrink-0 flex-col gap-1 overflow-hidden
+                    ${isActive ? 'brightness-100' : 'brightness-90'}`
                 }
             >
-                <img
-                    src={iconSource}
-                    alt={`${name} icon`}
-                    className='size-full object-cover'
-                />
+                <div
+                    className='rounded-squircle flex aspect-square items-center justify-center overflow-hidden
+                        bg-white'
+                >
+                    <img
+                        src={iconSource}
+                        alt={`${name} icon`}
+                        className='size-full object-cover'
+                    />
+                </div>
+                {showName && (
+                    <span className='truncate text-center text-sm font-semibold text-white'>{name}</span>
+                )}
             </NavLink>
         </>
     )
