@@ -5,16 +5,17 @@ export interface AppIconProps {
     name: string
     showName?: boolean
     path: string
+    isInNavigation?: boolean
 }
 
-const AppIcon = ({ iconSource, name, showName, path }: AppIconProps) => {
+const AppIcon = ({ iconSource, name, showName, path, isInNavigation }: AppIconProps) => {
     return (
         <>
             <NavLink
                 to={path}
                 className={({ isActive }) =>
                     `flex w-20 shrink-0 flex-col gap-1 overflow-hidden
-                    ${isActive ? 'brightness-100' : 'brightness-90'}`
+                    ${!isInNavigation || isActive ? 'brightness-100' : 'brightness-90'}`
                 }
             >
                 <div

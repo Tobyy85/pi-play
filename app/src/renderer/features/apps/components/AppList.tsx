@@ -14,6 +14,7 @@ const AppList = () => {
                         name={app.name}
                         path={`/${BASE_PATH}/${app.id}`}
                         key={app.id}
+                        isInNavigation={true}
                     />
                 ))}
             </div>
