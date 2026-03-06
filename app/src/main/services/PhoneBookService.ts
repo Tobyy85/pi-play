@@ -165,7 +165,7 @@ class PhoneBookService {
                 const address = deviceProps.Address.value
                 const uuids = deviceProps.UUIDs?.value || []
 
-                // chek if contains PBAP UUID (0000112f-0000-1000-8000-00805f9b34fb)
+                // check if contains PBAP UUID (0000112f-0000-1000-8000-00805f9b34fb)
                 const supportsPBAP = uuids.some((uuid: string) => uuid.toLowerCase().includes('112f'))
 
                 if (isConnected && supportsPBAP) {
