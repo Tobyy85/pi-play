@@ -4,6 +4,12 @@ import { AppReverseCameraBackground, AppReverseCameraContent } from '@renderer/f
 import MapsIcon from '@renderer/assets/maps-icon.png'
 import { AppMapsBackground, AppMapsContent } from '@renderer/features/appMaps'
 
+import MusicIcon from '@renderer/assets/music-icon.png'
+import { AppMusicBackground, AppMusicContent } from '@renderer/features/appMusic'
+
+import PhoneIcon from '@renderer/assets/phone-icon.png'
+import { AppPhoneBackground, AppPhoneContent } from '@renderer/features/appPhone'
+
 interface AppRegistryItem {
     name: string
     id: string
@@ -26,6 +32,20 @@ const APP_REGISTRY: AppRegistryItem[] = [
         icon: MapsIcon,
         contentComponent: AppMapsContent,
         backgroundComponent: AppMapsBackground,
+    },
+    {
+        name: 'Music',
+        id: 'music',
+        icon: MusicIcon,
+        contentComponent: AppMusicContent,
+        backgroundComponent: AppMusicBackground,
+    },
+    {
+        name: 'Phone',
+        id: 'phone',
+        icon: PhoneIcon,
+        contentComponent: AppPhoneContent,
+        backgroundComponent: AppPhoneBackground,
     },
 ]
 

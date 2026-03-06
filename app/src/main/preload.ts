@@ -1,19 +1,36 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 import type { ArduinoData } from '@shared/types/arduino'
+import type { CallInfo } from '@shared/types/call'
 import type { GPSData } from '@shared/types/gps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
+import type { Contact } from '@shared/types/phoneBook'
+
+const subscribeToChannel = <T>(channel: string, callback: (data: T) => void) => {
+    const cb = (_event: IpcRendererEvent, data: T) => {
+        callback(data)
+    }
+    ipcRenderer.on(channel, cb)
+    return () => {
+        ipcRenderer.off(channel, cb)
+    }
+}
+
+const generateDataHandler = <T>(getChannel: string, subscribeChannel: string) => {
+    return {
+        get: (): Promise<T> => {
+            return ipcRenderer.invoke(getChannel)
+        },
+        subscribe: (callback: (data: T) => void): (() => void) => {
+            return subscribeToChannel(subscribeChannel, callback)
+        },
+    }
+}
 
 const electronApi = {
     arduino: {
         subscribeToData: (callback: (arduinoData: ArduinoData) => void): (() => void) => {
-            const handler = (_event: IpcRendererEvent, data: ArduinoData) => {
-                callback(data)
-            }
-            ipcRenderer.on('arduino:change', handler)
-            return () => {
-                ipcRenderer.off('arduino:change', handler)
-            }
+            return subscribeToChannel('arduino:change', callback)
         },
         subscribeToSensorId: (
             sensorId: ArduinoData['sensorId'],
@@ -35,13 +52,7 @@ const electronApi = {
     },
     gps: {
         subscribe: (callback: (gpsData: GPSData) => void): (() => void) => {
-            const handler = (_event: IpcRendererEvent, data: GPSData) => {
-                callback(data)
-            }
-            ipcRenderer.on('gps:change', handler)
-            return () => {
-                ipcRenderer.off('gps:change', handler)
-            }
+            return subscribeToChannel('gps:change', callback)
         },
         getData: (): Promise<GPSData> => {
             return ipcRenderer.invoke('gps:getData')
@@ -51,68 +62,46 @@ const electronApi = {
         },
     },
     mediaPlayer: {
-        connectionStatus: (): Promise<boolean> => {
-            return ipcRenderer.invoke('mediaPlayer:connectionStatus')
+        connectionStatus: generateDataHandler<boolean>(
+            'mediaPlayer:getConnectionStatus',
+            'mediaPlayer:connectionStatus'
+        ),
+        trackInfo: generateDataHandler<TrackInfo>('mediaPlayer:getTrackInfo', 'mediaPlayer:trackInfo'),
+        playbackStatus: generateDataHandler<Status>(
+            'mediaPlayer:getPlaybackStatus',
+            'mediaPlayer:playbackStatus'
+        ),
+        position: generateDataHandler<Position>('mediaPlayer:getPosition', 'mediaPlayer:position'),
+        actions: {
+            play: async () => {
+                await ipcRenderer.invoke('mediaPlayer:play')
+            },
+            pause: async () => {
+                await ipcRenderer.invoke('mediaPlayer:pause')
+            },
+            next: async () => {
+                await ipcRenderer.invoke('mediaPlayer:next')
+            },
+            previous: async () => {
+                await ipcRenderer.invoke('mediaPlayer:previous')
+            },
         },
-        subscribeToConnectionStatus: (callback: (connectionStatus: boolean) => void): (() => void) => {
-            const handler = (_event: IpcRendererEvent, data: boolean) => {
-                callback(data)
-            }
-            ipcRenderer.on('mediaPlayer:connectionStatus', handler)
-            return () => {
-                ipcRenderer.off('mediaPlayer:connectionStatus', handler)
-            }
+    },
+    call: {
+        answer: async () => {
+            return await ipcRenderer.invoke('call:answer')
         },
-
-        getTrackInfo: (): Promise<TrackInfo> => {
-            return ipcRenderer.invoke('mediaPlayer:getTrackInfo')
+        hangup: async () => {
+            return await ipcRenderer.invoke('call:hangup')
         },
-        subscribeToTrackInfo: (callback: (trackInfo: TrackInfo) => void): (() => void) => {
-            const handler = (_event: IpcRendererEvent, data: TrackInfo) => {
-                callback(data)
-            }
-            ipcRenderer.on('mediaPlayer:trackInfo', handler)
-            return () => {
-                ipcRenderer.off('mediaPlayer:trackInfo', handler)
-            }
+        dial: async (phoneNumber: string) => {
+            return await ipcRenderer.invoke('call:dial', phoneNumber)
         },
-
-        getPlaybackStatus: (): Promise<Status> => {
-            return ipcRenderer.invoke('mediaPlayer:getPlaybackStatus')
-        },
-        subscribeToPlaybackStatus: (callback: (status: Status) => void): (() => void) => {
-            const handler = (_event: IpcRendererEvent, data: Status) => {
-                callback(data)
-            }
-            ipcRenderer.on('mediaPlayer:playbackStatus', handler)
-            return () => {
-                ipcRenderer.off('mediaPlayer:playbackStatus', handler)
-            }
-        },
-
-        getPosition: (): Promise<Position> => {
-            return ipcRenderer.invoke('mediaPlayer:getPosition')
-        },
-        subscribeToPosition: (callback: (position: Position) => void): (() => void) => {
-            const handler = (_event: IpcRendererEvent, data: Position) => {
-                callback(data)
-            }
-            ipcRenderer.on('mediaPlayer:position', handler)
-            return () => {
-                ipcRenderer.off('mediaPlayer:position', handler)
-            }
-        },
-        play: async () => {
-            await ipcRenderer.invoke('mediaPlayer:play')
-        },
-        pause: async () => {
-            await ipcRenderer.invoke('mediaPlayer:pause')
-        },
-        next: async () => {
-            await ipcRenderer.invoke('mediaPlayer:next')
-        },
-        previous: async () => {
-            await ipcRenderer.invoke('mediaPlayer:previous')
+        callInfo: generateDataHandler<CallInfo>('call:getCallInfo', 'call:info'),
+    },
+    phoneBook: {
+        getContacts: async (): Promise<Contact[]> => {
+            return await ipcRenderer.invoke('phoneBook:getContacts')
         },
     },
 }

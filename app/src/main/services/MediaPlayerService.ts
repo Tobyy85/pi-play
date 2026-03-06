@@ -1,5 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron'
 
+import type { TrackInfo } from '@shared/types/mediaPlayer'
+
 import * as dbus from 'dbus-next'
 
 /* eslint-disable new-cap */
@@ -20,8 +22,6 @@ class MediaPlayerService {
     }
 
     public async initialize() {
-        this.configureProperties()
-
         const bluez = await this.bus.getProxyObject('org.bluez', '/')
         this.objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
         this.objects = await this.objManager.GetManagedObjects()
@@ -36,18 +36,13 @@ class MediaPlayerService {
     }
 
     public registerIpcHandlers() {
-        ipcMain.handle('mediaPlayer:connectionStatus', () => {
+        ipcMain.handle('mediaPlayer:getConnectionStatus', () => {
             return this.connectionStatus
         })
 
         ipcMain.handle('mediaPlayer:getTrackInfo', async () => {
             const track = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Track')
-            return {
-                title: track?.value?.Title?.value ?? null,
-                artist: track?.value?.Artist?.value ?? null,
-                album: track?.value?.Album?.value ?? null,
-                duration: track?.value?.Duration?.value ?? null,
-            }
+            return this.extractTrackInfo(track)
         })
 
         ipcMain.handle('mediaPlayer:getPlaybackStatus', async () => {
@@ -105,16 +100,6 @@ class MediaPlayerService {
         })
     }
 
-    private async configureProperties() {
-        const bluezProxyObject = await this.bus.getProxyObject('org.bluez', '/org/bluez/hci0')
-        const properties = bluezProxyObject.getInterface('org.freedesktop.DBus.Properties')
-
-        await properties.Set('org.bluez.Adapter1', 'Alias', new dbus.Variant('s', 'PiPlay'))
-        await properties.Set('org.bluez.Adapter1', 'Powered', new dbus.Variant('b', true))
-        await properties.Set('org.bluez.Adapter1', 'Discoverable', new dbus.Variant('b', true))
-        await properties.Set('org.bluez.Adapter1', 'Pairable', new dbus.Variant('b', true))
-    }
-
     private async mediaPlayerHandler(path: string) {
         const mediaPlayerObject = await this.bus.getProxyObject('org.bluez', path)
 
@@ -133,13 +118,8 @@ class MediaPlayerService {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private sendMediaPlayerData(data: any) {
         if (data.Track) {
-            const track = data.Track.value
-            this.getWindow()?.webContents.send('mediaPlayer:trackInfo', {
-                title: track?.Title?.value ?? null,
-                artist: track?.Artist?.value ?? null,
-                album: track?.Album?.value ?? null,
-                duration: track?.Duration?.value ?? null,
-            })
+            const track = data.Track
+            this.getWindow()?.webContents.send('mediaPlayer:trackInfo', this.extractTrackInfo(track))
         }
         if (data.Status) {
             this.getWindow()?.webContents.send('mediaPlayer:playbackStatus', data.Status.value)
@@ -147,6 +127,50 @@ class MediaPlayerService {
         if (data.Position) {
             this.getWindow()?.webContents.send('mediaPlayer:position', data.Position.value)
         }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private extractTrackInfo(track: any): TrackInfo {
+        const title = track?.value?.Title?.value ?? null
+        const artist = track?.value?.Artist?.value ?? null
+        const album = track?.value?.Album?.value ?? null
+        const duration = track?.value?.Duration?.value ?? null
+
+        return this.cleanTrackInfo({
+            title,
+            artist,
+            album,
+            duration,
+        })
+    }
+
+    /**
+     * This is a hack to handle weird track info formats from certain players (like Spotify's "Listening on ...").
+     */
+    // eslint-disable-next-line class-methods-use-this
+    private cleanTrackInfo(trackInfo: TrackInfo): TrackInfo {
+        const cleanTrackInfo = trackInfo
+
+        if (trackInfo.artist?.toLowerCase().includes('listening on')) {
+            const titleSegments = trackInfo.title?.split('•')
+            cleanTrackInfo.title = titleSegments?.[0]?.trim() ?? trackInfo.title
+            cleanTrackInfo.artist = titleSegments?.[1]?.trim() ?? trackInfo.artist
+            return cleanTrackInfo
+        }
+
+        if (cleanTrackInfo.artist?.toLowerCase().includes('shuffle')) {
+            const artistSegments = cleanTrackInfo.artist.split('•')
+            cleanTrackInfo.artist = artistSegments?.[0]?.trim() ?? cleanTrackInfo.artist
+            return cleanTrackInfo
+        }
+
+        if (cleanTrackInfo.artist?.toLowerCase().includes('video')) {
+            const artistSegments = cleanTrackInfo.artist.split('•')
+            cleanTrackInfo.artist = artistSegments?.[0]?.trim() ?? cleanTrackInfo.artist
+            return cleanTrackInfo
+        }
+
+        return trackInfo
     }
 }
 

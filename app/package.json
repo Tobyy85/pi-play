@@ -75,7 +75,10 @@
         "react-map-gl": "^8.1.0",
         "react-router-dom": "^7.9.3",
         "serialport": "^13.0.0",
-        "tailwindcss": "^4.1.14"
+        "simplex-noise": "^4.0.3",
+        "tailwindcss": "^4.1.14",
+        "vcard4-ts": "^0.4.1",
+        "zustand": "^5.0.11"
     },
     "devDependencies": {
         "@eslint/js": "^9.37.0",

@@ -1,49 +1,30 @@
+import { useCallback } from 'react'
+
+import useIpcData from '@renderer/hooks/useIpcData'
+
 import type { ArduinoData } from '@shared/types/arduino'
-
-import { useCallback, useEffect, useState } from 'react'
-
-type UseArduinoSensorReturn<T extends ArduinoData['value']> = {
-    value: T | null
-    isLoading: boolean
-    error: string | null
-    refresh: () => Promise<void>
-}
 
 const useArduinoSensor = <T extends ArduinoData['value']>(
     sensorId: ArduinoData['sensorId'],
     initialValue: T | null = null
-): UseArduinoSensorReturn<T> => {
-    const [value, setValue] = useState<T | null>(initialValue)
-    const [isLoading, setIsLoading] = useState(true)
-    const [error, setError] = useState<string | null>(null)
-
-    const refresh = useCallback(async () => {
-        setIsLoading(true)
-        setError(null)
-        try {
-            const data = await window.api.arduino.requestSensorValue(sensorId)
-            setValue(data.value as T | null)
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'Unknown error'
-            setError(message)
-            console.error(`Error requesting sensor value for ${sensorId}:`, err)
-        } finally {
-            setIsLoading(false)
-        }
+) => {
+    const getData = useCallback(async () => {
+        const data = await window.api.arduino.requestSensorValue(sensorId)
+        return data.value as T
     }, [sensorId])
 
-    // Initial fetch
-    useEffect(() => {
-        refresh()
-    }, [refresh])
+    const subscribe = useCallback(
+        (callback: (value: T) => void) =>
+            window.api.arduino.subscribeToSensorId(sensorId, newValue => callback(newValue as T)),
+        [sensorId]
+    )
 
-    useEffect(() => {
-        const unsubscribe = window.api.arduino.subscribeToSensorId(sensorId, newValue => {
-            setValue(newValue as T | null)
-            setError(null)
-        })
-        return unsubscribe
-    }, [sensorId])
+    const {
+        data: value,
+        isLoading,
+        error,
+        refresh,
+    } = useIpcData<T>(getData, subscribe, initialValue, [sensorId])
 
     return { value, isLoading, error, refresh }
 }

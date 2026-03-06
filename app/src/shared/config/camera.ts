@@ -3,5 +3,5 @@ interface CameraConfig {
 }
 
 export const CAMERA_CONFIG: CameraConfig = {
-    reverseCameraId: '1fd215033257ce2031f75ef2193545b2465b8efff9e3f7d50bd69f8cbe5205a2',
+    reverseCameraId: 'aee3140a5374e75e4830d3c243fa5bfe3abf9f1e848f92868da5f139d88a71a3',
 }
