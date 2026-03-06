@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 
-export interface AppIconProps {
+export interface AppIconProps extends React.HTMLAttributes<HTMLAnchorElement> {
     iconSource: string
     name: string
     showName?: boolean
@@ -8,14 +8,16 @@ export interface AppIconProps {
     isInNavigation?: boolean
 }
 
-const AppIcon = ({ iconSource, name, showName, path, isInNavigation }: AppIconProps) => {
+const AppIcon = ({ iconSource, name, showName, path, isInNavigation, ...linkProps }: AppIconProps) => {
     return (
         <>
             <NavLink
                 to={path}
+                {...linkProps}
                 className={({ isActive }) =>
                     `flex w-20 shrink-0 flex-col gap-1 overflow-hidden
-                    ${!isInNavigation || isActive ? 'brightness-100' : 'brightness-90'}`
+                    ${!isInNavigation || isActive ? 'brightness-100' : 'brightness-90'}
+                    ${linkProps.className ?? ''}`
                 }
             >
                 <div
