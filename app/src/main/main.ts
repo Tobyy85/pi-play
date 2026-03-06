@@ -3,6 +3,7 @@ import { app, BrowserWindow } from 'electron'
 import WindowManager from '@main/managers/windowManager'
 import ArduinoService from '@main/services/arduinoService'
 import GPSService from '@main/services/gpsService'
+import MediaPlayerService from '@main/services/MediaPlayerService'
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
 const windowManager = new WindowManager()
@@ -10,6 +11,7 @@ const getWindow = () => windowManager.getWindow()
 
 const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
+const mediaPlayerService = new MediaPlayerService(getWindow)
 
 app.whenReady().then(() => {
     windowManager.createWindow()
@@ -19,6 +21,9 @@ app.whenReady().then(() => {
 
     gpsService.registerIpcHandlers()
     gpsService.connect()
+
+    mediaPlayerService.registerIpcHandlers()
+    mediaPlayerService.initialize()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -30,6 +35,7 @@ app.whenReady().then(() => {
 app.on('before-quit', () => {
     arduinoService.disconnect()
     gpsService.disconnect()
+    mediaPlayerService.disconnect()
 })
 
 app.on('window-all-closed', () => {
