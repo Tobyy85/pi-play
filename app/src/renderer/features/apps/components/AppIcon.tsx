@@ -6,7 +6,7 @@ export interface AppIconProps {
     path: string
 }
 
-const AppIcon = ({ iconSource: icon, name, path }: AppIconProps) => {
+const AppIcon = ({ iconSource, name, path }: AppIconProps) => {
     return (
         <>
             <NavLink
@@ -17,7 +17,7 @@ const AppIcon = ({ iconSource: icon, name, path }: AppIconProps) => {
                 }
             >
                 <img
-                    src={icon}
+                    src={iconSource}
                     alt={`${name} icon`}
                     className='size-full object-cover'
                 />
