@@ -1,13 +1,15 @@
 import PageWithBackground from '@renderer/components/PageWithBackground'
 
+import AppGrid from '@renderer/features/apps/components/AppGrid'
+
 const HomeBackground = () => {
-    return <div className='size-full bg-blue-500' />
+    return <div className='size-full bg-zinc-700' />
 }
 
 const HomeContent = () => {
     return (
-        <div>
-            <h1>HomePage</h1>
+        <div className='no-scrollbar size-full overflow-y-auto p-4'>
+            <AppGrid />
         </div>
     )
 }
