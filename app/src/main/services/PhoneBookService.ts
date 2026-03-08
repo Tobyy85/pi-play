@@ -22,7 +22,12 @@ class PhoneBookService {
 
     public async initialize() {
         try {
-            this.sessionPath = await this.createSession()
+            const deviceAddress = await this.getDeviceAddress()
+            if (!deviceAddress) {
+                return
+            }
+
+            this.sessionPath = await this.createSession(deviceAddress)
             await this.pullContacts()
         } catch (err) {
             console.error('Failed to initialize PhoneBookService:', err)
@@ -125,11 +130,10 @@ class PhoneBookService {
         })
     }
 
-    private async createSession() {
+    private async createSession(deviceAddress: string) {
         const client = await this.sessionBus.getProxyObject('org.bluez.obex', '/org/bluez/obex')
         const obexClient = client.getInterface('org.bluez.obex.Client1')
 
-        const deviceAddress = await this.getDeviceAddress()
         const sessionPath: string = await obexClient.CreateSession(deviceAddress, {
             Target: new dbus.Variant('s', 'pbap'),
         })
@@ -156,7 +160,7 @@ class PhoneBookService {
         const objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
         const managedObjects = await objManager.GetManagedObjects()
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         for (const [path, interfaces] of Object.entries(managedObjects) as [string, Record<string, any>][]) {
             const deviceProps = interfaces['org.bluez.Device1']
 
@@ -171,10 +175,31 @@ class PhoneBookService {
                 if (isConnected && supportsPBAP) {
                     return address
                 }
+
+                if (!isConnected && supportsPBAP) {
+                    await this.watchDeviceConnection(path)
+                }
             }
         }
 
         return null
+    }
+
+    private async watchDeviceConnection(devicePath: string) {
+        const deviceObj = await this.systemBus.getProxyObject('org.bluez', devicePath)
+        const propertiesInterface = deviceObj.getInterface('org.freedesktop.DBus.Properties')
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        propertiesInterface.on('PropertiesChanged', async (iface: string, changed: any) => {
+            if (iface === 'org.bluez.Device1' && 'Connected' in changed) {
+                const isConnected = changed.Connected.value
+                if (isConnected) {
+                    await this.initialize()
+                } else {
+                    this.contacts = null
+                }
+            }
+        })
     }
 }
 /* eslint-enable new-cap */
