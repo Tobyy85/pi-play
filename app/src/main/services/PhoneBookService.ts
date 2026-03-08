@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { BrowserWindow, ipcMain } from 'electron'
 import { readFileSync, unlinkSync } from 'fs'
 
 import * as dbus from 'dbus-next'
@@ -9,13 +9,17 @@ import { formatPhoneNumber, normalizePhoneNumber } from '@shared/utils/phoneBook
 
 /* eslint-disable new-cap */
 class PhoneBookService {
+    private getWindow: () => BrowserWindow | null
+    private connectionStatus: boolean = false
+
     private sessionBus: dbus.MessageBus
     private systemBus: dbus.MessageBus
     private sessionPath: string | null = null
 
     private contacts: Contact[] | null = null
 
-    constructor() {
+    constructor(getWindow: () => BrowserWindow | null) {
+        this.getWindow = getWindow
         this.sessionBus = dbus.sessionBus()
         this.systemBus = dbus.systemBus()
     }
@@ -39,6 +43,9 @@ class PhoneBookService {
     public registerIpcHandlers() {
         ipcMain.handle('phoneBook:getContacts', () => {
             return this.contacts
+        })
+        ipcMain.handle('phoneBook:connectionStatus', () => {
+            return this.connectionStatus
         })
     }
 
@@ -173,6 +180,7 @@ class PhoneBookService {
                 const supportsPBAP = uuids.some((uuid: string) => uuid.toLowerCase().includes('112f'))
 
                 if (isConnected && supportsPBAP) {
+                    this.updateConnectionStatus(true)
                     return address
                 }
 
@@ -182,6 +190,7 @@ class PhoneBookService {
             }
         }
 
+        this.updateConnectionStatus(false)
         return null
     }
 
@@ -196,10 +205,16 @@ class PhoneBookService {
                 if (isConnected) {
                     await this.initialize()
                 } else {
+                    this.updateConnectionStatus(false)
                     this.contacts = null
                 }
             }
         })
+    }
+
+    private updateConnectionStatus(isConnected: boolean) {
+        this.getWindow()?.webContents.send('phoneBook:connectionStatus', isConnected)
+        this.connectionStatus = isConnected
     }
 }
 /* eslint-enable new-cap */

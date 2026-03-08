@@ -21,7 +21,7 @@ const gpsService = new GPSService(getWindow)
 const bluetoothService = new BluetoothService()
 const mediaPlayerService = new MediaPlayerService(getWindow)
 const callService = new CallService(getWindow)
-const phoneBookService = new PhoneBookService()
+const phoneBookService = new PhoneBookService(getWindow)
 
 app.whenReady().then(() => {
     windowManager.createWindow()

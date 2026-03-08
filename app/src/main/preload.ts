@@ -103,6 +103,10 @@ const electronApi = {
         getContacts: async (): Promise<Contact[]> => {
             return await ipcRenderer.invoke('phoneBook:getContacts')
         },
+        connectionStatus: generateDataHandler<boolean>(
+            'phoneBook:getConnectionStatus',
+            'phoneBook:connectionStatus'
+        ),
     },
 }
 
