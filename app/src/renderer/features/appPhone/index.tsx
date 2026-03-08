@@ -1,5 +1,6 @@
 import ContactTile from '@renderer/features/appPhone/components/ContactTile'
 
+import useConnectionStatus from '@renderer/features/appPhone/hooks/useConnectionStatus'
 import { useContacts } from '@renderer/features/appPhone/store/usePhoneBookStore'
 
 export const AppPhoneBackground = () => {
@@ -7,7 +8,16 @@ export const AppPhoneBackground = () => {
 }
 
 export const AppPhoneContent = () => {
+    const { data: isConnected } = useConnectionStatus()
     const contacts = useContacts()
+
+    if (!isConnected) {
+        return (
+            <div className='flex size-full items-center justify-center pr-8'>
+                <p className='text-2xl text-white'>No phone connected</p>
+            </div>
+        )
+    }
 
     return (
         <div className='size-full pr-8'>
