@@ -100,9 +100,7 @@ const electronApi = {
         callInfo: generateDataHandler<CallInfo>('call:getCallInfo', 'call:info'),
     },
     phoneBook: {
-        getContacts: async (): Promise<Contact[]> => {
-            return await ipcRenderer.invoke('phoneBook:getContacts')
-        },
+        contacts: generateDataHandler<Contact[]>('phoneBook:getContacts', 'phoneBook:contacts'),
         connectionStatus: generateDataHandler<boolean>(
             'phoneBook:getConnectionStatus',
             'phoneBook:connectionStatus'

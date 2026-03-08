@@ -19,7 +19,7 @@ export const usePhoneBookStore = create<PhoneBookStore>(set => ({
     loadContacts: async () => {
         set({ isLoading: true })
         try {
-            const contacts = await window.api.phoneBook.getContacts()
+            const contacts = await window.api.phoneBook.contacts.get()
             set({ contacts, initialized: true })
         } catch (err) {
             console.error('Failed to load contacts:', err)

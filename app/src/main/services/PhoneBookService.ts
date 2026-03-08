@@ -73,7 +73,7 @@ class PhoneBookService {
         const vcardData = readFileSync(filename, 'utf-8')
         const contacts = this.parseVCards(vcardData)
 
-        this.contacts = contacts
+        this.updateContacts(contacts)
 
         try {
             unlinkSync(filename)
@@ -206,15 +206,20 @@ class PhoneBookService {
                     await this.initialize()
                 } else {
                     this.updateConnectionStatus(false)
-                    this.contacts = null
+                    this.updateContacts(null)
                 }
             }
         })
     }
 
     private updateConnectionStatus(isConnected: boolean) {
-        this.getWindow()?.webContents.send('phoneBook:connectionStatus', isConnected)
         this.connectionStatus = isConnected
+        this.getWindow()?.webContents.send('phoneBook:connectionStatus', isConnected)
+    }
+
+    private updateContacts(contacts: Contact[] | null) {
+        this.contacts = contacts
+        this.getWindow()?.webContents.send('phoneBook:contacts', contacts)
     }
 }
 /* eslint-enable new-cap */
