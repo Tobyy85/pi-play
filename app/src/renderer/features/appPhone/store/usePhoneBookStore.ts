@@ -6,29 +6,59 @@ import { normalizePhoneNumber } from '@shared/utils/phoneBook'
 interface PhoneBookStore {
     isLoading: boolean
     initialized: boolean
-    loadContacts: () => Promise<void>
+    initialize: () => Promise<void>
+    refreshContacts: () => Promise<void>
 
     contacts: Contact[] | null
 }
 
-export const usePhoneBookStore = create<PhoneBookStore>(set => ({
+let contactsUnsubscribe: (() => void) | null = null
+let initializePromise: Promise<void> | null = null
+
+export const usePhoneBookStore = create<PhoneBookStore>((set, get) => ({
     isLoading: false,
     initialized: false,
     contacts: null,
 
-    loadContacts: async () => {
+    refreshContacts: async () => {
         set({ isLoading: true })
         try {
             const contacts = await window.api.phoneBook.contacts.get()
-            set({ contacts, initialized: true })
+            set({ contacts })
         } catch (err) {
             console.error('Failed to load contacts:', err)
         } finally {
             set({ isLoading: false })
         }
     },
+
+    initialize: async () => {
+        if (get().initialized) return
+        if (initializePromise) {
+            await initializePromise
+            return
+        }
+
+        initializePromise = (async () => {
+            await get().refreshContacts()
+
+            if (!contactsUnsubscribe) {
+                contactsUnsubscribe = window.api.phoneBook.contacts.subscribe(contacts => {
+                    set({ contacts })
+                })
+            }
+
+            set({ initialized: true })
+        })()
+
+        try {
+            await initializePromise
+        } finally {
+            initializePromise = null
+        }
+    },
 }))
-usePhoneBookStore.getState().loadContacts()
+void usePhoneBookStore.getState().initialize() // eslint-disable-line no-void
 
 export const useContact = (phoneNumber: string): Contact | null => {
     const contacts = usePhoneBookStore(state => state.contacts)
