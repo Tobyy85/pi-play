@@ -44,7 +44,7 @@ class PhoneBookService {
         ipcMain.handle('phoneBook:getContacts', () => {
             return this.contacts
         })
-        ipcMain.handle('phoneBook:connectionStatus', () => {
+        ipcMain.handle('phoneBook:getConnectionStatus', () => {
             return this.connectionStatus
         })
     }
