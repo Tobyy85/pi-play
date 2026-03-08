@@ -179,13 +179,12 @@ class PhoneBookService {
                 // check if contains PBAP UUID (0000112f-0000-1000-8000-00805f9b34fb)
                 const supportsPBAP = uuids.some((uuid: string) => uuid.toLowerCase().includes('112f'))
 
-                if (isConnected && supportsPBAP) {
-                    this.updateConnectionStatus(true)
-                    return address
-                }
-
-                if (!isConnected && supportsPBAP) {
+                if (supportsPBAP) {
+                    this.updateConnectionStatus(isConnected)
                     await this.watchDeviceConnection(path)
+                    if (isConnected) {
+                        return address
+                    }
                 }
             }
         }
