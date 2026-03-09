@@ -4,7 +4,7 @@ import { readFileSync, unlinkSync } from 'fs'
 import * as dbus from 'dbus-next'
 import { parseVCards } from 'vcard4-ts'
 
-import type { Contact } from '@shared/types/phoneBook'
+import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
 import { formatPhoneNumber, normalizePhoneNumber } from '@shared/utils/phoneBook'
 
 /* eslint-disable new-cap */
@@ -14,6 +14,7 @@ class PhoneBookService {
     private sessionPath: string | null = null
 
     private contacts: Contact[] | null = null
+    private callHistory: CallHistoryEntry[] | null = null
 
     constructor() {
         this.sessionBus = dbus.sessionBus()
@@ -23,7 +24,7 @@ class PhoneBookService {
     public async initialize() {
         try {
             this.sessionPath = await this.createSession()
-            await this.pullContacts()
+            await Promise.all([this.pullContacts(), this.pullHistory()])
         } catch (err) {
             console.error('Failed to initialize PhoneBookService:', err)
         } finally {
@@ -34,6 +35,9 @@ class PhoneBookService {
     public registerIpcHandlers() {
         ipcMain.handle('phoneBook:getContacts', () => {
             return this.contacts
+        })
+        ipcMain.handle('phoneBook:getCallHistory', () => {
+            return this.callHistory
         })
     }
 
@@ -59,7 +63,7 @@ class PhoneBookService {
         await this.waitForTransferComplete(transferPath)
 
         const vcardData = readFileSync(filename, 'utf-8')
-        const contacts = this.parseVCards(vcardData)
+        const contacts = this.parseContactsVCards(vcardData)
 
         this.contacts = contacts
 
@@ -70,8 +74,35 @@ class PhoneBookService {
         }
     }
 
+    private async pullHistory() {
+        if (!this.sessionPath) throw new Error('No OBEX session established')
+
+        const sessionObj = await this.sessionBus.getProxyObject('org.bluez.obex', this.sessionPath)
+        const pbap = sessionObj.getInterface('org.bluez.obex.PhonebookAccess1')
+
+        await pbap.Select('int', 'cch')
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [transferPath, properties]: [string, Record<string, any>] = await pbap.PullAll('', {})
+        const filename: string = properties.Filename?.value
+
+        if (!filename) throw new Error('No filename in transfer properties')
+        await this.waitForTransferComplete(transferPath)
+
+        const vcardData = readFileSync(filename, 'utf-8')
+        const history = this.parseHistoryVCards(vcardData)
+
+        this.callHistory = history
+
+        try {
+            unlinkSync(filename)
+        } catch (err) {
+            console.error('Failed to remove temporary file:', err)
+        }
+    }
+
     // eslint-disable-next-line class-methods-use-this
-    private parseVCards(vCardsData: string): Contact[] {
+    private parseContactsVCards(vCardsData: string): Contact[] {
         const cards = parseVCards(vCardsData)
 
         if (!cards.vCards || cards.vCards.length === 0) {
@@ -91,6 +122,31 @@ class PhoneBookService {
                     photo: photo ?? undefined, // eslint-disable-line no-undefined
                 }
             })
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    private parseHistoryVCards(vCardsData: string): CallHistoryEntry[] {
+        const cards = parseVCards(vCardsData)
+
+        if (!cards.vCards || cards.vCards.length === 0) {
+            console.warn('No vCard objects found in data')
+            return []
+        }
+
+        return cards.vCards.map(card => {
+            const name = card.FN[0]?.value
+            const phoneNumber = card.TEL?.[0]?.value
+            const irmcCallDateTime = card.unparseable?.find(line => line.startsWith('X-IRMC-CALL-DATETIME'))
+            const extractedCallDateTime = irmcCallDateTime?.split(';')[1] ?? ''
+            const [type, time] = extractedCallDateTime.split(':') as [CallHistoryEntry['type'], string]
+
+            return {
+                name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
+                phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
+                dateTime: time,
+                type,
+            }
+        })
     }
 
     private async waitForTransferComplete(transferPath: string): Promise<void> {
