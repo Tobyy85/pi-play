@@ -19,11 +19,19 @@ export const AppPhoneContent = () => {
         )
     }
 
+    if (!contacts) {
+        return (
+            <div className='flex size-full items-center justify-center pr-8'>
+                <p className='text-2xl text-white'>Loading contacts...</p>
+            </div>
+        )
+    }
+
     return (
         <div className='size-full pr-8'>
             <div className='no-scrollbar size-full overflow-y-auto'>
                 <div className='flex h-full flex-col'>
-                    {contacts?.map(contact => (
+                    {contacts.map(contact => (
                         <ContactTile
                             key={`${contact.phoneNumber}${contact.name}`}
                             contact={contact}
