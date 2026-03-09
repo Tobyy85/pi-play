@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import CallHistory from '@renderer/features/appPhone/components/CallHistory'
 import Contacts from '@renderer/features/appPhone/components/Contacts'
 import Keypad from '@renderer/features/appPhone/components/Keypad'
 
@@ -21,6 +22,13 @@ export const AppPhoneContent = () => {
                     Contacts
                 </button>
                 <button
+                    onClick={() => setActiveTab('call-history')}
+                    className={`text-3xl font-bold
+                        ${activeTab === 'call-history' ? 'text-white' : 'text-white/70'}`}
+                >
+                    Calls
+                </button>
+                <button
                     onClick={() => setActiveTab('keypad')}
                     className={`text-3xl font-bold ${activeTab === 'keypad' ? 'text-white' : 'text-white/70'}`}
                 >
@@ -29,6 +37,7 @@ export const AppPhoneContent = () => {
             </div>
             <div className='size-full'>
                 {activeTab === 'contacts' && <Contacts />}
+                {activeTab === 'call-history' && <CallHistory />}
                 {activeTab === 'keypad' && <Keypad />}
             </div>
         </div>
