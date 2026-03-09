@@ -22,14 +22,15 @@ class CallService {
             const obj = await this.bus.getProxyObject('org.ofono', '/')
             this.ofonoManager = obj.getInterface('org.ofono.Manager')
 
-            this.ofonoManager.on('ModemAdded', (path: string) => {
-                this.setupModem(path)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.ofonoManager.on('ModemAdded', (path: string, properties: any) => {
+                this.handleModem(path, properties)
             })
 
             // Get existing modems on startup
             const modems = await this.ofonoManager.GetModems()
-            if (modems.length > 0) {
-                this.setupModem(modems[0][0])
+            for (const [path, properties] of modems) {
+                await this.handleModem(path, properties)
             }
         } catch (err) {
             console.error('Failed to initialize CallService:', err)
@@ -61,12 +62,29 @@ class CallService {
         this.bus.disconnect()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private async handleModem(path: string, properties: any) {
+        await this.watchModemProperties(path)
+        const isOnline = properties?.Online?.value
+        const hasVoiceCallManager = properties?.Interfaces?.value?.includes('org.ofono.VoiceCallManager')
+
+        if (isOnline || hasVoiceCallManager) {
+            await this.setupModem(path)
+        }
+    }
+
     private async setupModem(path: string) {
         const modemObj = await this.bus.getProxyObject('org.ofono', path)
         this.voiceCallManager = modemObj.getInterface('org.ofono.VoiceCallManager')
         if (!this.voiceCallManager) {
             throw new Error('Failed to get VoiceCallManager interface')
         }
+
+        await Promise.all([
+            this.voiceCallManager?.removeAllListeners('CallAdded'),
+            this.voiceCallManager?.removeAllListeners('CallRemoved'),
+            this.callInterface?.removeAllListeners('PropertyChanged'),
+        ])
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.voiceCallManager.on('CallAdded', async (callPath: string, properties: any) => {
@@ -83,6 +101,43 @@ class CallService {
             this.callInterface = undefined // eslint-disable-line no-undefined
             this.getWindow()?.webContents.send('call:info', this.createDisconnectedCallInfo())
         })
+    }
+
+    private async watchModemProperties(path: string) {
+        const modemObj = await this.bus.getProxyObject('org.ofono', path)
+        try {
+            const modemInterface = modemObj.getInterface('org.ofono.Modem')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            modemInterface.on('PropertyChanged', async (property: string, value: any) => {
+                await this.handleModemPropertyChanged(path, { [property]: value })
+            })
+        } catch (err) {
+            console.warn(`org.ofono.Modem signal watcher unavailable on ${path}:`, err)
+        }
+
+        try {
+            const propertiesInterface = modemObj.getInterface('org.freedesktop.DBus.Properties')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            propertiesInterface.on('PropertiesChanged', async (iface: string, changed: any) => {
+                if (iface !== 'org.ofono.Modem') {
+                    return
+                }
+
+                await this.handleModemPropertyChanged(path, changed)
+            })
+        } catch (err) {
+            console.warn(`No modem property watcher available for ${path}:`, err)
+        }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private async handleModemPropertyChanged(path: string, changed: any) {
+        const isOnline = changed?.Online?.value
+        const hasVoiceCallManager = changed?.Interfaces?.value?.includes('org.ofono.VoiceCallManager')
+
+        if (isOnline || hasVoiceCallManager) {
+            await this.setupModem(path)
+        }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, class-methods-use-this
