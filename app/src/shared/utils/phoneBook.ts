@@ -6,9 +6,9 @@ export const normalizePhoneNumber = (phoneNumber: string): string => {
 
 export const formatPhoneNumber = (phoneNumber: string): string => {
     const normalized = normalizePhoneNumber(phoneNumber)
-    if (normalized.length <= 3) return normalized
-    if (normalized.length <= 6) {
-        return `${normalized.slice(0, 3)} ${normalized.slice(3, 6)}`
+    const parts = []
+    for (let i = 0; i < normalized.length; i += 3) {
+        parts.push(normalized.slice(i, i + 3))
     }
-    return `${normalized.slice(0, 3)} ${normalized.slice(3, 6)} ${normalized.slice(6, 9)}`
+    return parts.join(' ')
 }
