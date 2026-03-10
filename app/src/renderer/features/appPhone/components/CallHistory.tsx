@@ -10,7 +10,7 @@ const CallHistory = () => {
             <div className='flex h-full flex-col'>
                 {callHistory?.map(callEntry => (
                     <CallHistoryTile
-                        key={`${callEntry.phoneNumber}${callEntry.name}`}
+                        key={`${callEntry.phoneNumber}${callEntry.dateTime}`}
                         callEntry={callEntry}
                     />
                 ))}
