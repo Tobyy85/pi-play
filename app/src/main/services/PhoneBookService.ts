@@ -104,7 +104,7 @@ class PhoneBookService {
         const vcardData = readFileSync(filename, 'utf-8')
         const history = this.parseHistoryVCards(vcardData)
 
-        this.callHistory = history
+        this.updateCallHistory(history)
 
         try {
             unlinkSync(filename)
@@ -262,6 +262,7 @@ class PhoneBookService {
                 } else {
                     this.updateConnectionStatus(false)
                     this.updateContacts(null)
+                    this.updateCallHistory(null)
                 }
             }
         })
@@ -275,6 +276,11 @@ class PhoneBookService {
     private updateContacts(contacts: Contact[] | null) {
         this.contacts = contacts
         this.getWindow()?.webContents.send('phoneBook:contacts', contacts)
+    }
+
+    private updateCallHistory(callHistory: CallHistoryEntry[] | null) {
+        this.callHistory = callHistory
+        this.getWindow()?.webContents.send('phoneBook:callHistory', callHistory)
     }
 }
 /* eslint-enable new-cap */

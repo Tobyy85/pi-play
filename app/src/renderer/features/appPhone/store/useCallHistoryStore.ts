@@ -2,30 +2,61 @@ import type { CallHistoryEntry } from '@shared/types/phoneBook'
 import { create } from 'zustand'
 
 interface CallHistoryStore {
-    callHistory: CallHistoryEntry[] | null
     isLoading: boolean
     initialized: boolean
-    loadCallHistory: () => Promise<void>
+    initialize: () => Promise<void>
+    refreshCallHistory: () => Promise<void>
+
+    callHistory: CallHistoryEntry[] | null
 }
 
-export const useCallHistoryStore = create<CallHistoryStore>(set => ({
+let callHistoryUnsubscribe: (() => void) | null = null
+let initializePromise: Promise<void> | null = null
+
+export const useCallHistoryStore = create<CallHistoryStore>((set, get) => ({
     isLoading: false,
     initialized: false,
     callHistory: null,
 
-    loadCallHistory: async () => {
+    refreshCallHistory: async () => {
         set({ isLoading: true })
         try {
-            const callHistory = await window.api.phoneBook.getCallHistory()
+            const callHistory = await window.api.phoneBook.callHistory.get()
             set({ callHistory, initialized: true })
         } catch (err) {
-            console.error('Failed to load call history:', err)
+            console.error('Failed to load call history: ', err)
         } finally {
             set({ isLoading: false })
         }
     },
+
+    initialize: async () => {
+        if (get().initialized) return
+        if (initializePromise) {
+            await initializePromise
+            return
+        }
+
+        initializePromise = (async () => {
+            await get().refreshCallHistory()
+
+            if (!callHistoryUnsubscribe) {
+                callHistoryUnsubscribe = window.api.phoneBook.callHistory.subscribe(callHistory => {
+                    set({ callHistory })
+                })
+            }
+
+            set({ initialized: true })
+        })()
+
+        try {
+            await initializePromise
+        } finally {
+            initializePromise = null
+        }
+    },
 }))
-useCallHistoryStore.getState().loadCallHistory()
+useCallHistoryStore.getState().initialize()
 
 export const useCallHistory = (): CallHistoryEntry[] | null => {
     return useCallHistoryStore(state => state.callHistory)

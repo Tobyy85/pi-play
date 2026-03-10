@@ -105,9 +105,10 @@ const electronApi = {
             'phoneBook:getConnectionStatus',
             'phoneBook:connectionStatus'
         ),
-        getCallHistory: async (): Promise<CallHistoryEntry[]> => {
-            return await ipcRenderer.invoke('phoneBook:getCallHistory')
-        },
+        callHistory: generateDataHandler<CallHistoryEntry[]>(
+            'phoneBook:getCallHistory',
+            'phoneBook:callHistory'
+        ),
     },
 }
 
