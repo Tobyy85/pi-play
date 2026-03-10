@@ -5,7 +5,6 @@ import Contacts from '@renderer/features/appPhone/components/Contacts'
 import Keypad from '@renderer/features/appPhone/components/Keypad'
 
 import useConnectionStatus from '@renderer/features/appPhone/hooks/useConnectionStatus'
-import { useContacts } from '@renderer/features/appPhone/store/usePhoneBookStore'
 
 export const AppPhoneBackground = () => {
     return <div className='h-full w-full bg-zinc-700'></div>
@@ -13,21 +12,12 @@ export const AppPhoneBackground = () => {
 
 export const AppPhoneContent = () => {
     const { data: isConnected } = useConnectionStatus()
-    const contacts = useContacts()
     const [activeTab, setActiveTab] = useState<string>('contacts')
 
     if (!isConnected) {
         return (
             <div className='flex size-full items-center justify-center pr-8'>
                 <p className='text-2xl text-white'>No phone connected</p>
-            </div>
-        )
-    }
-
-    if (!contacts) {
-        return (
-            <div className='flex size-full items-center justify-center pr-8'>
-                <p className='text-2xl text-white'>Loading contacts...</p>
             </div>
         )
     }
