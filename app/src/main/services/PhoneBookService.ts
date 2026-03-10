@@ -33,7 +33,9 @@ class PhoneBookService {
             }
 
             this.sessionPath = await this.createSession(deviceAddress)
-            await Promise.all([this.pullContacts(), this.pullHistory()])
+            // Cannot run pullContacts and pullHistory in parallel
+            await this.pullContacts()
+            await this.pullHistory()
         } catch (err) {
             console.error('Failed to initialize PhoneBookService:', err)
         } finally {
