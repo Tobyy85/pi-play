@@ -10,11 +10,15 @@ const FollowModeButton = ({ followMode, toggleFollowMode }: FollowModeButtonProp
         <>
             <button
                 onClick={toggleFollowMode}
-                className={`absolute right-4 bottom-4 flex size-14 cursor-pointer items-center justify-center
-                    rounded-full bg-black/75 p-3 text-white shadow-lg ${followMode && 'hidden'}`}
+                className={`absolute right-0 bottom-0 flex p-4 ${followMode && 'hidden'}`}
                 title={followMode ? 'Following GPS position' : 'Click to follow GPS'}
             >
-                <PiGpsFixFill className='size-full' />
+                <div
+                    className='size-14 items-center justify-center rounded-full bg-black/75 p-3 text-white
+                        shadow-lg'
+                >
+                    <PiGpsFixFill className='size-full' />
+                </div>
             </button>
         </>
     )
