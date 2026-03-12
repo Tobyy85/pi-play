@@ -30,8 +30,11 @@ export const AppMapsContent = () => {
             {error && <p className='text-red-500'>Error: {error}</p>}
             {data && (
                 <div className='absolute bottom-1 left-0'>
-                    <div className='rounded-full bg-black/75 px-4 py-1 text-3xl font-bold text-white'>
-                        <span>{data.speed ?? 'N/A'}</span> <span className='text-2xl'>km/h</span>
+                    <div
+                        className='rounded-full bg-black/75 px-4 py-1.5 text-[2.5rem] leading-[1.05] font-bold
+                            text-white'
+                    >
+                        <span>{data.speed ?? 'N/A'}</span> <span className='text-4xl'>km/h</span>
                     </div>
                 </div>
             )}
