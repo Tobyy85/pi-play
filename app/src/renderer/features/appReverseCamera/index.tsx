@@ -5,11 +5,13 @@ import { CAMERA_CONFIG } from '@shared/config/camera'
 export const AppReverseCameraBackground = () => {
     return (
         <div className='size-full bg-black/50'>
-            <div className='size-full blur-3xl'>
+            <div className='size-full'>
                 <Camera
                     deviceId={CAMERA_CONFIG.reverseCameraId}
                     isMirrored={true}
+                    className='size-full object-cover'
                 />
+                <div className='absolute top-0 left-0 size-full bg-black/10 backdrop-blur-md'></div>
             </div>
         </div>
     )

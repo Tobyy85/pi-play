@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 
-interface CameraProps {
+interface CameraProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
     deviceId: string
     isMirrored?: boolean
 }
 
-const Camera = ({ deviceId, isMirrored }: CameraProps) => {
+const Camera = ({ deviceId, isMirrored, ...videoProps }: CameraProps) => {
     const videoRef = useRef<HTMLVideoElement>(null)
     const streamRef = useRef<MediaStream | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -61,11 +61,13 @@ const Camera = ({ deviceId, isMirrored }: CameraProps) => {
                     <div className='text-xl font-medium text-red-500'>{error}</div>
                 ) : (
                     <video
-                        ref={videoRef}
                         autoPlay
                         playsInline
                         muted
-                        className={`size-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}`}
+                        {...videoProps}
+                        ref={videoRef}
+                        className={`size-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}
+                            ${videoProps.className || ''}`}
                     />
                 )}
             </div>
