@@ -9,7 +9,7 @@ class MediaPlayerService {
     private getWindow: () => BrowserWindow | null
     private connectionStatus: boolean = false
 
-    private bus: dbus.MessageBus
+    private systemBus: dbus.MessageBus
     private objManager: dbus.ClientInterface | null = null
     private objects: any // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -18,11 +18,11 @@ class MediaPlayerService {
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
-        this.bus = dbus.systemBus()
+        this.systemBus = dbus.systemBus()
     }
 
     public async initialize() {
-        const bluez = await this.bus.getProxyObject('org.bluez', '/')
+        const bluez = await this.systemBus.getProxyObject('org.bluez', '/')
         this.objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
         this.objects = await this.objManager.GetManagedObjects()
 
@@ -71,7 +71,7 @@ class MediaPlayerService {
     }
 
     public disconnect() {
-        this.bus.disconnect()
+        this.systemBus.disconnect()
     }
 
     private setConnected(connected: boolean) {
@@ -101,7 +101,7 @@ class MediaPlayerService {
     }
 
     private async mediaPlayerHandler(path: string) {
-        const mediaPlayerObject = await this.bus.getProxyObject('org.bluez', path)
+        const mediaPlayerObject = await this.systemBus.getProxyObject('org.bluez', path)
 
         this.mediaPlayerInterface = mediaPlayerObject.getInterface('org.bluez.MediaPlayer1')
         this.setConnected(true)

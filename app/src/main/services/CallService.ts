@@ -7,19 +7,19 @@ import * as dbus from 'dbus-next'
 class CallService {
     private getWindow: () => BrowserWindow | null
 
-    private bus: dbus.MessageBus
+    private systemBus: dbus.MessageBus
     private ofonoManager: any // eslint-disable-line @typescript-eslint/no-explicit-any
     private voiceCallManager: any // eslint-disable-line @typescript-eslint/no-explicit-any
     private callInterface: any // eslint-disable-line @typescript-eslint/no-explicit-any
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
-        this.bus = dbus.systemBus()
+        this.systemBus = dbus.systemBus()
     }
 
     public async initialize() {
         try {
-            const obj = await this.bus.getProxyObject('org.ofono', '/')
+            const obj = await this.systemBus.getProxyObject('org.ofono', '/')
             this.ofonoManager = obj.getInterface('org.ofono.Manager')
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -59,7 +59,7 @@ class CallService {
     }
 
     public disconnect() {
-        this.bus.disconnect()
+        this.systemBus.disconnect()
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,7 +74,7 @@ class CallService {
     }
 
     private async setupModem(path: string) {
-        const modemObj = await this.bus.getProxyObject('org.ofono', path)
+        const modemObj = await this.systemBus.getProxyObject('org.ofono', path)
         this.voiceCallManager = modemObj.getInterface('org.ofono.VoiceCallManager')
         if (!this.voiceCallManager) {
             throw new Error('Failed to get VoiceCallManager interface')
@@ -88,7 +88,7 @@ class CallService {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.voiceCallManager.on('CallAdded', async (callPath: string, properties: any) => {
-            const callObj = await this.bus.getProxyObject('org.ofono', callPath)
+            const callObj = await this.systemBus.getProxyObject('org.ofono', callPath)
             this.callInterface = callObj.getInterface('org.ofono.VoiceCall')
 
             const callInfo = this.extractCallInfo(properties)
@@ -104,7 +104,7 @@ class CallService {
     }
 
     private async watchModemProperties(path: string) {
-        const modemObj = await this.bus.getProxyObject('org.ofono', path)
+        const modemObj = await this.systemBus.getProxyObject('org.ofono', path)
         try {
             const modemInterface = modemObj.getInterface('org.ofono.Modem')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

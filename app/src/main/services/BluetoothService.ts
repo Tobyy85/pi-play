@@ -2,14 +2,14 @@ import * as dbus from 'dbus-next'
 
 /* eslint-disable new-cap */
 class BluetoothService {
-    private bus: dbus.MessageBus
+    private systemBus: dbus.MessageBus
 
     constructor() {
-        this.bus = dbus.systemBus()
+        this.systemBus = dbus.systemBus()
     }
 
     public async configureProperties() {
-        const bluezProxyObject = await this.bus.getProxyObject('org.bluez', '/org/bluez/hci0')
+        const bluezProxyObject = await this.systemBus.getProxyObject('org.bluez', '/org/bluez/hci0')
         const properties = bluezProxyObject.getInterface('org.freedesktop.DBus.Properties')
 
         await properties.Set('org.bluez.Adapter1', 'Alias', new dbus.Variant('s', 'PiPlay'))
@@ -19,7 +19,7 @@ class BluetoothService {
     }
 
     public disconnect() {
-        this.bus.disconnect()
+        this.systemBus.disconnect()
     }
 }
 /* eslint-enable new-cap */
