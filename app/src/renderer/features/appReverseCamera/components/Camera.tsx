@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
 
-interface CameraProps extends React.VideoHTMLAttributes<HTMLVideoElement> {
+interface CameraProps extends Omit<React.VideoHTMLAttributes<HTMLVideoElement>, 'onError'> {
     deviceId: string
     isMirrored?: boolean
+    setError?: (error: string | null) => void
 }
 
-const Camera = ({ deviceId, isMirrored, ...videoProps }: CameraProps) => {
+const Camera = ({ deviceId, isMirrored, setError, ...videoProps }: CameraProps) => {
     const videoRef = useRef<HTMLVideoElement>(null)
     const streamRef = useRef<MediaStream | null>(null)
-    const [error, setError] = useState<string | null>(null)
+
+    const [isError, setIsError] = useState<boolean>(false)
 
     useEffect(() => {
         let isMounted = true
@@ -32,10 +34,13 @@ const Camera = ({ deviceId, isMirrored, ...videoProps }: CameraProps) => {
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream
                 }
+                setError?.(null)
+                setIsError(false)
             } catch (err) {
                 console.error('Error accessing camera:', err)
                 if (isMounted) {
-                    setError('Failed to load camera. Please check the connection.')
+                    setError?.('Failed to load camera.')
+                    setIsError(true)
                 }
             }
         }
@@ -54,22 +59,20 @@ const Camera = ({ deviceId, isMirrored, ...videoProps }: CameraProps) => {
         }
     }, [deviceId])
 
+    if (isError) return null
+
     return (
         <>
             <div className='flex size-full items-center justify-center overflow-hidden'>
-                {error ? (
-                    <div className='text-xl font-medium text-red-500'>{error}</div>
-                ) : (
-                    <video
-                        autoPlay
-                        playsInline
-                        muted
-                        {...videoProps}
-                        ref={videoRef}
-                        className={`size-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}
-                            ${videoProps.className || ''}`}
-                    />
-                )}
+                <video
+                    autoPlay
+                    playsInline
+                    muted
+                    {...videoProps}
+                    ref={videoRef}
+                    className={`size-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}
+                        ${videoProps.className || ''}`}
+                />
             </div>
         </>
     )
