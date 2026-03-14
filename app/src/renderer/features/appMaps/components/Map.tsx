@@ -8,7 +8,7 @@ import MapMarker from '@renderer/features/appMaps/components/MapMarker'
 
 import { MAP_STYLE } from '@shared/config/maps/mapStyle'
 
-const DEFAULT_ZOOM = 15
+const DEFAULT_ZOOM = 16
 const PITCH = 45
 
 interface MapProps {
