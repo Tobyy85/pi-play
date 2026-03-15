@@ -11,10 +11,10 @@ export const AppPhoneBackground = () => {
 }
 
 export const AppPhoneContent = () => {
-    const { data: isConnected } = useConnectionStatus()
+    const { data: isConnected, isLoading } = useConnectionStatus()
     const [activeTab, setActiveTab] = useState<string>('contacts')
 
-    if (!isConnected) {
+    if (!isConnected && !isLoading) {
         return (
             <div className='flex size-full items-center justify-center pr-8'>
                 <p className='text-2xl text-white'>No phone connected</p>
