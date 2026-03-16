@@ -7,7 +7,7 @@ const CallEndIcon = ({ ...svgProps }: React.SVGProps<SVGSVGElement>) => (
         xmlns='http://www.w3.org/2000/svg'
         {...svgProps}
     >
-        <g clip-path='url(#clip0_103_50)'>
+        <g clipPath='url(#clip0_103_50)'>
             <path
                 fillRule='evenodd'
                 clipRule='evenodd'
