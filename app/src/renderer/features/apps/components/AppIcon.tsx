@@ -30,9 +30,7 @@ const AppIcon = ({ iconSource, name, showName, path, isInNavigation, ...linkProp
                         className='size-full object-cover'
                     />
                 </div>
-                {showName && (
-                    <span className='truncate text-center text-sm font-semibold text-white'>{name}</span>
-                )}
+                {showName && <span className='truncate text-center font-semibold text-white'>{name}</span>}
             </NavLink>
         </>
     )
