@@ -18,7 +18,7 @@ const getWindow = () => windowManager.getWindow()
 const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
 
-const bluetoothService = new BluetoothService()
+const bluetoothService = new BluetoothService(getWindow)
 const mediaPlayerService = new MediaPlayerService(getWindow)
 const callService = new CallService(getWindow)
 const phoneBookService = new PhoneBookService(getWindow)
@@ -32,6 +32,8 @@ app.whenReady().then(() => {
     gpsService.registerIpcHandlers()
     gpsService.connect()
 
+    bluetoothService.registerIpcHandlers()
+    bluetoothService.initialize()
     bluetoothService.configureProperties()
 
     mediaPlayerService.registerIpcHandlers()
