@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
 
 import type { ArduinoData } from '@shared/types/arduino'
+import type { BluetoothDevice } from '@shared/types/bluetooth'
 import type { CallInfo } from '@shared/types/call'
 import type { GPSData } from '@shared/types/gps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
@@ -60,6 +61,12 @@ const electronApi = {
         getConnectionStatus: (): Promise<boolean> => {
             return ipcRenderer.invoke('gps:getConnectionStatus')
         },
+    },
+    bluetooth: {
+        connectedDevice: generateDataHandler<BluetoothDevice>(
+            'bluetooth:getConnectedDevice',
+            'bluetooth:connectedDevice'
+        ),
     },
     mediaPlayer: {
         connectionStatus: generateDataHandler<boolean>(
