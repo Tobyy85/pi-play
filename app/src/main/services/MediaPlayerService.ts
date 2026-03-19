@@ -15,6 +15,9 @@ class MediaPlayerService {
 
     private mediaPlayerProps: dbus.ClientInterface | null = null
     private mediaPlayerInterface: any = null // eslint-disable-line @typescript-eslint/no-explicit-any
+    private mediaPlayerPath: string | null = null
+
+    private isInitialized: boolean = false
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -24,13 +27,26 @@ class MediaPlayerService {
     public async initialize() {
         const bluez = await this.systemBus.getProxyObject('org.bluez', '/')
         this.objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
-        this.objects = await this.objManager.GetManagedObjects()
+        if (!this.isInitialized) {
+            this.listenForConnectionChanges()
+            this.isInitialized = true
+        }
 
-        this.listenForConnectionChanges()
+        await this.reload()
+    }
+
+    public async reload() {
+        if (!this.objManager) {
+            return
+        }
+
+        this.resetMediaPlayerState()
+        this.objects = await this.objManager.GetManagedObjects()
 
         for (const path in this.objects) {
             if (this.objects[path]['org.bluez.MediaPlayer1']) {
-                this.mediaPlayerHandler(path)
+                await this.mediaPlayerHandler(path)
+                break
             }
         }
     }
@@ -87,23 +103,34 @@ class MediaPlayerService {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.objManager.on('InterfacesAdded', (path: string, interfaces: any) => {
             if (interfaces['org.bluez.MediaPlayer1']) {
-                this.mediaPlayerHandler(path)
+                this.mediaPlayerHandler(path).catch(err => {
+                    console.error('Failed to handle MediaPlayer interface addition:', err)
+                })
             }
         })
 
-        this.objManager.on('InterfacesRemoved', (path: string, interfaces: string[]) => {
+        this.objManager.on('InterfacesRemoved', (_path: string, interfaces: string[]) => {
             if (interfaces.includes('org.bluez.MediaPlayer1')) {
-                this.mediaPlayerInterface = null
-                this.mediaPlayerProps = null
-                this.setConnected(false)
+                this.reload().catch(err => {
+                    console.error('Failed to reload MediaPlayerService:', err)
+                })
             }
         })
     }
 
     private async mediaPlayerHandler(path: string) {
+        if (this.mediaPlayerPath === path && this.mediaPlayerProps && this.mediaPlayerInterface) {
+            return
+        }
+
+        if (this.mediaPlayerProps) {
+            this.mediaPlayerProps.removeAllListeners('PropertiesChanged')
+        }
+
         const mediaPlayerObject = await this.systemBus.getProxyObject('org.bluez', path)
 
         this.mediaPlayerInterface = mediaPlayerObject.getInterface('org.bluez.MediaPlayer1')
+        this.mediaPlayerPath = path
         this.setConnected(true)
 
         this.mediaPlayerProps = mediaPlayerObject.getInterface('org.freedesktop.DBus.Properties')
@@ -113,6 +140,17 @@ class MediaPlayerService {
         this.mediaPlayerProps.on('PropertiesChanged', (iface, changed) => {
             this.sendMediaPlayerData(changed)
         })
+    }
+
+    private resetMediaPlayerState() {
+        if (this.mediaPlayerProps) {
+            this.mediaPlayerProps.removeAllListeners('PropertiesChanged')
+        }
+
+        this.mediaPlayerPath = null
+        this.mediaPlayerInterface = null
+        this.mediaPlayerProps = null
+        this.setConnected(false)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

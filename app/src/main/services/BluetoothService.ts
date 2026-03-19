@@ -4,6 +4,11 @@ import * as dbus from 'dbus-next'
 
 import type { BluetoothDevice } from '@shared/types/bluetooth'
 
+type ConnectedDeviceListener = (
+    connectedDevice: BluetoothDevice | null,
+    previousDevice: BluetoothDevice | null
+) => void | Promise<void>
+
 /* eslint-disable new-cap */
 class BluetoothService {
     private getWindow: () => BrowserWindow | null
@@ -13,6 +18,7 @@ class BluetoothService {
 
     private connectedDevice: BluetoothDevice | null = null
     private watchedDevicePaths = new Set<string>()
+    private deviceChangeListeners = new Set<ConnectedDeviceListener>()
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -33,6 +39,14 @@ class BluetoothService {
         ipcMain.handle('bluetooth:getConnectedDevice', () => {
             return this.connectedDevice
         })
+    }
+
+    public onConnectedDeviceChanged(listener: ConnectedDeviceListener) {
+        this.deviceChangeListeners.add(listener)
+
+        return () => {
+            this.deviceChangeListeners.delete(listener)
+        }
     }
 
     public async configureProperties() {
@@ -118,8 +132,40 @@ class BluetoothService {
     }
 
     private updateConnectedDevice(connectedDevice: BluetoothDevice | null) {
+        const previousDevice = this.connectedDevice
+        if (this.areDevicesEqual(previousDevice, connectedDevice)) {
+            return
+        }
+
         this.connectedDevice = connectedDevice
         this.getWindow()?.webContents.send('bluetooth:connectedDevice', connectedDevice)
+        this.notifyConnectedDeviceChanged(connectedDevice, previousDevice)
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    private areDevicesEqual(deviceA: BluetoothDevice | null, deviceB: BluetoothDevice | null) {
+        if (!deviceA || !deviceB) {
+            return false
+        }
+
+        return (
+            deviceA.path === deviceB.path &&
+            deviceA.address === deviceB.address &&
+            deviceA.name === deviceB.name
+        )
+    }
+
+    private async notifyConnectedDeviceChanged(
+        connectedDevice: BluetoothDevice | null,
+        previousDevice: BluetoothDevice | null
+    ) {
+        for (const listener of this.deviceChangeListeners) {
+            try {
+                await listener(connectedDevice, previousDevice)
+            } catch (err) {
+                console.error('Bluetooth device change listener failed:', err)
+            }
+        }
     }
 }
 /* eslint-enable new-cap */

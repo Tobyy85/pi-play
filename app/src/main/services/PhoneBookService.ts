@@ -15,6 +15,7 @@ class PhoneBookService {
     private sessionBus: dbus.MessageBus
     private systemBus: dbus.MessageBus
     private sessionPath: string | null = null
+    private watchedDevicePaths = new Set<string>()
 
     private contacts: Contact[] | null = null
     private callHistory: CallHistoryEntry[] | null = null
@@ -29,6 +30,9 @@ class PhoneBookService {
         try {
             const deviceAddress = await this.getDeviceAddress()
             if (!deviceAddress) {
+                this.updateConnectionStatus(false)
+                this.updateContacts(null)
+                this.updateCallHistory(null)
                 return
             }
 
@@ -39,8 +43,12 @@ class PhoneBookService {
         } catch (err) {
             console.error('Failed to initialize PhoneBookService:', err)
         } finally {
-            this.removeSession()
+            await this.removeSession()
         }
+    }
+
+    public async reload() {
+        await this.initialize()
     }
 
     public registerIpcHandlers() {
@@ -252,6 +260,12 @@ class PhoneBookService {
     }
 
     private async watchDeviceConnection(devicePath: string) {
+        if (this.watchedDevicePaths.has(devicePath)) {
+            return
+        }
+
+        this.watchedDevicePaths.add(devicePath)
+
         const deviceObj = await this.systemBus.getProxyObject('org.bluez', devicePath)
         const propertiesInterface = deviceObj.getInterface('org.freedesktop.DBus.Properties')
 
@@ -260,6 +274,7 @@ class PhoneBookService {
             if (iface === 'org.bluez.Device1' && 'Connected' in changed) {
                 const isConnected = changed.Connected.value
                 if (isConnected) {
+                    this.updateConnectionStatus(true)
                     await this.initialize()
                 } else {
                     this.updateConnectionStatus(false)

@@ -12,6 +12,9 @@ class CallService {
     private voiceCallManager: any // eslint-disable-line @typescript-eslint/no-explicit-any
     private callInterface: any // eslint-disable-line @typescript-eslint/no-explicit-any
 
+    private isInitialized: boolean = false
+    private watchedModemPaths = new Set<string>()
+
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
         this.systemBus = dbus.systemBus()
@@ -19,21 +22,47 @@ class CallService {
 
     public async initialize() {
         try {
-            const obj = await this.systemBus.getProxyObject('org.ofono', '/')
-            this.ofonoManager = obj.getInterface('org.ofono.Manager')
+            if (!this.ofonoManager) {
+                const obj = await this.systemBus.getProxyObject('org.ofono', '/')
+                this.ofonoManager = obj.getInterface('org.ofono.Manager')
+            }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            this.ofonoManager.on('ModemAdded', (path: string, properties: any) => {
-                this.handleModem(path, properties)
-            })
+            if (!this.isInitialized) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                this.ofonoManager.on('ModemAdded', (path: string, properties: any) => {
+                    this.handleModem(path, properties).catch(err => {
+                        console.error('Failed to handle added modem:', err)
+                    })
+                })
+                this.isInitialized = true
+            }
 
-            // Get existing modems on startup
+            await this.reload()
+        } catch (err) {
+            console.error('Failed to initialize CallService:', err)
+        }
+    }
+
+    public async reload() {
+        if (!this.ofonoManager) {
+            return
+        }
+
+        try {
             const modems = await this.ofonoManager.GetModems()
+
+            if (!modems?.length) {
+                this.voiceCallManager = undefined // eslint-disable-line no-undefined
+                this.callInterface = undefined // eslint-disable-line no-undefined
+                this.getWindow()?.webContents.send('call:info', this.createDisconnectedCallInfo())
+                return
+            }
+
             for (const [path, properties] of modems) {
                 await this.handleModem(path, properties)
             }
         } catch (err) {
-            console.error('Failed to initialize CallService:', err)
+            console.error('Failed to reload CallService:', err)
         }
     }
 
@@ -104,6 +133,11 @@ class CallService {
     }
 
     private async watchModemProperties(path: string) {
+        if (this.watchedModemPaths.has(path)) {
+            return
+        }
+        this.watchedModemPaths.add(path)
+
         const modemObj = await this.systemBus.getProxyObject('org.ofono', path)
         try {
             const modemInterface = modemObj.getInterface('org.ofono.Modem')

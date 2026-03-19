@@ -23,6 +23,10 @@ const mediaPlayerService = new MediaPlayerService(getWindow)
 const callService = new CallService(getWindow)
 const phoneBookService = new PhoneBookService(getWindow)
 
+bluetoothService.onConnectedDeviceChanged(async () => {
+    await Promise.allSettled([mediaPlayerService.reload(), callService.reload(), phoneBookService.reload()])
+})
+
 app.whenReady().then(() => {
     windowManager.createWindow()
 
@@ -34,7 +38,6 @@ app.whenReady().then(() => {
 
     bluetoothService.registerIpcHandlers()
     bluetoothService.initialize()
-    bluetoothService.configureProperties()
 
     mediaPlayerService.registerIpcHandlers()
     mediaPlayerService.initialize()
