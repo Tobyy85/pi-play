@@ -18,6 +18,13 @@ interface PhoneBookStore {
 let contactsUnsubscribe: (() => void) | null = null
 let initializePromise: Promise<void> | null = null
 
+const indexContactsByPhoneNumber = (contacts: Contact[]) => {
+    return contacts.reduce<ContactsByPhone>((index, contact) => {
+        index[normalizePhoneNumber(contact.phoneNumber)] = contact
+        return index
+    }, {})
+}
+
 export const usePhoneBookStore = create<PhoneBookStore>((set, get) => ({
     isLoading: false,
     initialized: false,
@@ -28,10 +35,7 @@ export const usePhoneBookStore = create<PhoneBookStore>((set, get) => ({
         set({ isLoading: true })
         try {
             const contacts = await window.api.phoneBook.contacts.get()
-            const contactsByPhone = contacts.reduce<ContactsByPhone>((index, contact) => {
-                index[normalizePhoneNumber(contact.phoneNumber)] = contact
-                return index
-            }, {})
+            const contactsByPhone = indexContactsByPhoneNumber(contacts)
 
             set({ contacts, contactsByPhone, initialized: true })
         } catch (err) {
@@ -53,7 +57,8 @@ export const usePhoneBookStore = create<PhoneBookStore>((set, get) => ({
 
             if (!contactsUnsubscribe) {
                 contactsUnsubscribe = window.api.phoneBook.contacts.subscribe(contacts => {
-                    set({ contacts })
+                    const contactsByPhone = indexContactsByPhoneNumber(contacts)
+                    set({ contacts, contactsByPhone })
                 })
             }
 
