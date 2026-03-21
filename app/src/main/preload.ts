@@ -116,6 +116,14 @@ const electronApi = {
             'phoneBook:getCallHistory',
             'phoneBook:callHistory'
         ),
+        loadingContacts: generateDataHandler<boolean>(
+            'phoneBook:getLoadingContacts',
+            'phoneBook:loadingContacts'
+        ),
+        loadingCallHistory: generateDataHandler<boolean>(
+            'phoneBook:getLoadingCallHistory',
+            'phoneBook:loadingCallHistory'
+        ),
     },
 }
 

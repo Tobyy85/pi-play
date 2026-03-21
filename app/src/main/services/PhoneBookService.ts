@@ -18,7 +18,9 @@ class PhoneBookService {
     private watchedDevicePaths = new Set<string>()
 
     private contacts: Contact[] | null = null
+    private loadingContacts: boolean = false
     private callHistory: CallHistoryEntry[] | null = null
+    private loadingCallHistory: boolean = false
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -37,7 +39,9 @@ class PhoneBookService {
             }
 
             this.sessionPath = await this.createSession(deviceAddress)
-            // Cannot run pullContacts and pullHistory in parallel
+
+            this.updateLoadingContacts(true)
+            this.updateLoadingCallHistory(true)
             await this.pullContacts()
             await this.pullHistory()
         } catch (err) {
@@ -61,6 +65,12 @@ class PhoneBookService {
         ipcMain.handle('phoneBook:getConnectionStatus', () => {
             return this.connectionStatus
         })
+        ipcMain.handle('phoneBook:getLoadingContacts', () => {
+            return this.loadingContacts
+        })
+        ipcMain.handle('phoneBook:getLoadingCallHistory', () => {
+            return this.loadingCallHistory
+        })
     }
 
     public async disconnect() {
@@ -70,6 +80,7 @@ class PhoneBookService {
     }
 
     private async pullContacts() {
+        this.updateLoadingContacts(true)
         if (!this.sessionPath) throw new Error('No OBEX session established')
 
         const sessionObj = await this.sessionBus.getProxyObject('org.bluez.obex', this.sessionPath)
@@ -81,13 +92,17 @@ class PhoneBookService {
         const [transferPath, properties]: [string, Record<string, any>] = await pbap.PullAll('', {})
         const filename: string = properties.Filename?.value
 
-        if (!filename) throw new Error('No filename in transfer properties')
+        if (!filename) {
+            this.updateLoadingContacts(false)
+            throw new Error('No filename in transfer properties')
+        }
         await this.waitForTransferComplete(transferPath)
 
         const vcardData = readFileSync(filename, 'utf-8')
         const contacts = this.parseContactsVCards(vcardData)
 
         this.updateContacts(contacts)
+        this.updateLoadingContacts(false)
 
         try {
             unlinkSync(filename)
@@ -98,6 +113,7 @@ class PhoneBookService {
 
     private async pullHistory() {
         if (!this.sessionPath) throw new Error('No OBEX session established')
+        this.updateLoadingCallHistory(true)
 
         const sessionObj = await this.sessionBus.getProxyObject('org.bluez.obex', this.sessionPath)
         const pbap = sessionObj.getInterface('org.bluez.obex.PhonebookAccess1')
@@ -108,14 +124,17 @@ class PhoneBookService {
         const [transferPath, properties]: [string, Record<string, any>] = await pbap.PullAll('', {})
         const filename: string = properties.Filename?.value
 
-        if (!filename) throw new Error('No filename in transfer properties')
+        if (!filename) {
+            this.updateLoadingCallHistory(false)
+            throw new Error('No filename in transfer properties')
+        }
         await this.waitForTransferComplete(transferPath)
 
         const vcardData = readFileSync(filename, 'utf-8')
         const history = this.parseHistoryVCards(vcardData)
 
         this.updateCallHistory(history)
-
+        this.updateLoadingCallHistory(false)
         try {
             unlinkSync(filename)
         } catch (err) {
@@ -298,6 +317,18 @@ class PhoneBookService {
     private updateCallHistory(callHistory: CallHistoryEntry[] | null) {
         this.callHistory = callHistory
         this.getWindow()?.webContents.send('phoneBook:callHistory', callHistory)
+    }
+
+    private updateLoadingContacts(isLoading: boolean) {
+        if (this.loadingContacts === isLoading) return
+        this.loadingContacts = isLoading
+        this.getWindow()?.webContents.send('phoneBook:loadingContacts', isLoading)
+    }
+
+    private updateLoadingCallHistory(isLoading: boolean) {
+        if (this.loadingCallHistory === isLoading) return
+        this.loadingCallHistory = isLoading
+        this.getWindow()?.webContents.send('phoneBook:loadingCallHistory', isLoading)
     }
 }
 /* eslint-enable new-cap */
