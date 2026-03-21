@@ -54,10 +54,10 @@ const Camera = ({ deviceId, isMirrored, setError, ...videoProps }: CameraProps) 
                 streamRef.current = null
             }
             if (videoRef.current) {
-                videoRef.current.srcObject = null
+                videoRef.current.srcObject = null // eslint-disable-line react-hooks/exhaustive-deps
             }
         }
-    }, [deviceId])
+    }, [deviceId, setError])
 
     if (isError) return null
 
