@@ -58,7 +58,7 @@ class MediaPlayerService {
 
         ipcMain.handle('mediaPlayer:getTrackInfo', async () => {
             const track = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Track')
-            return this.extractTrackInfo(track)
+            return MediaPlayerService.extractTrackInfo(track)
         })
 
         ipcMain.handle('mediaPlayer:getPlaybackStatus', async () => {
@@ -157,7 +157,10 @@ class MediaPlayerService {
     private sendMediaPlayerData(data: any) {
         if (data.Track) {
             const track = data.Track
-            this.getWindow()?.webContents.send('mediaPlayer:trackInfo', this.extractTrackInfo(track))
+            this.getWindow()?.webContents.send(
+                'mediaPlayer:trackInfo',
+                MediaPlayerService.extractTrackInfo(track)
+            )
         }
         if (data.Status) {
             this.getWindow()?.webContents.send('mediaPlayer:playbackStatus', data.Status.value)
@@ -168,13 +171,13 @@ class MediaPlayerService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private extractTrackInfo(track: any): TrackInfo {
+    private static extractTrackInfo(track: any): TrackInfo {
         const title = track?.value?.Title?.value ?? null
         const artist = track?.value?.Artist?.value ?? null
         const album = track?.value?.Album?.value ?? null
         const duration = track?.value?.Duration?.value ?? null
 
-        return this.cleanTrackInfo({
+        return MediaPlayerService.cleanTrackInfo({
             title,
             artist,
             album,
@@ -185,8 +188,7 @@ class MediaPlayerService {
     /**
      * This is a hack to handle weird track info formats from certain players (like Spotify's "Listening on ...").
      */
-    // eslint-disable-next-line class-methods-use-this
-    private cleanTrackInfo(trackInfo: TrackInfo): TrackInfo {
+    private static cleanTrackInfo(trackInfo: TrackInfo): TrackInfo {
         const cleanTrackInfo = trackInfo
 
         if (trackInfo.artist?.toLowerCase().includes('listening on')) {

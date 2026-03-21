@@ -54,7 +54,7 @@ class CallService {
             if (!modems?.length) {
                 this.voiceCallManager = undefined // eslint-disable-line no-undefined
                 this.callInterface = undefined // eslint-disable-line no-undefined
-                this.getWindow()?.webContents.send('call:info', this.createDisconnectedCallInfo())
+                this.getWindow()?.webContents.send('call:info', CallService.createDisconnectedCallInfo())
                 return
             }
 
@@ -70,14 +70,14 @@ class CallService {
         ipcMain.handle('call:getCallInfo', async () => {
             const properties = await this.callInterface?.GetProperties()
             const callInfo: CallInfo = properties
-                ? this.extractCallInfo(properties)
-                : this.createDisconnectedCallInfo()
+                ? CallService.extractCallInfo(properties)
+                : CallService.createDisconnectedCallInfo()
             return callInfo
         })
         ipcMain.handle('call:answer', async () => {
             await this.callInterface?.Answer()
             const properties = await this.callInterface?.GetProperties()
-            this.getWindow()?.webContents.send('call:info', this.extractCallInfo(properties))
+            this.getWindow()?.webContents.send('call:info', CallService.extractCallInfo(properties))
         })
         ipcMain.handle('call:hangup', async () => {
             await this.callInterface?.Hangup()
@@ -120,7 +120,7 @@ class CallService {
             const callObj = await this.systemBus.getProxyObject('org.ofono', callPath)
             this.callInterface = callObj.getInterface('org.ofono.VoiceCall')
 
-            const callInfo = this.extractCallInfo(properties)
+            const callInfo = CallService.extractCallInfo(properties)
             this.getWindow()?.webContents.send('call:info', callInfo)
 
             this.listenToCallPropertyChanges()
@@ -128,7 +128,7 @@ class CallService {
 
         this.voiceCallManager.on('CallRemoved', () => {
             this.callInterface = undefined // eslint-disable-line no-undefined
-            this.getWindow()?.webContents.send('call:info', this.createDisconnectedCallInfo())
+            this.getWindow()?.webContents.send('call:info', CallService.createDisconnectedCallInfo())
         })
     }
 
@@ -174,8 +174,22 @@ class CallService {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, class-methods-use-this
-    private extractCallInfo(data: any): CallInfo {
+    private listenToCallPropertyChanges() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.callInterface.on('PropertyChanged', async (property: string, value: any) => {
+            let callInfo: CallInfo
+            if (property === 'State' && value.value === 'disconnected') {
+                callInfo = CallService.createDisconnectedCallInfo()
+            } else {
+                const properties = await this.callInterface.GetProperties()
+                callInfo = CallService.extractCallInfo(properties)
+            }
+            this.getWindow()?.webContents.send('call:info', callInfo)
+        })
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private static extractCallInfo(data: any): CallInfo {
         return {
             state: data?.State?.value,
             lineIdentification: data?.LineIdentification?.value,
@@ -183,27 +197,12 @@ class CallService {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this
-    private createDisconnectedCallInfo(): CallInfo {
+    private static createDisconnectedCallInfo(): CallInfo {
         return {
             state: 'disconnected',
             lineIdentification: undefined, // eslint-disable-line no-undefined
             startTime: undefined, // eslint-disable-line no-undefined
         }
-    }
-
-    private listenToCallPropertyChanges() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.callInterface.on('PropertyChanged', async (property: string, value: any) => {
-            let callInfo: CallInfo
-            if (property === 'State' && value.value === 'disconnected') {
-                callInfo = this.createDisconnectedCallInfo()
-            } else {
-                const properties = await this.callInterface.GetProperties()
-                callInfo = this.extractCallInfo(properties)
-            }
-            this.getWindow()?.webContents.send('call:info', callInfo)
-        })
     }
 }
 /* eslint-enable new-cap */

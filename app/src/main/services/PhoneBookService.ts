@@ -99,7 +99,7 @@ class PhoneBookService {
         await this.waitForTransferComplete(transferPath)
 
         const vcardData = readFileSync(filename, 'utf-8')
-        const contacts = this.parseContactsVCards(vcardData)
+        const contacts = PhoneBookService.parseContactsVCards(vcardData)
 
         this.updateContacts(contacts)
         this.updateLoadingContacts(false)
@@ -131,7 +131,7 @@ class PhoneBookService {
         await this.waitForTransferComplete(transferPath)
 
         const vcardData = readFileSync(filename, 'utf-8')
-        const history = this.parseHistoryVCards(vcardData)
+        const history = PhoneBookService.parseHistoryVCards(vcardData)
 
         this.updateCallHistory(history)
         this.updateLoadingCallHistory(false)
@@ -140,54 +140,6 @@ class PhoneBookService {
         } catch (err) {
             console.error('Failed to remove temporary file:', err)
         }
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    private parseContactsVCards(vCardsData: string): Contact[] {
-        const cards = parseVCards(vCardsData)
-
-        if (!cards.vCards || cards.vCards.length === 0) {
-            console.warn('No vCard objects found in data')
-            return []
-        }
-
-        return cards.vCards
-            .filter(card => Boolean(card.TEL?.[0]?.value))
-            .map(card => {
-                const name = card.FN[0]?.value
-                const phoneNumber = card.TEL?.[0]?.value
-                const photo = card.PHOTO?.[0]?.value
-                return {
-                    name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
-                    phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
-                    photo: photo ?? undefined, // eslint-disable-line no-undefined
-                }
-            })
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    private parseHistoryVCards(vCardsData: string): CallHistoryEntry[] {
-        const cards = parseVCards(vCardsData)
-
-        if (!cards.vCards || cards.vCards.length === 0) {
-            console.warn('No vCard objects found in data')
-            return []
-        }
-
-        return cards.vCards.map(card => {
-            const name = card.FN[0]?.value
-            const phoneNumber = card.TEL?.[0]?.value
-            const irmcCallDateTime = card.unparseable?.find(line => line.startsWith('X-IRMC-CALL-DATETIME'))
-            const extractedCallDateTime = irmcCallDateTime?.split(';')[1] ?? ''
-            const [type, time] = extractedCallDateTime.split(':') as [CallHistoryEntry['type'], string]
-
-            return {
-                name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
-                phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
-                dateTime: time,
-                type,
-            }
-        })
     }
 
     private async waitForTransferComplete(transferPath: string): Promise<void> {
@@ -329,6 +281,52 @@ class PhoneBookService {
         if (this.loadingCallHistory === isLoading) return
         this.loadingCallHistory = isLoading
         this.getWindow()?.webContents.send('phoneBook:loadingCallHistory', isLoading)
+    }
+
+    private static parseContactsVCards(vCardsData: string): Contact[] {
+        const cards = parseVCards(vCardsData)
+
+        if (!cards.vCards || cards.vCards.length === 0) {
+            console.warn('No vCard objects found in data')
+            return []
+        }
+
+        return cards.vCards
+            .filter(card => Boolean(card.TEL?.[0]?.value))
+            .map(card => {
+                const name = card.FN[0]?.value
+                const phoneNumber = card.TEL?.[0]?.value
+                const photo = card.PHOTO?.[0]?.value
+                return {
+                    name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
+                    phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
+                    photo: photo ?? undefined, // eslint-disable-line no-undefined
+                }
+            })
+    }
+
+    private static parseHistoryVCards(vCardsData: string): CallHistoryEntry[] {
+        const cards = parseVCards(vCardsData)
+
+        if (!cards.vCards || cards.vCards.length === 0) {
+            console.warn('No vCard objects found in data')
+            return []
+        }
+
+        return cards.vCards.map(card => {
+            const name = card.FN[0]?.value
+            const phoneNumber = card.TEL?.[0]?.value
+            const irmcCallDateTime = card.unparseable?.find(line => line.startsWith('X-IRMC-CALL-DATETIME'))
+            const extractedCallDateTime = irmcCallDateTime?.split(';')[1] ?? ''
+            const [type, time] = extractedCallDateTime.split(':') as [CallHistoryEntry['type'], string]
+
+            return {
+                name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
+                phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
+                dateTime: time,
+                type,
+            }
+        })
     }
 }
 /* eslint-enable new-cap */

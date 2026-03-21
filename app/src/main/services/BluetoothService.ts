@@ -133,26 +133,13 @@ class BluetoothService {
 
     private updateConnectedDevice(connectedDevice: BluetoothDevice | null) {
         const previousDevice = this.connectedDevice
-        if (this.areDevicesEqual(previousDevice, connectedDevice)) {
+        if (BluetoothService.areDevicesEqual(previousDevice, connectedDevice)) {
             return
         }
 
         this.connectedDevice = connectedDevice
         this.getWindow()?.webContents.send('bluetooth:connectedDevice', connectedDevice)
         this.notifyConnectedDeviceChanged(connectedDevice, previousDevice)
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    private areDevicesEqual(deviceA: BluetoothDevice | null, deviceB: BluetoothDevice | null) {
-        if (!deviceA || !deviceB) {
-            return false
-        }
-
-        return (
-            deviceA.path === deviceB.path &&
-            deviceA.address === deviceB.address &&
-            deviceA.name === deviceB.name
-        )
     }
 
     private async notifyConnectedDeviceChanged(
@@ -166,6 +153,18 @@ class BluetoothService {
                 console.error('Bluetooth device change listener failed:', err)
             }
         }
+    }
+
+    private static areDevicesEqual(deviceA: BluetoothDevice | null, deviceB: BluetoothDevice | null) {
+        if (!deviceA || !deviceB) {
+            return false
+        }
+
+        return (
+            deviceA.path === deviceB.path &&
+            deviceA.address === deviceB.address &&
+            deviceA.name === deviceB.name
+        )
     }
 }
 /* eslint-enable new-cap */
