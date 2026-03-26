@@ -21,7 +21,7 @@ export default tseslint.config([
         },
         rules: {
             'no-unused-vars': 'off',
-            '@typescript-eslint/no-unused-vars': 'warn',
+            '@typescript-eslint/no-unused-vars': ['warn', { varsIgnorePattern: '^_' }],
 
             'array-callback-return': 'warn',
             'no-constructor-return': 'warn',
@@ -45,8 +45,8 @@ export default tseslint.config([
             'func-name-matching': 'warn',
             'func-style': ['warn', 'expression'],
             'grouped-accessor-pairs': 'warn',
-            'id-length': ['warn', { min: 2, max: 30, exceptions: ['e', 'i', 'j', 'k', 'a', 'b'] }],
-            'id-denylist': ['warn', 'foo', 'bar', 'baz', 'x', 'y', 'z', 'c'],
+            'id-length': ['warn', { min: 2, max: 30, exceptions: ['e', 'i', 'j', 'a', 'b', '_'] }],
+            'id-denylist': ['warn', 'foo', 'bar', 'baz', 'x', 'y', 'z'],
             'logical-assignment-operators': 'warn',
             'max-depth': ['warn', 4],
             'max-lines': ['warn', { max: 300, skipBlankLines: true, skipComments: true }],
