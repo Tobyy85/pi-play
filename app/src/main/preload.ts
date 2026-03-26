@@ -4,6 +4,7 @@ import type { ArduinoData } from '@shared/types/arduino'
 import type { BluetoothDevice } from '@shared/types/bluetooth'
 import type { CallInfo } from '@shared/types/call'
 import type { GPSData } from '@shared/types/gps'
+import type { MapDownloadRequest } from '@shared/types/maps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
 import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
 
@@ -124,6 +125,11 @@ const electronApi = {
             'phoneBook:getLoadingCallHistory',
             'phoneBook:loadingCallHistory'
         ),
+    },
+    maps: {
+        downloadArea: async (request: MapDownloadRequest) => {
+            await ipcRenderer.invoke('maps:downloadArea', request)
+        },
     },
 }
 
