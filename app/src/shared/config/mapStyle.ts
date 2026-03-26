@@ -30,7 +30,7 @@ export const MAP_STYLE: StyleSpecification = {
     sources: {
         openmaptiles: {
             type: 'vector',
-            tiles: ['https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf'],
+            tiles: ['map://tile/{z}/{x}/{y}'],
             maxzoom: 14,
             attribution: '© OpenMapTiles © OpenStreetMap contributors',
         },

@@ -6,7 +6,7 @@ import MapGL, { type MapRef } from 'react-map-gl/maplibre'
 import FollowModeButton from '@renderer/features/appMaps/components/FollowModeButton'
 import MapMarker from '@renderer/features/appMaps/components/MapMarker'
 
-import { MAP_STYLE } from '@shared/config/maps/mapStyle'
+import { MAP_STYLE } from '@shared/config/mapStyle'
 
 const DEFAULT_ZOOM = 16
 const PITCH = 45
