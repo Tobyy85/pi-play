@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { app, BrowserWindow } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
@@ -7,6 +8,7 @@ import GPSService from '@main/services/GpsService'
 
 import BluetoothService from '@main/services/BluetoothService'
 import CallService from '@main/services/CallService'
+import MapService from '@main/services/MapService'
 import MediaPlayerService from '@main/services/MediaPlayerService'
 import PhoneBookService from '@main/services/PhoneBookService'
 
@@ -17,6 +19,8 @@ const getWindow = () => windowManager.getWindow()
 
 const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
+
+MapService.initialize()
 
 const bluetoothService = new BluetoothService(getWindow)
 const mediaPlayerService = new MediaPlayerService(getWindow)
@@ -47,6 +51,9 @@ app.whenReady().then(() => {
 
     phoneBookService.registerIpcHandlers()
     phoneBookService.initialize()
+
+    MapService.registerIpcHandlers()
+    MapService.initializeProtocol()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
