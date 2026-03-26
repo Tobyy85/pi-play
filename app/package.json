@@ -67,6 +67,7 @@
     "dependencies": {
         "@tailwindcss/vite": "^4.1.14",
         "dbus-next": "^0.10.2",
+        "dotenv": "^17.3.1",
         "maplibre-gl": "^5.17.0",
         "nmea-simple": "^3.3.0",
         "react": "^19.2.0",
