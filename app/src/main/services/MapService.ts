@@ -30,7 +30,6 @@ class MapService {
 
     public static initializeProtocol() {
         protocol.handle('map', async request => {
-            console.warn(`Handling protocol request: ${request.url}`)
             const url = new URL(request.url)
 
             switch (url.hostname) {
