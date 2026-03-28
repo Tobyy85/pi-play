@@ -174,15 +174,20 @@ class PhoneBookService {
         })
     }
 
-    private async createSession(deviceAddress: string) {
-        const client = await this.sessionBus.getProxyObject('org.bluez.obex', '/org/bluez/obex')
-        const obexClient = client.getInterface('org.bluez.obex.Client1')
+    private async createSession(deviceAddress: string): Promise<string | null> {
+        try {
+            const client = await this.sessionBus.getProxyObject('org.bluez.obex', '/org/bluez/obex')
+            const obexClient = client.getInterface('org.bluez.obex.Client1')
 
-        const sessionPath: string = await obexClient.CreateSession(deviceAddress, {
-            Target: new dbus.Variant('s', 'pbap'),
-        })
+            const sessionPath: string = await obexClient.CreateSession(deviceAddress, {
+                Target: new dbus.Variant('s', 'pbap'),
+            })
 
-        return sessionPath
+            return sessionPath
+        } catch (err) {
+            console.error('Failed to create OBEX session:', err)
+            return null
+        }
     }
 
     private async removeSession() {
