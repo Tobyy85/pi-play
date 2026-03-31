@@ -1,3 +1,5 @@
+/* eslint-disable max-lines, id-length, no-magic-numbers */
+
 import js from '@eslint/js'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
@@ -127,7 +129,7 @@ export default defineConfig([
             'no-useless-rename': 'warn',
             'no-useless-return': 'warn',
             'no-var': 'warn',
-            'no-void': 'warn',
+            'no-void': ['warn', { allowAsStatement: true }],
             'no-warning-comments': 'warn',
             'no-with': 'error',
             'object-shorthand': ['warn', 'always'],
@@ -180,27 +182,22 @@ export default defineConfig([
             '@typescript-eslint/naming-convention': [
                 'warn',
                 {
+                    selector: 'objectLiteralProperty',
+                    modifiers: ['requiresQuotes'],
+                    format: null,
+                },
+                {
                     selector: 'default',
                     format: ['camelCase'],
                 },
                 {
-                    selector: 'variable',
+                    selector: ['variable', 'import'],
                     format: ['camelCase', 'UPPER_CASE', 'PascalCase'], // allow PascalCase for React components
-                },
-                {
-                    selector: 'import',
-                    format: ['camelCase', 'PascalCase'],
                 },
                 {
                     selector: 'parameter',
                     format: ['camelCase'],
                     leadingUnderscore: 'allow',
-                },
-                {
-                    selector: 'memberLike',
-                    modifiers: ['private'],
-                    format: ['camelCase'],
-                    leadingUnderscore: 'require',
                 },
                 {
                     selector: 'typeLike',
@@ -210,7 +207,15 @@ export default defineConfig([
                     selector: 'variable',
                     types: ['boolean'],
                     format: ['PascalCase'],
-                    prefix: ['is', 'should', 'has', 'can', 'did', 'will'],
+                    prefix: ['is', 'should', 'has', 'can', 'did', 'will', 'are'],
+                },
+                {
+                    selector: ['variable', 'parameter'],
+                    filter: {
+                        regex: '^_$',
+                        match: true,
+                    },
+                    format: null,
                 },
             ],
 
@@ -313,10 +318,17 @@ export default defineConfig([
                 'warn',
                 { prefer: 'type-imports', fixStyle: 'separate-type-imports' },
             ],
-            '@typescript-eslint/explicit-function-return-type': 'warn',
-            '@typescript-eslint/explicit-member-accessibility': 'warn',
-            '@typescript-eslint/explicit-module-boundary-types': 'warn',
-            '@typescript-eslint/method-signature-style': ['warn', 'method'],
+            '@typescript-eslint/explicit-function-return-type': [
+                'warn',
+                {
+                    allowExpressions: true,
+                },
+            ],
+            '@typescript-eslint/explicit-member-accessibility': [
+                'warn',
+                { overrides: { constructors: 'no-public' } },
+            ],
+            '@typescript-eslint/method-signature-style': ['warn', 'property'],
             '@typescript-eslint/no-array-delete': 'warn',
             '@typescript-eslint/no-base-to-string': 'warn',
             '@typescript-eslint/no-confusing-non-null-assertion': 'warn',
@@ -345,7 +357,14 @@ export default defineConfig([
             '@typescript-eslint/no-invalid-void-type': 'warn',
             '@typescript-eslint/no-meaningless-void-operator': 'warn',
             '@typescript-eslint/no-misused-new': 'warn',
-            '@typescript-eslint/no-misused-promises': 'warn',
+            '@typescript-eslint/no-misused-promises': [
+                'warn',
+                {
+                    checksVoidReturn: {
+                        attributes: false,
+                    },
+                },
+            ],
             '@typescript-eslint/no-misused-spread': 'warn',
             '@typescript-eslint/no-mixed-enums': 'warn',
             '@typescript-eslint/no-namespace': 'warn',
@@ -361,7 +380,7 @@ export default defineConfig([
             '@typescript-eslint/no-unnecessary-qualifier': 'warn',
             '@typescript-eslint/no-unnecessary-template-expression': 'warn',
             '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
-            '@typescript-eslint/no-unnecessary-type-arguments': 'warn',
+            '@typescript-eslint/no-unnecessary-type-arguments': 'off', // Disabled due to an upstream fixer crash when reporting certain generic calls.
             '@typescript-eslint/no-unnecessary-type-constraint': 'warn',
             '@typescript-eslint/no-unnecessary-type-conversion': 'warn',
             '@typescript-eslint/no-unnecessary-type-parameters': 'warn',
@@ -391,7 +410,13 @@ export default defineConfig([
             '@typescript-eslint/prefer-nullish-coalescing': 'warn',
             '@typescript-eslint/prefer-optional-chain': 'warn',
             '@typescript-eslint/prefer-readonly': 'warn',
-            '@typescript-eslint/prefer-readonly-parameter-types': 'warn',
+            '@typescript-eslint/prefer-readonly-parameter-types': [
+                'warn',
+                {
+                    ignoreInferredTypes: true,
+                    treatMethodsAsReadonly: true,
+                },
+            ],
             '@typescript-eslint/prefer-reduce-type-parameter': 'warn',
             '@typescript-eslint/prefer-regexp-exec': 'warn',
             '@typescript-eslint/prefer-return-this-type': 'warn',
@@ -402,7 +427,6 @@ export default defineConfig([
             '@typescript-eslint/restrict-plus-operands': 'warn',
             '@typescript-eslint/restrict-template-expressions': 'warn',
             '@typescript-eslint/return-await': ['warn', 'always'],
-            '@typescript-eslint/strict-boolean-expressions': 'warn',
             '@typescript-eslint/strict-void-return': 'warn',
             '@typescript-eslint/switch-exhaustiveness-check': 'warn',
             '@typescript-eslint/unbound-method': ['warn', { ignoreStatic: true }],
@@ -419,8 +443,9 @@ export default defineConfig([
     {
         files: ['**/*.tsx'],
         rules: {
-            '@typescript-eslint/explicit-function-return-type': 'off',
-            '@typescript-eslint/explicit-module-boundary-types': 'off',
+            '@typescript-eslint/explicit-function-return-type': 'off', // No need to explicitly type React components' return types
+            '@typescript-eslint/prefer-readonly-parameter-types': 'off', // No need to explicitly type readonly for React components' props
+            '@typescript-eslint/strict-void-return': 'off', // Allow Promise-returning callbacks in React props
         },
     },
 ])
