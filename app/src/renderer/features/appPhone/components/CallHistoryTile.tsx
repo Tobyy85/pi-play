@@ -43,7 +43,7 @@ const CallHistoryTile = ({ callEntry }: CallHistoryTileProps) => {
             <div className='flex h-full items-center gap-3'>
                 <p className='text-white/70'>{formatRelativeDate(callEntry.dateTime)}</p>
                 <button
-                    onClick={() => window.api.call.dial(callEntry.phoneNumber)}
+                    onClick={async () => await window.api.call.dial(callEntry.phoneNumber)}
                     className='flex aspect-square h-5/6 items-center justify-center rounded-full bg-zinc-600
                         p-3'
                 >

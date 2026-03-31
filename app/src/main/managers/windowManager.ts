@@ -6,7 +6,7 @@ import { isDev } from '@main/utils/isDev'
 class WindowManager {
     private browserWindow: BrowserWindow | null = null
 
-    public createWindow(): BrowserWindow {
+    public async createWindow(): Promise<BrowserWindow> {
         this.browserWindow = new BrowserWindow({
             width: 1024,
             height: 600,
@@ -18,11 +18,11 @@ class WindowManager {
         })
 
         if (isDev) {
-            this.browserWindow.loadURL('http://localhost:3000')
+            await this.browserWindow.loadURL('http://localhost:3000')
             this.browserWindow.webContents.openDevTools()
         } else {
             const indexHtml = path.join(app.getAppPath(), 'dist', 'index.html')
-            this.browserWindow.loadFile(indexHtml)
+            await this.browserWindow.loadFile(indexHtml)
         }
 
         this.browserWindow.on('closed', () => {

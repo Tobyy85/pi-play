@@ -1,8 +1,7 @@
-/* eslint-disable no-magic-numbers */
-export const formatTime = (milliseconds: number) => {
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+export const formatTime = (milliseconds: number): string => {
     const totalSeconds = Math.floor(milliseconds / 1000)
     const minutes = Math.floor(totalSeconds / 60)
     const seconds = totalSeconds % 60
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
 }
-/* eslint-enable no-magic-numbers */

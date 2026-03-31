@@ -1,7 +1,7 @@
 /**
  * Parses a date-time string in the format "YYYYMMDDTHHMMSS" and returns a Date object.
  */
-/* eslint-disable no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 const parseDateTimeString = (dateTimeString: string): Date => {
     const year = parseInt(dateTimeString.slice(0, 4), 10)
     const month = parseInt(dateTimeString.slice(4, 6), 10) - 1
@@ -12,7 +12,7 @@ const parseDateTimeString = (dateTimeString: string): Date => {
 
     return new Date(year, month, day, hour, minute, second)
 }
-/* eslint-enable no-magic-numbers */
+/* eslint-enable @typescript-eslint/no-magic-numbers */
 
 /**
  * Formats a date-time string as a relative date (e.g., "Today", "Yesterday", "Monday", or "DD.MM.YYYY").
@@ -44,7 +44,7 @@ export const formatRelativeDate = (dateTimeString: string): string => {
     }
 
     const oneWeekAgo = new Date(now)
-    oneWeekAgo.setDate(now.getDate() - 7) // eslint-disable-line no-magic-numbers
+    oneWeekAgo.setDate(now.getDate() - 7) // eslint-disable-line @typescript-eslint/no-magic-numbers
     if (date > oneWeekAgo) {
         return date.toLocaleDateString([], { weekday: 'long' })
     }

@@ -6,7 +6,7 @@ const AnswerCallButton = ({ ...buttonProps }: React.ButtonHTMLAttributes<HTMLBut
             <button
                 {...buttonProps}
                 onClick={window.api.call.answer}
-                className={`aspect-square rounded-full bg-green-500 p-2 ${buttonProps.className || ''}`}
+                className={`aspect-square rounded-full bg-green-500 p-2 ${buttonProps.className ?? ''}`}
             >
                 <CallIcon className='size-full text-white' />
             </button>

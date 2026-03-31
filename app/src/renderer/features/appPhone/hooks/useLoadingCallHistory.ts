@@ -1,6 +1,6 @@
-import useIpcData from '@renderer/hooks/useIpcData'
+import useIpcData, { type UseIpcDataReturn } from '@renderer/hooks/useIpcData'
 
-const useLoadingCallHistory = () => {
+const useLoadingCallHistory = (): UseIpcDataReturn<boolean> => {
     return useIpcData<boolean>(
         window.api.phoneBook.loadingCallHistory.get,
         callback => window.api.phoneBook.loadingCallHistory.subscribe(callback),

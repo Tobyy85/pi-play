@@ -27,7 +27,7 @@ const Keypad = () => {
                 <button
                     className='col-start-2 flex size-16 rounded-full bg-green-500 p-3 transition-opacity
                         active:opacity-80'
-                    onClick={() => window.api.call.dial(normalizePhoneNumber(display))}
+                    onClick={async () => await window.api.call.dial(normalizePhoneNumber(display))}
                 >
                     <CallIcon className='size-full text-white' />
                 </button>

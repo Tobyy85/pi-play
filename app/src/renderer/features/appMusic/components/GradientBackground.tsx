@@ -10,7 +10,7 @@ interface GradientBackgroundProps {
 const HASH_PRIME = 31
 const HASH_MOD = 1_000_000_007
 const RNG_MOD = 2_147_483_647
-const RNG_MULT = 16807
+const RNG_MULTIPLIER = 16807
 
 // ── Color generation ───────────────────────────────────────────────────
 const HUE_FULL = 360
@@ -55,7 +55,7 @@ const hashString = (str: string): number => {
 const createRng = (initialSeed: number) => {
     let state = (initialSeed % RNG_MOD) + 1
     return () => {
-        state = (state * RNG_MULT) % RNG_MOD
+        state = (state * RNG_MULTIPLIER) % RNG_MOD
         return state / RNG_MOD
     }
 }

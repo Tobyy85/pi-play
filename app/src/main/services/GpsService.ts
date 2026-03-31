@@ -1,5 +1,5 @@
 import { ReadlineParser } from '@serialport/parser-readline'
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain, type BrowserWindow } from 'electron'
 import * as nmea from 'nmea-simple'
 import { SerialPort } from 'serialport'
 
@@ -33,9 +33,9 @@ const DEFAULT_GPS_DATA: GPSData = {
 class GPSService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
-    private getWindow: () => BrowserWindow | null
-    private isConnected: boolean = false
-    private currentData: GPSData = { ...DEFAULT_GPS_DATA }
+    private readonly getWindow: () => BrowserWindow | null
+    private isConnected = false
+    private readonly currentData: GPSData = { ...DEFAULT_GPS_DATA }
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -108,7 +108,7 @@ class GPSService {
             this.parseNMEA(line)
         })
 
-        this.port.on('error', (err: Error) => {
+        this.port.on('error', (err: Readonly<Error>) => {
             console.error('GPS: SerialPort Error:', err.message)
             this.isConnected = false
         })
@@ -127,9 +127,9 @@ class GPSService {
             if (!sentence.startsWith('$')) return
 
             const parsed = nmea.parseNmeaSentence(sentence)
-            const dataChanged = this.handleParsedSentence(parsed)
+            const hasDataChanged = this.handleParsedSentence(parsed)
 
-            if (dataChanged) {
+            if (hasDataChanged) {
                 this.getWindow()?.webContents.send('gps:change', { ...this.currentData })
             }
         } catch (error) {
@@ -143,12 +143,14 @@ class GPSService {
      * @param parsed - The parsed NMEA packet.
      * @returns True if data changed, false otherwise.
      */
+    // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
     private handleParsedSentence(parsed: nmea.Packet): boolean {
+        // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
         switch (parsed.sentenceId) {
             case 'GGA':
-                return this.handleGGA(parsed as nmea.GGAPacket)
+                return this.handleGGA(parsed)
             case 'RMC':
-                return this.handleRMC(parsed as nmea.RMCPacket)
+                return this.handleRMC(parsed)
             default:
                 return false
         }
@@ -158,7 +160,7 @@ class GPSService {
      * Handle GGA (Global Positioning System Fix Data) sentence.
      * @return True if data changed, false otherwise.
      */
-    private handleGGA(gga: nmea.GGAPacket): boolean {
+    private handleGGA(gga: Readonly<nmea.GGAPacket>): boolean {
         if (gga.fixType === 'none') {
             this.currentData.fix = false
             this.currentData.satellites = gga.satellitesInView
@@ -178,7 +180,7 @@ class GPSService {
      * Handle RMC (Recommended Minimum Navigation Information) sentence.
      * @return True if data changed, false otherwise.
      */
-    private handleRMC(rmc: nmea.RMCPacket): boolean {
+    private handleRMC(rmc: Readonly<nmea.RMCPacket>): boolean {
         if (rmc.status !== 'valid') {
             this.currentData.fix = false
             return false

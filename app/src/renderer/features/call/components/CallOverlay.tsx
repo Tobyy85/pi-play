@@ -10,7 +10,7 @@ import { formatPhoneNumber } from '@shared/utils/phoneBook'
 const CallOverlay = () => {
     const { data: callInfo, isLoading } = useCallInfo()
 
-    const contact = useContact(callInfo?.lineIdentification || '')
+    const contact = useContact(callInfo?.lineIdentification ?? '')
 
     if (isLoading || !callInfo || callInfo.state === 'disconnected') {
         return <></>
@@ -33,7 +33,7 @@ const CallOverlay = () => {
                         />
                     )}
                     <p className='`w-full truncate text-3xl font-bold text-clip text-white/90'>
-                        {contact?.name || formatPhoneNumber(callInfo.lineIdentification)}
+                        {contact?.name ?? formatPhoneNumber(callInfo.lineIdentification)}
                     </p>
                 </div>
                 <div className='flex h-full items-center gap-3 py-0.5'>

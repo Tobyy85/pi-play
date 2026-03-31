@@ -1,18 +1,18 @@
 import { ReadlineParser } from '@serialport/parser-readline'
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain, type BrowserWindow } from 'electron'
 import { SerialPort } from 'serialport'
 
 import type { ArduinoData, BoardInfo } from '@shared/types/arduino'
 
-type PendingRequest = {
-    resolve: (data: ArduinoData) => void
-    reject: (error: Error) => void
+interface PendingRequest {
+    resolve: (data: Readonly<ArduinoData>) => void
+    reject: (error: Readonly<Error>) => void
     timeout: NodeJS.Timeout
 }
 
 const REQUEST_TIMEOUT = 5000
 
-const parseJson = (line: string): unknown | null => {
+const parseJson = (line: string): unknown => {
     try {
         return JSON.parse(line.trim())
     } catch {
@@ -20,12 +20,12 @@ const parseJson = (line: string): unknown | null => {
     }
 }
 
-const findArduinoPath = async (boardInfo: BoardInfo): Promise<string | null> => {
+const findArduinoPath = async (boardInfo: Readonly<BoardInfo>): Promise<string | null> => {
     const ports = await SerialPort.list()
     const arduinoPort = ports.find(
         port =>
-            port.vendorId?.toLowerCase() === boardInfo.vendorId?.toLowerCase() &&
-            port.productId?.toLowerCase() === boardInfo.productId?.toLowerCase()
+            port.vendorId?.toLowerCase() === boardInfo.vendorId.toLowerCase() &&
+            port.productId?.toLowerCase() === boardInfo.productId.toLowerCase()
     )
     return arduinoPort?.path ?? null
 }
@@ -33,8 +33,8 @@ const findArduinoPath = async (boardInfo: BoardInfo): Promise<string | null> => 
 class ArduinoService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
-    private getWindow: () => BrowserWindow | null
-    private pendingRequests: Map<string, PendingRequest[]> = new Map()
+    private readonly getWindow: () => BrowserWindow | null
+    private readonly pendingRequests: Map<string, PendingRequest[]> = new Map()
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -45,7 +45,7 @@ class ArduinoService {
      * @param boardInfo - The BoardInfo containing vendorId and productId.
      * @param baudRate - The baud rate for the serial connection.
      */
-    public async connect(boardInfo: BoardInfo, baudRate: number): Promise<void> {
+    public async connect(boardInfo: Readonly<BoardInfo>, baudRate: number): Promise<void> {
         try {
             const path = await findArduinoPath(boardInfo)
             if (!path) {
@@ -86,8 +86,8 @@ class ArduinoService {
      * Register IPC handlers for the Arduino service.
      */
     public registerIpcHandlers(): void {
-        ipcMain.handle('arduino:requestSensorValue', (_event, sensorId: string) => {
-            return this.requestSensorValue(sensorId)
+        ipcMain.handle('arduino:requestSensorValue', async (_event, sensorId: string) => {
+            return await this.requestSensorValue(sensorId)
         })
     }
 
@@ -98,7 +98,7 @@ class ArduinoService {
         if (!this.parser) return
 
         this.parser.on('data', (line: string) => {
-            const data = parseJson(line) as ArduinoData | null
+            const data = parseJson(line) as ArduinoData | null // eslint-disable-line @typescript-eslint/no-unsafe-type-assertion
             if (data) {
                 const pendingRequests = this.pendingRequests.get(data.sensorId)
                 if (pendingRequests && pendingRequests.length > 0) {
@@ -114,7 +114,7 @@ class ArduinoService {
             }
         })
 
-        this.port?.on('error', (err: Error) => {
+        this.port?.on('error', (err: Readonly<Error>) => {
             console.error('SerialPort Error: ', err.message)
         })
     }
@@ -124,9 +124,9 @@ class ArduinoService {
      * @param sensorId - The ID of the sensor to request.
      * @returns A promise that resolves with the ArduinoData.
      */
-    public requestSensorValue(sensorId: string): Promise<ArduinoData> {
-        return new Promise((resolve, reject) => {
-            if (!this.port || !this.port.isOpen) {
+    public async requestSensorValue(sensorId: string): Promise<ArduinoData> {
+        return await new Promise((resolve, reject) => {
+            if (!this.port?.isOpen) {
                 reject(new Error('Serial port is not connected'))
                 return
             }
@@ -162,7 +162,7 @@ class ArduinoService {
      * @param sensorId - The ID of the sensor.
      * @param request - The pending request to remove.
      */
-    private removePendingRequest(sensorId: string, request: PendingRequest): void {
+    private removePendingRequest(sensorId: string, request: Readonly<PendingRequest>): void {
         const requests = this.pendingRequests.get(sensorId)
         if (!requests) return
 

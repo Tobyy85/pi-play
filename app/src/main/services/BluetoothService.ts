@@ -1,31 +1,31 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain, type BrowserWindow } from 'electron'
 
 import * as dbus from 'dbus-next'
 
 import type { BluetoothDevice } from '@shared/types/bluetooth'
 
 type ConnectedDeviceListener = (
-    connectedDevice: BluetoothDevice | null,
-    previousDevice: BluetoothDevice | null
+    connectedDevice: Readonly<BluetoothDevice> | null,
+    previousDevice: Readonly<BluetoothDevice> | null
 ) => void | Promise<void>
 
-/* eslint-disable new-cap */
+/* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 class BluetoothService {
-    private getWindow: () => BrowserWindow | null
+    private readonly getWindow: () => BrowserWindow | null
 
-    private systemBus: dbus.MessageBus
+    private readonly systemBus: dbus.MessageBus
     private objectManager: dbus.ClientInterface | null = null
 
     private connectedDevice: BluetoothDevice | null = null
-    private watchedDevicePaths = new Set<string>()
-    private deviceChangeListeners = new Set<ConnectedDeviceListener>()
+    private readonly watchedDevicePaths: Set<string> = new Set()
+    private readonly deviceChangeListeners: Set<ConnectedDeviceListener> = new Set()
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
         this.systemBus = dbus.systemBus()
     }
 
-    public async initialize() {
+    public async initialize(): Promise<void> {
         await this.configureProperties()
 
         const bluezProxyObject = await this.systemBus.getProxyObject('org.bluez', '/')
@@ -35,7 +35,7 @@ class BluetoothService {
         await this.watchConnectedDevices()
     }
 
-    public registerIpcHandlers() {
+    public registerIpcHandlers(): void {
         ipcMain.handle('bluetooth:getConnectedDevice', () => {
             return this.connectedDevice
         })
@@ -49,7 +49,7 @@ class BluetoothService {
         }
     }
 
-    public async configureProperties() {
+    public async configureProperties(): Promise<void> {
         const bluezProxyObject = await this.systemBus.getProxyObject('org.bluez', '/org/bluez/hci0')
         const properties = bluezProxyObject.getInterface('org.freedesktop.DBus.Properties')
 
@@ -59,7 +59,7 @@ class BluetoothService {
         await properties.Set('org.bluez.Adapter1', 'Pairable', new dbus.Variant('b', true))
     }
 
-    public disconnect() {
+    public disconnect(): void {
         this.systemBus.disconnect()
     }
 
@@ -71,8 +71,8 @@ class BluetoothService {
 
         const managedObjects = await this.objectManager.GetManagedObjects()
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const [path, interfaces] of Object.entries(managedObjects) as [string, any][]) {
+        for (const [path, interfaces] of Object.entries(managedObjects)) {
+            // @ts-expect-error - The type of 'interfaces' is not well-defined, so we disable type checking here
             const deviceProps = interfaces['org.bluez.Device1']
             if (deviceProps?.Connected?.value) {
                 return {
@@ -86,14 +86,14 @@ class BluetoothService {
         return null
     }
 
-    private async watchConnectedDevices() {
+    private async watchConnectedDevices(): Promise<void> {
         if (!this.objectManager) {
             console.error('ObjectManager not initialized')
-            return null
+            return
         }
         const managedObjects = await this.objectManager.GetManagedObjects()
 
-        const watchDevice = async (path: string) => {
+        const watchDevice = async (path: string): Promise<void> => {
             if (this.watchedDevicePaths.has(path)) {
                 return
             }
@@ -102,36 +102,42 @@ class BluetoothService {
             const deviceProxyObject = await this.systemBus.getProxyObject('org.bluez', path)
             const deviceProperties = deviceProxyObject.getInterface('org.freedesktop.DBus.Properties')
 
-            deviceProperties.on('PropertiesChanged', async (iface: string) => {
+            deviceProperties.on('PropertiesChanged', (iface: string) => {
                 if (iface === 'org.bluez.Device1') {
-                    this.updateConnectedDevice(await this.getConnectedDevice())
+                    void (async () => {
+                        this.updateConnectedDevice(await this.getConnectedDevice())
+                    })()
                 }
             })
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const [path, interfaces] of Object.entries(managedObjects) as [string, any][]) {
+        for (const [path, interfaces] of Object.entries(managedObjects)) {
+            // @ts-expect-error - The type of 'interfaces' is not well-defined, so we disable type checking here
             if (interfaces['org.bluez.Device1']) {
                 await watchDevice(path)
             }
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.objectManager.on('InterfacesAdded', async (path: string, interfaces: any) => {
+        this.objectManager.on('InterfacesAdded', (path: string, interfaces: any) => {
             if (interfaces['org.bluez.Device1']) {
-                await watchDevice(path)
-                this.updateConnectedDevice(await this.getConnectedDevice())
+                void (async () => {
+                    await watchDevice(path)
+                    this.updateConnectedDevice(await this.getConnectedDevice())
+                })()
             }
         })
 
-        this.objectManager.on('InterfacesRemoved', async (_path: string, interfaces: string[]) => {
+        this.objectManager.on('InterfacesRemoved', (_path: string, interfaces: readonly string[]) => {
             if (interfaces.includes('org.bluez.Device1')) {
-                this.updateConnectedDevice(await this.getConnectedDevice())
+                void (async () => {
+                    this.updateConnectedDevice(await this.getConnectedDevice())
+                })()
             }
         })
     }
 
-    private updateConnectedDevice(connectedDevice: BluetoothDevice | null) {
+    private updateConnectedDevice(connectedDevice: Readonly<BluetoothDevice> | null): void {
         const previousDevice = this.connectedDevice
         if (BluetoothService.areDevicesEqual(previousDevice, connectedDevice)) {
             return
@@ -139,13 +145,15 @@ class BluetoothService {
 
         this.connectedDevice = connectedDevice
         this.getWindow()?.webContents.send('bluetooth:connectedDevice', connectedDevice)
-        this.notifyConnectedDeviceChanged(connectedDevice, previousDevice)
+        this.notifyConnectedDeviceChanged(connectedDevice, previousDevice).catch((err: unknown) => {
+            console.error('Failed to notify connected device change:', err)
+        })
     }
 
     private async notifyConnectedDeviceChanged(
-        connectedDevice: BluetoothDevice | null,
-        previousDevice: BluetoothDevice | null
-    ) {
+        connectedDevice: Readonly<BluetoothDevice> | null,
+        previousDevice: Readonly<BluetoothDevice> | null
+    ): Promise<void> {
         for (const listener of this.deviceChangeListeners) {
             try {
                 await listener(connectedDevice, previousDevice)
@@ -155,7 +163,10 @@ class BluetoothService {
         }
     }
 
-    private static areDevicesEqual(deviceA: BluetoothDevice | null, deviceB: BluetoothDevice | null) {
+    private static areDevicesEqual(
+        deviceA: Readonly<BluetoothDevice> | null,
+        deviceB: Readonly<BluetoothDevice> | null
+    ): boolean {
         if (!deviceA || !deviceB) {
             return false
         }
@@ -167,5 +178,4 @@ class BluetoothService {
         )
     }
 }
-/* eslint-enable new-cap */
 export default BluetoothService
