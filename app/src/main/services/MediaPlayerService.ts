@@ -1,15 +1,15 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain, type BrowserWindow } from 'electron'
 
 import type { TrackInfo } from '@shared/types/mediaPlayer'
 
 import * as dbus from 'dbus-next'
 
-/* eslint-disable new-cap */
+/* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 class MediaPlayerService {
-    private getWindow: () => BrowserWindow | null
-    private connectionStatus: boolean = false
+    private readonly getWindow: () => BrowserWindow | null
+    private connectionStatus = false
 
-    private systemBus: dbus.MessageBus
+    private readonly systemBus: dbus.MessageBus
     private objManager: dbus.ClientInterface | null = null
     private objects: any // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -17,14 +17,14 @@ class MediaPlayerService {
     private mediaPlayerInterface: any = null // eslint-disable-line @typescript-eslint/no-explicit-any
     private mediaPlayerPath: string | null = null
 
-    private isInitialized: boolean = false
+    private isInitialized = false
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
         this.systemBus = dbus.systemBus()
     }
 
-    public async initialize() {
+    public async initialize(): Promise<void> {
         const bluez = await this.systemBus.getProxyObject('org.bluez', '/')
         this.objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
         if (!this.isInitialized) {
@@ -35,7 +35,7 @@ class MediaPlayerService {
         await this.reload()
     }
 
-    public async reload() {
+    public async reload(): Promise<void> {
         if (!this.objManager) {
             return
         }
@@ -51,7 +51,7 @@ class MediaPlayerService {
         }
     }
 
-    public registerIpcHandlers() {
+    public registerIpcHandlers(): void {
         ipcMain.handle('mediaPlayer:getConnectionStatus', () => {
             return this.connectionStatus
         })
@@ -62,11 +62,15 @@ class MediaPlayerService {
         })
 
         ipcMain.handle('mediaPlayer:getPlaybackStatus', async () => {
-            return (await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Status'))?.value ?? null
+            const status = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Status')
+            const value: string | undefined = status?.value
+            return value ?? null
         })
 
         ipcMain.handle('mediaPlayer:getPosition', async () => {
-            return (await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Position'))?.value ?? null
+            const position = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Position')
+            const value: number | undefined = position?.value
+            return value ?? null
         })
 
         ipcMain.handle('mediaPlayer:play', async () => {
@@ -86,39 +90,39 @@ class MediaPlayerService {
         })
     }
 
-    public disconnect() {
+    public disconnect(): void {
         this.systemBus.disconnect()
     }
 
-    private setConnected(connected: boolean) {
+    private setConnected(connected: boolean): void {
         if (this.connectionStatus !== connected) {
             this.connectionStatus = connected
             this.getWindow()?.webContents.send('mediaPlayer:connectionStatus', connected)
         }
     }
 
-    private listenForConnectionChanges() {
+    private listenForConnectionChanges(): void {
         if (!this.objManager) return
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.objManager.on('InterfacesAdded', (path: string, interfaces: any) => {
             if (interfaces['org.bluez.MediaPlayer1']) {
-                this.mediaPlayerHandler(path).catch(err => {
+                this.mediaPlayerHandler(path).catch((err: unknown) => {
                     console.error('Failed to handle MediaPlayer interface addition:', err)
                 })
             }
         })
 
-        this.objManager.on('InterfacesRemoved', (_path: string, interfaces: string[]) => {
+        this.objManager.on('InterfacesRemoved', (_path: string, interfaces: readonly string[]) => {
             if (interfaces.includes('org.bluez.MediaPlayer1')) {
-                this.reload().catch(err => {
+                this.reload().catch((err: unknown) => {
                     console.error('Failed to reload MediaPlayerService:', err)
                 })
             }
         })
     }
 
-    private async mediaPlayerHandler(path: string) {
+    private async mediaPlayerHandler(path: string): Promise<void> {
         if (this.mediaPlayerPath === path && this.mediaPlayerProps && this.mediaPlayerInterface) {
             return
         }
@@ -142,7 +146,7 @@ class MediaPlayerService {
         })
     }
 
-    private resetMediaPlayerState() {
+    private resetMediaPlayerState(): void {
         if (this.mediaPlayerProps) {
             this.mediaPlayerProps.removeAllListeners('PropertiesChanged')
         }
@@ -154,7 +158,7 @@ class MediaPlayerService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private sendMediaPlayerData(data: any) {
+    private sendMediaPlayerData(data: any): void {
         if (data.Track) {
             const track = data.Track
             this.getWindow()?.webContents.send(
@@ -188,8 +192,8 @@ class MediaPlayerService {
     /**
      * This is a hack to handle weird track info formats from certain players (like Spotify's "Listening on ...").
      */
-    private static cleanTrackInfo(trackInfo: TrackInfo): TrackInfo {
-        const cleanTrackInfo = trackInfo
+    private static cleanTrackInfo(trackInfo: Readonly<TrackInfo>): TrackInfo {
+        const cleanTrackInfo = { ...trackInfo }
 
         if (trackInfo.artist?.toLowerCase().includes('listening on')) {
             const titleSegments = trackInfo.title?.split('•')
@@ -200,13 +204,13 @@ class MediaPlayerService {
 
         if (cleanTrackInfo.artist?.toLowerCase().includes('shuffle')) {
             const artistSegments = cleanTrackInfo.artist.split('•')
-            cleanTrackInfo.artist = artistSegments?.[0]?.trim() ?? cleanTrackInfo.artist
+            cleanTrackInfo.artist = artistSegments[0]?.trim() ?? cleanTrackInfo.artist
             return cleanTrackInfo
         }
 
         if (cleanTrackInfo.artist?.toLowerCase().includes('video')) {
             const artistSegments = cleanTrackInfo.artist.split('•')
-            cleanTrackInfo.artist = artistSegments?.[0]?.trim() ?? cleanTrackInfo.artist
+            cleanTrackInfo.artist = artistSegments[0]?.trim() ?? cleanTrackInfo.artist
             return cleanTrackInfo
         }
 
@@ -215,5 +219,3 @@ class MediaPlayerService {
 }
 
 export default MediaPlayerService
-
-/* eslint-enable new-cap */

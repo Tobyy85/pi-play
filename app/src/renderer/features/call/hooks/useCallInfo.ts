@@ -1,10 +1,10 @@
 import type { CallInfo } from '@shared/types/call'
 
-import useIpcData from '@renderer/hooks/useIpcData'
+import useIpcData, { type UseIpcDataReturn } from '@renderer/hooks/useIpcData'
 
-const useCallInfo = () => {
+const useCallInfo = (): UseIpcDataReturn<CallInfo> => {
     return useIpcData<CallInfo>(
-        () => window.api.call.callInfo.get(),
+        async () => await window.api.call.callInfo.get(),
         callback => window.api.call.callInfo.subscribe(callback)
     )
 }

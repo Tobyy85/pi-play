@@ -45,7 +45,7 @@ const Camera = ({ deviceId, isMirrored, setError, ...videoProps }: CameraProps) 
             }
         }
 
-        startCamera()
+        void startCamera()
 
         return () => {
             isMounted = false
@@ -71,7 +71,7 @@ const Camera = ({ deviceId, isMirrored, setError, ...videoProps }: CameraProps) 
                     {...videoProps}
                     ref={videoRef}
                     className={`size-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}
-                        ${videoProps.className || ''}`}
+                        ${videoProps.className ?? ''}`}
                 />
             </div>
         </>

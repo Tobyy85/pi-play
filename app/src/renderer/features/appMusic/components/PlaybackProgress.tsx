@@ -32,7 +32,7 @@ const PlaybackProgress = ({ position, duration, status }: PlaybackProgressProps)
 
     return (
         <div className='flex w-full items-center justify-center gap-4'>
-            <span className='text-xl font-bold text-white/75'>{formatTime(currentPosition || 0)}</span>
+            <span className='text-xl font-bold text-white/75'>{formatTime(currentPosition ?? 0)}</span>
             <div className='h-3 w-full overflow-hidden rounded-full bg-white/25'>
                 {currentPosition !== null && duration !== null && (
                     <div
@@ -44,7 +44,7 @@ const PlaybackProgress = ({ position, duration, status }: PlaybackProgressProps)
                     ></div>
                 )}
             </div>
-            <span className='text-xl font-bold text-white/75'>{formatTime(duration || 0)}</span>
+            <span className='text-xl font-bold text-white/75'>{formatTime(duration ?? 0)}</span>
         </div>
     )
 }

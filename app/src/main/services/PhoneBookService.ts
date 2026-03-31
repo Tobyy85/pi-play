@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain, type BrowserWindow } from 'electron'
 import { readFileSync, unlinkSync } from 'fs'
 
 import * as dbus from 'dbus-next'
@@ -7,20 +7,20 @@ import { parseVCards } from 'vcard4-ts'
 import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
 import { formatPhoneNumber, normalizePhoneNumber } from '@shared/utils/phoneBook'
 
-/* eslint-disable new-cap */
+/* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 class PhoneBookService {
-    private getWindow: () => BrowserWindow | null
-    private connectionStatus: boolean = false
+    private readonly getWindow: () => BrowserWindow | null
+    private connectionStatus = false
 
-    private sessionBus: dbus.MessageBus
-    private systemBus: dbus.MessageBus
+    private readonly sessionBus: dbus.MessageBus
+    private readonly systemBus: dbus.MessageBus
     private sessionPath: string | null = null
-    private watchedDevicePaths = new Set<string>()
+    private readonly watchedDevicePaths: Set<string> = new Set()
 
     private contacts: Contact[] | null = null
-    private loadingContacts: boolean = false
+    private loadingContacts = false
     private callHistory: CallHistoryEntry[] | null = null
-    private loadingCallHistory: boolean = false
+    private loadingCallHistory = false
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
@@ -28,7 +28,7 @@ class PhoneBookService {
         this.systemBus = dbus.systemBus()
     }
 
-    public async initialize() {
+    public async initialize(): Promise<void> {
         try {
             const deviceAddress = await this.getDeviceAddress()
             if (!deviceAddress) {
@@ -51,11 +51,11 @@ class PhoneBookService {
         }
     }
 
-    public async reload() {
+    public async reload(): Promise<void> {
         await this.initialize()
     }
 
-    public registerIpcHandlers() {
+    public registerIpcHandlers(): void {
         ipcMain.handle('phoneBook:getContacts', () => {
             return this.contacts
         })
@@ -73,13 +73,13 @@ class PhoneBookService {
         })
     }
 
-    public async disconnect() {
+    public async disconnect(): Promise<void> {
         await this.removeSession()
         this.sessionBus.disconnect()
         this.systemBus.disconnect()
     }
 
-    private async pullContacts() {
+    private async pullContacts(): Promise<void> {
         this.updateLoadingContacts(true)
         if (!this.sessionPath) throw new Error('No OBEX session established')
 
@@ -89,7 +89,7 @@ class PhoneBookService {
         await pbap.Select('int', 'pb')
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const [transferPath, properties]: [string, Record<string, any>] = await pbap.PullAll('', {})
+        const [transferPath, properties]: [string, { [key: string]: any }] = await pbap.PullAll('', {})
         const filename: string = properties.Filename?.value
 
         if (!filename) {
@@ -111,7 +111,7 @@ class PhoneBookService {
         }
     }
 
-    private async pullHistory() {
+    private async pullHistory(): Promise<void> {
         if (!this.sessionPath) throw new Error('No OBEX session established')
         this.updateLoadingCallHistory(true)
 
@@ -121,7 +121,7 @@ class PhoneBookService {
         await pbap.Select('int', 'cch')
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const [transferPath, properties]: [string, Record<string, any>] = await pbap.PullAll('', {})
+        const [transferPath, properties]: [string, { [key: string]: any }] = await pbap.PullAll('', {})
         const filename: string = properties.Filename?.value
 
         if (!filename) {
@@ -146,16 +146,16 @@ class PhoneBookService {
         const transferObj = await this.sessionBus.getProxyObject('org.bluez.obex', transferPath)
         const transferProps = transferObj.getInterface('org.freedesktop.DBus.Properties')
 
-        return new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             const TIMEOUT_DELAY = 30
             const timeout = setTimeout(() => {
                 reject(new Error(`Transfer timeout after ${TIMEOUT_DELAY}s`))
             }, TIMEOUT_DELAY * 1000)
 
-            const handleStatusUpdate = (status: string) => {
+            const handleStatusUpdate = (status: string): void => {
                 if (status === 'complete') {
                     clearTimeout(timeout)
-                    resolve()
+                    resolve(null)
                 } else if (status === 'error') {
                     clearTimeout(timeout)
                     reject(new Error('Transfer failed'))
@@ -180,7 +180,7 @@ class PhoneBookService {
             const obexClient = client.getInterface('org.bluez.obex.Client1')
 
             const sessionPath: string = await obexClient.CreateSession(deviceAddress, {
-                Target: new dbus.Variant('s', 'pbap'),
+                Target: new dbus.Variant('s', 'pbap'), // eslint-disable-line @typescript-eslint/naming-convention
             })
 
             return sessionPath
@@ -190,7 +190,7 @@ class PhoneBookService {
         }
     }
 
-    private async removeSession() {
+    private async removeSession(): Promise<void> {
         if (!this.sessionPath) return
 
         try {
@@ -209,14 +209,14 @@ class PhoneBookService {
         const objManager = bluez.getInterface('org.freedesktop.DBus.ObjectManager')
         const managedObjects = await objManager.GetManagedObjects()
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const [path, interfaces] of Object.entries(managedObjects) as [string, Record<string, any>][]) {
+        for (const [path, interfaces] of Object.entries(managedObjects)) {
+            // @ts-expect-error - The type of 'interfaces' is not well-defined, so we disable type checking here
             const deviceProps = interfaces['org.bluez.Device1']
 
             if (deviceProps) {
                 const isConnected = deviceProps.Connected.value
-                const address = deviceProps.Address.value
-                const uuids = deviceProps.UUIDs?.value || []
+                const address: string = deviceProps.Address.value
+                const uuids = deviceProps.UUIDs?.value || [] // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing
 
                 // check if contains PBAP UUID (0000112f-0000-1000-8000-00805f9b34fb)
                 const supportsPBAP = uuids.some((uuid: string) => uuid.toLowerCase().includes('112f'))
@@ -235,7 +235,7 @@ class PhoneBookService {
         return null
     }
 
-    private async watchDeviceConnection(devicePath: string) {
+    private async watchDeviceConnection(devicePath: string): Promise<void> {
         if (this.watchedDevicePaths.has(devicePath)) {
             return
         }
@@ -246,43 +246,45 @@ class PhoneBookService {
         const propertiesInterface = deviceObj.getInterface('org.freedesktop.DBus.Properties')
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        propertiesInterface.on('PropertiesChanged', async (iface: string, changed: any) => {
-            if (iface === 'org.bluez.Device1' && 'Connected' in changed) {
-                const isConnected = changed.Connected.value
-                if (isConnected) {
-                    this.updateConnectionStatus(true)
-                    await this.initialize()
-                } else {
-                    this.updateConnectionStatus(false)
-                    this.updateContacts(null)
-                    this.updateCallHistory(null)
+        propertiesInterface.on('PropertiesChanged', (iface: string, changed: any) => {
+            void (async () => {
+                if (iface === 'org.bluez.Device1' && 'Connected' in changed) {
+                    const isConnected = changed.Connected.value
+                    if (isConnected) {
+                        this.updateConnectionStatus(true)
+                        await this.initialize()
+                    } else {
+                        this.updateConnectionStatus(false)
+                        this.updateContacts(null)
+                        this.updateCallHistory(null)
+                    }
                 }
-            }
+            })()
         })
     }
 
-    private updateConnectionStatus(isConnected: boolean) {
+    private updateConnectionStatus(isConnected: boolean): void {
         this.connectionStatus = isConnected
         this.getWindow()?.webContents.send('phoneBook:connectionStatus', isConnected)
     }
 
-    private updateContacts(contacts: Contact[] | null) {
-        this.contacts = contacts
+    private updateContacts(contacts: readonly Readonly<Contact>[] | null): void {
+        this.contacts = contacts ? [...contacts] : null
         this.getWindow()?.webContents.send('phoneBook:contacts', contacts)
     }
 
-    private updateCallHistory(callHistory: CallHistoryEntry[] | null) {
-        this.callHistory = callHistory
+    private updateCallHistory(callHistory: readonly Readonly<CallHistoryEntry>[] | null): void {
+        this.callHistory = callHistory ? [...callHistory] : null
         this.getWindow()?.webContents.send('phoneBook:callHistory', callHistory)
     }
 
-    private updateLoadingContacts(isLoading: boolean) {
+    private updateLoadingContacts(isLoading: boolean): void {
         if (this.loadingContacts === isLoading) return
         this.loadingContacts = isLoading
         this.getWindow()?.webContents.send('phoneBook:loadingContacts', isLoading)
     }
 
-    private updateLoadingCallHistory(isLoading: boolean) {
+    private updateLoadingCallHistory(isLoading: boolean): void {
         if (this.loadingCallHistory === isLoading) return
         this.loadingCallHistory = isLoading
         this.getWindow()?.webContents.send('phoneBook:loadingCallHistory', isLoading)
@@ -299,11 +301,11 @@ class PhoneBookService {
         return cards.vCards
             .filter(card => Boolean(card.TEL?.[0]?.value))
             .map(card => {
-                const name = card.FN[0]?.value
+                const name = card.FN[0].value
                 const phoneNumber = card.TEL?.[0]?.value
                 const photo = card.PHOTO?.[0]?.value
                 return {
-                    name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
+                    name: name || formatPhoneNumber(phoneNumber ?? ''),
                     phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
                     photo: photo ?? undefined, // eslint-disable-line no-undefined
                 }
@@ -319,14 +321,15 @@ class PhoneBookService {
         }
 
         return cards.vCards.map(card => {
-            const name = card.FN[0]?.value
+            const name = card.FN[0].value
             const phoneNumber = card.TEL?.[0]?.value
             const irmcCallDateTime = card.unparseable?.find(line => line.startsWith('X-IRMC-CALL-DATETIME'))
             const extractedCallDateTime = irmcCallDateTime?.split(';')[1] ?? ''
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion
             const [type, time] = extractedCallDateTime.split(':') as [CallHistoryEntry['type'], string]
 
             return {
-                name: (name || formatPhoneNumber(phoneNumber ?? '')) ?? 'Unknown',
+                name: name || formatPhoneNumber(phoneNumber ?? ''),
                 phoneNumber: normalizePhoneNumber(phoneNumber ?? ''),
                 dateTime: time,
                 type,
@@ -334,6 +337,5 @@ class PhoneBookService {
         })
     }
 }
-/* eslint-enable new-cap */
 
 export default PhoneBookService

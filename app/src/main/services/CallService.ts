@@ -1,26 +1,26 @@
 import type { CallInfo } from '@shared/types/call'
-import { BrowserWindow, ipcMain } from 'electron'
+import { ipcMain, type BrowserWindow } from 'electron'
 
 import * as dbus from 'dbus-next'
 
-/* eslint-disable new-cap */
+/* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 class CallService {
-    private getWindow: () => BrowserWindow | null
+    private readonly getWindow: () => BrowserWindow | null
 
-    private systemBus: dbus.MessageBus
+    private readonly systemBus: dbus.MessageBus
     private ofonoManager: any // eslint-disable-line @typescript-eslint/no-explicit-any
     private voiceCallManager: any // eslint-disable-line @typescript-eslint/no-explicit-any
     private callInterface: any // eslint-disable-line @typescript-eslint/no-explicit-any
 
-    private isInitialized: boolean = false
-    private watchedModemPaths = new Set<string>()
+    private isInitialized = false
+    private readonly watchedModemPaths: Set<string> = new Set()
 
     constructor(getWindow: () => BrowserWindow | null) {
         this.getWindow = getWindow
         this.systemBus = dbus.systemBus()
     }
 
-    public async initialize() {
+    public async initialize(): Promise<void> {
         try {
             if (!this.ofonoManager) {
                 const obj = await this.systemBus.getProxyObject('org.ofono', '/')
@@ -30,7 +30,7 @@ class CallService {
             if (!this.isInitialized) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 this.ofonoManager.on('ModemAdded', (path: string, properties: any) => {
-                    this.handleModem(path, properties).catch(err => {
+                    this.handleModem(path, properties).catch((err: unknown) => {
                         console.error('Failed to handle added modem:', err)
                     })
                 })
@@ -43,7 +43,7 @@ class CallService {
         }
     }
 
-    public async reload() {
+    public async reload(): Promise<void> {
         if (!this.ofonoManager) {
             return
         }
@@ -66,7 +66,7 @@ class CallService {
         }
     }
 
-    public registerIpcHandlers() {
+    public registerIpcHandlers(): void {
         ipcMain.handle('call:getCallInfo', async () => {
             const properties = await this.callInterface?.GetProperties()
             const callInfo: CallInfo = properties
@@ -87,12 +87,12 @@ class CallService {
         })
     }
 
-    public disconnect() {
+    public disconnect(): void {
         this.systemBus.disconnect()
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async handleModem(path: string, properties: any) {
+    private async handleModem(path: string, properties: any): Promise<void> {
         await this.watchModemProperties(path)
         const isOnline = properties?.Online?.value
         const hasVoiceCallManager = properties?.Interfaces?.value?.includes('org.ofono.VoiceCallManager')
@@ -102,7 +102,7 @@ class CallService {
         }
     }
 
-    private async setupModem(path: string) {
+    private async setupModem(path: string): Promise<void> {
         const modemObj = await this.systemBus.getProxyObject('org.ofono', path)
         this.voiceCallManager = modemObj.getInterface('org.ofono.VoiceCallManager')
         if (!this.voiceCallManager) {
@@ -132,7 +132,7 @@ class CallService {
         })
     }
 
-    private async watchModemProperties(path: string) {
+    private async watchModemProperties(path: string): Promise<void> {
         if (this.watchedModemPaths.has(path)) {
             return
         }
@@ -142,8 +142,10 @@ class CallService {
         try {
             const modemInterface = modemObj.getInterface('org.ofono.Modem')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            modemInterface.on('PropertyChanged', async (property: string, value: any) => {
-                await this.handleModemPropertyChanged(path, { [property]: value })
+            modemInterface.on('PropertyChanged', (property: string, value: any) => {
+                void (async () => {
+                    await this.handleModemPropertyChanged(path, { [property]: value })
+                })()
             })
         } catch (err) {
             console.warn(`org.ofono.Modem signal watcher unavailable on ${path}:`, err)
@@ -152,12 +154,14 @@ class CallService {
         try {
             const propertiesInterface = modemObj.getInterface('org.freedesktop.DBus.Properties')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            propertiesInterface.on('PropertiesChanged', async (iface: string, changed: any) => {
+            propertiesInterface.on('PropertiesChanged', (iface: string, changed: any) => {
                 if (iface !== 'org.ofono.Modem') {
                     return
                 }
 
-                await this.handleModemPropertyChanged(path, changed)
+                void (async () => {
+                    await this.handleModemPropertyChanged(path, changed)
+                })()
             })
         } catch (err) {
             console.warn(`No modem property watcher available for ${path}:`, err)
@@ -165,7 +169,7 @@ class CallService {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private async handleModemPropertyChanged(path: string, changed: any) {
+    private async handleModemPropertyChanged(path: string, changed: any): Promise<void> {
         const isOnline = changed?.Online?.value
         const hasVoiceCallManager = changed?.Interfaces?.value?.includes('org.ofono.VoiceCallManager')
 
@@ -174,7 +178,7 @@ class CallService {
         }
     }
 
-    private listenToCallPropertyChanges() {
+    private listenToCallPropertyChanges(): void {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.callInterface.on('PropertyChanged', async (property: string, value: any) => {
             let callInfo: CallInfo
@@ -205,6 +209,5 @@ class CallService {
         }
     }
 }
-/* eslint-enable new-cap */
 
 export default CallService

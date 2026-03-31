@@ -5,9 +5,9 @@ import { useCallHistory } from '@renderer/features/appPhone/store/useCallHistory
 
 const CallHistory = () => {
     const callHistory = useCallHistory()
-    const { data: loadingCallHistory } = useLoadingCallHistory()
+    const { data: isLoadingCallHistory } = useLoadingCallHistory()
 
-    if (loadingCallHistory && (!callHistory || callHistory.length === 0)) {
+    if (isLoadingCallHistory && (!callHistory || callHistory.length === 0)) {
         return (
             <div className='flex h-full items-center justify-center'>
                 <span className='text-2xl text-white'>Loading call history...</span>

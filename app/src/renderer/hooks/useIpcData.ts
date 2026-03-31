@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState, type DependencyList } from 'r
 type UnsubscribeFunction = () => void
 type SubscribeFunction<T> = (callback: (data: T) => void) => UnsubscribeFunction
 
-type UseIpcDataReturn<T> = {
+export interface UseIpcDataReturn<T> {
     data: T | null
     isLoading: boolean
     error: string | null
@@ -40,7 +40,7 @@ const useIpcData = <T>(
     }, [])
 
     useEffect(() => {
-        void refresh() // eslint-disable-line no-void
+        void refresh()
     }, [refresh, ...deps]) // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {

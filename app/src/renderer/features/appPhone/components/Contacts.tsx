@@ -5,9 +5,9 @@ import { useContacts } from '@renderer/features/appPhone/store/usePhoneBookStore
 
 const Contacts = () => {
     const contacts = useContacts()
-    const { data: loadingContacts } = useLoadingContacts()
+    const { data: isLoadingContacts } = useLoadingContacts()
 
-    if (loadingContacts && (!contacts || contacts.length === 0)) {
+    if (isLoadingContacts && (!contacts || contacts.length === 0)) {
         return (
             <div className='flex h-full items-center justify-center'>
                 <span className='text-2xl text-white'>Loading contacts...</span>

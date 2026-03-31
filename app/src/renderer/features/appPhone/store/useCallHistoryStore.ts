@@ -40,6 +40,7 @@ export const useCallHistoryStore = create<CallHistoryStore>((set, get) => ({
         initializePromise = (async () => {
             await get().refreshCallHistory()
 
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             if (!callHistoryUnsubscribe) {
                 callHistoryUnsubscribe = window.api.phoneBook.callHistory.subscribe(callHistory => {
                     set({ callHistory })
@@ -56,7 +57,8 @@ export const useCallHistoryStore = create<CallHistoryStore>((set, get) => ({
         }
     },
 }))
-useCallHistoryStore.getState().initialize()
+
+void useCallHistoryStore.getState().initialize()
 
 export const useCallHistory = (): CallHistoryEntry[] | null => {
     return useCallHistoryStore(state => state.callHistory)

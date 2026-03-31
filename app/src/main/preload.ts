@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
 
 import type { ArduinoData } from '@shared/types/arduino'
 import type { BluetoothDevice } from '@shared/types/bluetooth'
@@ -8,8 +8,10 @@ import type { MapDownloadRequest } from '@shared/types/maps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
 import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 const subscribeToChannel = <T>(channel: string, callback: (data: T) => void) => {
-    const cb = (_event: IpcRendererEvent, data: T) => {
+    // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+    const cb = (_event: Readonly<IpcRendererEvent>, data: T): void => {
         callback(data)
     }
     ipcRenderer.on(channel, cb)
@@ -18,10 +20,14 @@ const subscribeToChannel = <T>(channel: string, callback: (data: T) => void) => 
     }
 }
 
-const generateDataHandler = <T>(getChannel: string, subscribeChannel: string) => {
+interface DataHandler<T> {
+    get: () => Promise<T>
+    subscribe: (callback: (data: T) => void) => () => void
+}
+const generateDataHandler = <T>(getChannel: string, subscribeChannel: string): DataHandler<T> => {
     return {
-        get: (): Promise<T> => {
-            return ipcRenderer.invoke(getChannel)
+        get: async (): Promise<T> => {
+            return await ipcRenderer.invoke(getChannel) // eslint-disable-line @typescript-eslint/no-unsafe-return
         },
         subscribe: (callback: (data: T) => void): (() => void) => {
             return subscribeToChannel(subscribeChannel, callback)
@@ -31,14 +37,15 @@ const generateDataHandler = <T>(getChannel: string, subscribeChannel: string) =>
 
 const electronApi = {
     arduino: {
-        subscribeToData: (callback: (arduinoData: ArduinoData) => void): (() => void) => {
+        subscribeToData: (callback: (arduinoData: Readonly<ArduinoData>) => void): (() => void) => {
             return subscribeToChannel('arduino:change', callback)
         },
         subscribeToSensorId: (
             sensorId: ArduinoData['sensorId'],
             callback: (value: ArduinoData['value']) => void
         ): (() => void) => {
-            const handler = (_event: IpcRendererEvent, data: ArduinoData) => {
+            // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
+            const handler = (_event: Readonly<IpcRendererEvent>, data: Readonly<ArduinoData>): void => {
                 if (data.sensorId === sensorId) {
                     callback(data.value)
                 }
@@ -48,19 +55,19 @@ const electronApi = {
                 ipcRenderer.off('arduino:change', handler)
             }
         },
-        requestSensorValue: (sensorId: string): Promise<ArduinoData> => {
-            return ipcRenderer.invoke('arduino:requestSensorValue', sensorId)
+        requestSensorValue: async (sensorId: string): Promise<ArduinoData> => {
+            return await ipcRenderer.invoke('arduino:requestSensorValue', sensorId) // eslint-disable-line @typescript-eslint/no-unsafe-return
         },
     },
     gps: {
-        subscribe: (callback: (gpsData: GPSData) => void): (() => void) => {
+        subscribe: (callback: (gpsData: Readonly<GPSData>) => void): (() => void) => {
             return subscribeToChannel('gps:change', callback)
         },
-        getData: (): Promise<GPSData> => {
-            return ipcRenderer.invoke('gps:getData')
+        getData: async (): Promise<GPSData> => {
+            return await ipcRenderer.invoke('gps:getData') // eslint-disable-line @typescript-eslint/no-unsafe-return
         },
-        getConnectionStatus: (): Promise<boolean> => {
-            return ipcRenderer.invoke('gps:getConnectionStatus')
+        getConnectionStatus: async (): Promise<boolean> => {
+            return await ipcRenderer.invoke('gps:getConnectionStatus') // eslint-disable-line @typescript-eslint/no-unsafe-return
         },
     },
     bluetooth: {
@@ -97,13 +104,13 @@ const electronApi = {
     },
     call: {
         answer: async () => {
-            return await ipcRenderer.invoke('call:answer')
+            await ipcRenderer.invoke('call:answer')
         },
         hangup: async () => {
-            return await ipcRenderer.invoke('call:hangup')
+            await ipcRenderer.invoke('call:hangup')
         },
         dial: async (phoneNumber: string) => {
-            return await ipcRenderer.invoke('call:dial', phoneNumber)
+            await ipcRenderer.invoke('call:dial', phoneNumber)
         },
         callInfo: generateDataHandler<CallInfo>('call:getCallInfo', 'call:info'),
     },
@@ -127,7 +134,7 @@ const electronApi = {
         ),
     },
     maps: {
-        downloadArea: async (request: MapDownloadRequest) => {
+        downloadArea: async (request: Readonly<MapDownloadRequest>) => {
             await ipcRenderer.invoke('maps:downloadArea', request)
         },
     },

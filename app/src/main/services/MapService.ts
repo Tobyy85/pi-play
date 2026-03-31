@@ -6,9 +6,9 @@ import { tileServerUrl } from '@shared/config/maps'
 
 import type { MapDownloadRequest } from '@shared/types/maps'
 
-/* eslint-disable id-length, id-denylist */
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 class MapService {
-    public static initialize() {
+    public static initialize(): void {
         protocol.registerSchemesAsPrivileged([
             {
                 scheme: 'map',
@@ -22,13 +22,13 @@ class MapService {
         ])
     }
 
-    public static registerIpcHandlers() {
-        ipcMain.handle('maps:downloadArea', (event, request: MapDownloadRequest) => {
-            MapService.downloadArea(request)
+    public static registerIpcHandlers(): void {
+        ipcMain.handle('maps:downloadArea', async (event, request: Readonly<MapDownloadRequest>) => {
+            await MapService.downloadArea(request)
         })
     }
 
-    public static initializeProtocol() {
+    public static initializeProtocol(): void {
         protocol.handle('map', async request => {
             const url = new URL(request.url)
 
@@ -36,7 +36,7 @@ class MapService {
                 case 'tile': {
                     try {
                         const parts = url.pathname.split('/')
-                        const [_, z, x, y] = parts.map(part => parseInt(part, 10))
+                        const [_, z, x, y] = parts.map(part => parseInt(part, 10)) // eslint-disable-line id-denylist
 
                         const tile = await MapService.getTile(x, y, z)
                         if (tile) {
@@ -57,10 +57,12 @@ class MapService {
         })
     }
 
+    // eslint-disable-next-line id-denylist
     private static getTilePath(x: number, y: number, z: number): string {
-        return path.join(app.getPath('userData'), 'map-tiles', `${z}`, `${x}`, `${y}.pbf`)
+        return path.join(app.getPath('userData'), 'map-tiles', `${z}`, `${x}`, `${y}.pbf`) // eslint-disable-line id-denylist
     }
 
+    // eslint-disable-next-line id-denylist
     private static async getTile(x: number, y: number, z: number): Promise<Buffer | null> {
         const tilePath = MapService.getTilePath(x, y, z)
 
@@ -70,6 +72,7 @@ class MapService {
         return await MapService.downloadTile(x, y, z)
     }
 
+    // eslint-disable-next-line id-denylist
     private static async downloadTile(x: number, y: number, z: number): Promise<Buffer | null> {
         try {
             const apiKey = MapService.getApiKey()
@@ -98,33 +101,36 @@ class MapService {
 
             return tileData
         } catch (error) {
-            console.error(`Failed to download tile ${z}/${x}/${y}:`, error)
+            console.error(`Failed to download tile ${z}/${x}/${y}:`, error) // eslint-disable-line id-denylist
             return null
         }
     }
 
-    private static longitudeToTile(lon: number, zoom: number) {
-        return Math.floor(((lon + 180) / 360) * 2 ** zoom) // eslint-disable-line no-magic-numbers
+    private static longitudeToTile(lon: number, zoom: number): number {
+        return Math.floor(((lon + 180) / 360) * 2 ** zoom) // eslint-disable-line @typescript-eslint/no-magic-numbers
     }
 
-    private static latitudeToTile(lat: number, zoom: number) {
+    private static latitudeToTile(lat: number, zoom: number): number {
         return Math.floor(
-            ((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / // eslint-disable-line no-magic-numbers
+            ((1 - Math.log(Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)) / Math.PI) / // eslint-disable-line @typescript-eslint/no-magic-numbers
                 2) *
                 2 ** zoom
         )
     }
 
-    private static async downloadArea(request: MapDownloadRequest) {
+    private static async downloadArea(request: Readonly<MapDownloadRequest>): Promise<void> {
         const { minLat, minLon, maxLat, maxLon, minZoom, maxZoom } = request
 
+        // eslint-disable-next-line id-denylist
         for (let z = minZoom; z <= maxZoom; z++) {
             const minX = MapService.longitudeToTile(minLon, z)
             const maxX = MapService.longitudeToTile(maxLon, z)
             const minY = MapService.latitudeToTile(maxLat, z)
             const maxY = MapService.latitudeToTile(minLat, z)
 
+            // eslint-disable-next-line id-denylist
             for (let x = minX; x <= maxX; x++) {
+                // eslint-disable-next-line id-denylist
                 for (let y = minY; y <= maxY; y++) {
                     await MapService.downloadTile(x, y, z)
                 }
@@ -143,6 +149,5 @@ class MapService {
         return apiKey
     }
 }
-/* eslint-enable id-length, id-denylist */
 
 export default MapService

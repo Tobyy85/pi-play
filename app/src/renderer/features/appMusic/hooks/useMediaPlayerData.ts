@@ -1,21 +1,21 @@
-import useIpcData from '@renderer/hooks/useIpcData'
+import useIpcData, { type UseIpcDataReturn } from '@renderer/hooks/useIpcData'
 
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
 
-export const useTrackInfo = () =>
+export const useTrackInfo = (): UseIpcDataReturn<TrackInfo> =>
     useIpcData<TrackInfo>(
-        () => window.api.mediaPlayer.trackInfo.get(),
+        async () => await window.api.mediaPlayer.trackInfo.get(),
         callback => window.api.mediaPlayer.trackInfo.subscribe(callback)
     )
 
-export const usePlaybackStatus = () =>
+export const usePlaybackStatus = (): UseIpcDataReturn<Status> =>
     useIpcData<Status>(
-        () => window.api.mediaPlayer.playbackStatus.get(),
+        async () => await window.api.mediaPlayer.playbackStatus.get(),
         callback => window.api.mediaPlayer.playbackStatus.subscribe(callback)
     )
 
-export const usePosition = () =>
+export const usePosition = (): UseIpcDataReturn<Position> =>
     useIpcData<Position>(
-        () => window.api.mediaPlayer.position.get(),
+        async () => await window.api.mediaPlayer.position.get(),
         callback => window.api.mediaPlayer.position.subscribe(callback)
     )

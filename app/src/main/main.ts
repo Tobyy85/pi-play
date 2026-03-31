@@ -15,7 +15,7 @@ import PhoneBookService from '@main/services/PhoneBookService'
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
 const windowManager = new WindowManager()
-const getWindow = () => windowManager.getWindow()
+const getWindow = (): BrowserWindow | null => windowManager.getWindow()
 
 const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
@@ -31,6 +31,7 @@ bluetoothService.onConnectedDeviceChanged(async () => {
     await Promise.allSettled([mediaPlayerService.reload(), callService.reload(), phoneBookService.reload()])
 })
 
+/* eslint-disable @typescript-eslint/no-floating-promises */
 app.whenReady().then(() => {
     windowManager.createWindow()
 
@@ -70,6 +71,7 @@ app.on('before-quit', () => {
     phoneBookService.disconnect()
     bluetoothService.disconnect()
 })
+/* eslint-enable @typescript-eslint/no-floating-promises */
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

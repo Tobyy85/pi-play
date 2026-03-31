@@ -1,8 +1,8 @@
-import useIpcData from '@renderer/hooks/useIpcData'
+import useIpcData, { type UseIpcDataReturn } from '@renderer/hooks/useIpcData'
 
-const useConnectionStatus = () => {
+const useConnectionStatus = (): UseIpcDataReturn<boolean> => {
     return useIpcData<boolean>(
-        () => window.api.phoneBook.connectionStatus.get(),
+        async () => await window.api.phoneBook.connectionStatus.get(),
         callback => window.api.phoneBook.connectionStatus.subscribe(callback),
         false
     )
