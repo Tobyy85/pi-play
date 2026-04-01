@@ -6,8 +6,8 @@ const Sidebar = () => {
     return (
         <>
             <div
-                className='rounded-squircle flex h-full w-24 shrink-0 flex-col items-center gap-3 bg-black/50
-                    p-2 pb-4'
+                className='flex h-full w-24 shrink-0 flex-col items-center gap-3 rounded-4xl bg-black/50 p-2.5
+                    pb-4'
             >
                 <SidebarInfo />
                 <AppList />

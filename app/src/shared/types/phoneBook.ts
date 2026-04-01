@@ -3,3 +3,10 @@ export interface Contact {
     phoneNumber: string
     photo?: string
 }
+
+export interface CallHistoryEntry {
+    name: string
+    phoneNumber: string
+    dateTime: string
+    type: 'RECEIVED' | 'DIALED' | 'MISSED'
+}

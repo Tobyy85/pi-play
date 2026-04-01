@@ -23,14 +23,14 @@ const COLORS = {
     minorRoad: '#323C4E',
 }
 
-/* eslint-disable no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 export const MAP_STYLE: StyleSpecification = {
     version: 8,
     name: 'Dark Map Style',
     sources: {
         openmaptiles: {
             type: 'vector',
-            tiles: ['https://tiles.stadiamaps.com/data/openmaptiles/{z}/{x}/{y}.pbf'],
+            tiles: ['map://tile/{z}/{x}/{y}'],
             maxzoom: 14,
             attribution: '© OpenMapTiles © OpenStreetMap contributors',
         },

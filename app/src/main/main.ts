@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { app, BrowserWindow } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
@@ -7,22 +8,30 @@ import GPSService from '@main/services/GpsService'
 
 import BluetoothService from '@main/services/BluetoothService'
 import CallService from '@main/services/CallService'
+import MapService from '@main/services/MapService'
 import MediaPlayerService from '@main/services/MediaPlayerService'
 import PhoneBookService from '@main/services/PhoneBookService'
 
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
 const windowManager = new WindowManager()
-const getWindow = () => windowManager.getWindow()
+const getWindow = (): BrowserWindow | null => windowManager.getWindow()
 
 const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
 
-const bluetoothService = new BluetoothService()
+MapService.initialize()
+
+const bluetoothService = new BluetoothService(getWindow)
 const mediaPlayerService = new MediaPlayerService(getWindow)
 const callService = new CallService(getWindow)
-const phoneBookService = new PhoneBookService()
+const phoneBookService = new PhoneBookService(getWindow)
 
+bluetoothService.onConnectedDeviceChanged(async () => {
+    await Promise.allSettled([mediaPlayerService.reload(), callService.reload(), phoneBookService.reload()])
+})
+
+/* eslint-disable @typescript-eslint/no-floating-promises */
 app.whenReady().then(() => {
     windowManager.createWindow()
 
@@ -32,7 +41,8 @@ app.whenReady().then(() => {
     gpsService.registerIpcHandlers()
     gpsService.connect()
 
-    bluetoothService.configureProperties()
+    bluetoothService.registerIpcHandlers()
+    bluetoothService.initialize()
 
     mediaPlayerService.registerIpcHandlers()
     mediaPlayerService.initialize()
@@ -42,6 +52,9 @@ app.whenReady().then(() => {
 
     phoneBookService.registerIpcHandlers()
     phoneBookService.initialize()
+
+    MapService.registerIpcHandlers()
+    MapService.initializeProtocol()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -58,6 +71,7 @@ app.on('before-quit', () => {
     phoneBookService.disconnect()
     bluetoothService.disconnect()
 })
+/* eslint-enable @typescript-eslint/no-floating-promises */
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

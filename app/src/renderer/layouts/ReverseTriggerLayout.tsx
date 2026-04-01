@@ -17,10 +17,10 @@ const ReverseTriggerLayout = () => {
         if (isReversing) {
             if (location.pathname !== REVERSE_PATH) {
                 previousPath.current = location.pathname
-                navigate(REVERSE_PATH, { replace: true })
+                void navigate(REVERSE_PATH, { replace: true })
             }
         } else if (location.pathname === REVERSE_PATH && previousPath.current) {
-            navigate(previousPath.current, { replace: true })
+            void navigate(previousPath.current, { replace: true })
             previousPath.current = null
         }
     }, [isReversing, navigate, location.pathname])

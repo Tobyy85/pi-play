@@ -1,4 +1,4 @@
-/* eslint-disable no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-magic-numbers */
 export const normalizePhoneNumber = (phoneNumber: string): string => {
     const normalized = phoneNumber.replace(/\D/gu, '').slice(-9)
     return normalized

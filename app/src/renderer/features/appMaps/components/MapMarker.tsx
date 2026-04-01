@@ -5,9 +5,10 @@ import MarkerIcon from '@renderer/features/appMaps/assets/MarkerIcon'
 interface MapMarkerProps {
     longitude: number
     latitude: number
+    rotation: number
 }
 
-const MapMarker = ({ longitude, latitude }: MapMarkerProps) => {
+const MapMarker = ({ longitude, latitude, rotation }: MapMarkerProps) => {
     return (
         <>
             <Marker
@@ -15,6 +16,7 @@ const MapMarker = ({ longitude, latitude }: MapMarkerProps) => {
                 latitude={latitude}
                 anchor='center'
                 rotationAlignment='map'
+                rotation={rotation}
             >
                 <MarkerIcon className='size-10 fill-blue-400 stroke-white' />
             </Marker>

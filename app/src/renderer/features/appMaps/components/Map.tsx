@@ -6,9 +6,9 @@ import MapGL, { type MapRef } from 'react-map-gl/maplibre'
 import FollowModeButton from '@renderer/features/appMaps/components/FollowModeButton'
 import MapMarker from '@renderer/features/appMaps/components/MapMarker'
 
-import { MAP_STYLE } from '@shared/config/maps/mapStyle'
+import { MAP_STYLE } from '@shared/config/mapStyle'
 
-const DEFAULT_ZOOM = 15
+const DEFAULT_ZOOM = 16
 const PITCH = 45
 
 interface MapProps {
@@ -26,21 +26,21 @@ const Map = ({ latitude, longitude, course }: MapProps) => {
         bearing: course ?? 0,
         pitch: PITCH,
     })
-    const [followMode, setFollowMode] = useState(true)
+    const [isFollowMode, setIsFollowMode] = useState(true)
 
     const handleMove = useCallback((evt: { viewState: typeof viewState }) => {
         setViewState(evt.viewState)
     }, [])
 
     const handleMoveStart = () => {
-        if (followMode) {
-            setFollowMode(false)
+        if (isFollowMode) {
+            setIsFollowMode(false)
         }
     }
 
     const toggleFollowMode = () => {
-        setFollowMode(prev => !prev)
-        if (!followMode && latitude !== null && longitude !== null) {
+        setIsFollowMode(prev => !prev)
+        if (!isFollowMode && latitude !== null && longitude !== null) {
             setViewState(prev => ({
                 ...prev,
                 longitude,
@@ -53,7 +53,7 @@ const Map = ({ latitude, longitude, course }: MapProps) => {
     }
 
     useEffect(() => {
-        if (followMode && latitude !== null && longitude !== null) {
+        if (isFollowMode && latitude !== null && longitude !== null) {
             setViewState(prev => ({
                 ...prev,
                 longitude,
@@ -61,7 +61,7 @@ const Map = ({ latitude, longitude, course }: MapProps) => {
                 bearing: course ?? prev.bearing,
             }))
         }
-    }, [latitude, longitude, course, followMode])
+    }, [latitude, longitude, course, isFollowMode])
 
     return (
         <div className='relative h-full w-full'>
@@ -78,12 +78,13 @@ const Map = ({ latitude, longitude, course }: MapProps) => {
                     <MapMarker
                         latitude={latitude}
                         longitude={longitude}
+                        rotation={course ?? 0}
                     />
                 )}
             </MapGL>
 
             <FollowModeButton
-                followMode={followMode}
+                followMode={isFollowMode}
                 toggleFollowMode={toggleFollowMode}
             />
         </div>

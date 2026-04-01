@@ -13,6 +13,8 @@ const DisplayTime = () => {
     const [time, setTime] = useState(getCurrentFormattedTime())
 
     useEffect(() => {
+        let intervalId: ReturnType<typeof setInterval> | undefined
+
         // Calculate milliseconds until the next minute starts
         // This ensures the time updates at the start of each minute
         const msToNextMinute = msInMinute - (Date.now() % msInMinute)
@@ -20,14 +22,17 @@ const DisplayTime = () => {
         const timeoutId = setTimeout(() => {
             setTime(getCurrentFormattedTime())
 
-            const intervalId = setInterval(() => {
+            intervalId = setInterval(() => {
                 setTime(getCurrentFormattedTime())
             }, msInMinute)
-
-            return () => clearInterval(intervalId)
         }, msToNextMinute)
 
-        return () => clearTimeout(timeoutId)
+        return () => {
+            clearTimeout(timeoutId)
+            if (intervalId) {
+                clearInterval(intervalId)
+            }
+        }
     }, [])
 
     return <>{time}</>
