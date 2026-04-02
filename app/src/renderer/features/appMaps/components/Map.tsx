@@ -5,6 +5,7 @@ import MapGL, { type MapRef } from 'react-map-gl/maplibre'
 
 import FollowModeButton from '@renderer/features/appMaps/components/FollowModeButton'
 import MapMarker from '@renderer/features/appMaps/components/MapMarker'
+import useDeadReckoning, { type VisualPosition } from '../hooks/useDeadReckoning'
 
 import { MAP_STYLE } from '@shared/config/mapStyle'
 
@@ -15,15 +16,23 @@ interface MapProps {
     latitude: number | null
     longitude: number | null
     course: number | null
+    speedMps: number | null
 }
 
-const Map = ({ latitude, longitude, course }: MapProps) => {
+const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
     const mapRef = useRef<MapRef | null>(null)
+    const visualPosition: VisualPosition = useDeadReckoning({
+        latitude,
+        longitude,
+        speedMps,
+        heading: course,
+    })
+
     const [viewState, setViewState] = useState({
-        longitude: longitude ?? 0,
-        latitude: latitude ?? 0,
+        longitude: visualPosition.lng ?? longitude ?? 0,
+        latitude: visualPosition.lat ?? latitude ?? 0,
         zoom: DEFAULT_ZOOM,
-        bearing: course ?? 0,
+        bearing: visualPosition.heading ?? course ?? 0,
         pitch: PITCH,
     })
     const [isFollowMode, setIsFollowMode] = useState(true)
@@ -39,29 +48,42 @@ const Map = ({ latitude, longitude, course }: MapProps) => {
     }
 
     const toggleFollowMode = () => {
-        setIsFollowMode(prev => !prev)
-        if (!isFollowMode && latitude !== null && longitude !== null) {
-            setViewState(prev => ({
-                ...prev,
-                longitude,
-                latitude,
-                bearing: course ?? prev.bearing,
-                pitch: PITCH,
-                zoom: DEFAULT_ZOOM,
-            }))
-        }
+        setIsFollowMode(prev => {
+            const isFollowModeEnabled = !prev
+
+            if (isFollowModeEnabled && visualPosition.lat !== null && visualPosition.lng !== null) {
+                const nextLatitude = visualPosition.lat
+                const nextLongitude = visualPosition.lng
+                const nextBearing = visualPosition.heading
+
+                setViewState(current => ({
+                    ...current,
+                    longitude: nextLongitude,
+                    latitude: nextLatitude,
+                    bearing: nextBearing ?? current.bearing,
+                    pitch: PITCH,
+                    zoom: DEFAULT_ZOOM,
+                }))
+            }
+
+            return isFollowModeEnabled
+        })
     }
 
     useEffect(() => {
-        if (isFollowMode && latitude !== null && longitude !== null) {
+        if (isFollowMode && visualPosition.lat !== null && visualPosition.lng !== null) {
+            const nextLatitude = visualPosition.lat
+            const nextLongitude = visualPosition.lng
+            const nextBearing = visualPosition.heading
+
             setViewState(prev => ({
                 ...prev,
-                longitude,
-                latitude,
-                bearing: course ?? prev.bearing,
+                longitude: nextLongitude,
+                latitude: nextLatitude,
+                bearing: nextBearing ?? prev.bearing,
             }))
         }
-    }, [latitude, longitude, course, isFollowMode])
+    }, [isFollowMode, visualPosition.lat, visualPosition.lng, visualPosition.heading])
 
     return (
         <div className='relative h-full w-full'>
@@ -74,11 +96,11 @@ const Map = ({ latitude, longitude, course }: MapProps) => {
                 mapStyle={MAP_STYLE}
                 attributionControl={false}
             >
-                {latitude !== null && longitude !== null && (
+                {visualPosition.lat !== null && visualPosition.lng !== null && (
                     <MapMarker
-                        latitude={latitude}
-                        longitude={longitude}
-                        rotation={course ?? 0}
+                        latitude={visualPosition.lat}
+                        longitude={visualPosition.lng}
+                        rotation={visualPosition.heading ?? 0}
                     />
                 )}
             </MapGL>

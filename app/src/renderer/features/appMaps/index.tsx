@@ -1,6 +1,8 @@
 import Map from '@renderer/features/appMaps/components/Map'
 import useGps from '@renderer/features/gps/hooks/useGps'
 
+const KMH_TO_MPS_DIVISOR = 3.6
+
 export const AppMapsBackground = () => {
     const { data, isLoading, error } = useGps()
 
@@ -15,6 +17,7 @@ export const AppMapsBackground = () => {
                     latitude={data.latitude}
                     longitude={data.longitude}
                     course={data.course}
+                    speedMps={data.speed === null ? null : data.speed / KMH_TO_MPS_DIVISOR}
                 />
             </div>
         </>
