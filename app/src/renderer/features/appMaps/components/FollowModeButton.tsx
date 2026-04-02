@@ -1,14 +1,14 @@
 import { PiGpsFixFill } from 'react-icons/pi'
 
 interface FollowModeButtonProps {
-    toggleFollowMode: () => void
+    enableFollowMode: () => void
 }
 
-const FollowModeButton = ({ toggleFollowMode }: FollowModeButtonProps) => {
+const FollowModeButton = ({ enableFollowMode }: FollowModeButtonProps) => {
     return (
         <>
             <button
-                onClick={toggleFollowMode}
+                onClick={enableFollowMode}
                 className='p-4 pl-2'
             >
                 <div

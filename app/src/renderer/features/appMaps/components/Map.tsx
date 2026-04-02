@@ -48,28 +48,18 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
         }
     }
 
-    const toggleFollowMode = () => {
-        setIsFollowMode(prev => {
-            const isFollowModeEnabled = !prev
-
-            if (isFollowModeEnabled && visualPosition.lat !== null && visualPosition.lng !== null) {
-                const nextLatitude = visualPosition.lat
-                const nextLongitude = visualPosition.lng
-                const nextBearing = visualPosition.heading
-
-                setViewState(current => ({
-                    ...current,
-                    longitude: nextLongitude,
-                    latitude: nextLatitude,
-                    bearing: nextBearing ?? current.bearing,
-                    pitch: PITCH,
-                    zoom: DEFAULT_ZOOM,
-                }))
-            }
-
-            return isFollowModeEnabled
+    const enableFollowMode = () => {
+        mapRef.current?.flyTo({
+            center: [visualPosition.lng ?? viewState.longitude, visualPosition.lat ?? viewState.latitude],
+            bearing: visualPosition.heading ?? viewState.bearing,
+            pitch: PITCH,
+            zoom: DEFAULT_ZOOM,
+            duration: 1000,
         })
+
+        setIsFollowMode(true)
     }
+
     const resetBearingToNorth = () => {
         mapRef.current?.rotateTo(0, { duration: 500 })
     }
@@ -117,7 +107,7 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
                             resetBearing={resetBearingToNorth}
                         />
                     )}
-                    <FollowModeButton toggleFollowMode={toggleFollowMode} />
+                    <FollowModeButton enableFollowMode={enableFollowMode} />
                 </div>
             )}
         </div>
