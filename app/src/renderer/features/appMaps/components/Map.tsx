@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import 'maplibre-gl/dist/maplibre-gl.css'
-import MapGL, { type MapRef } from 'react-map-gl/maplibre'
+import MapGL, { type MapRef, type ViewStateChangeEvent } from 'react-map-gl/maplibre'
 
 import CompassButton from '@renderer/features/appMaps/components/CompassButton'
 import FollowModeButton from '@renderer/features/appMaps/components/FollowModeButton'
@@ -21,6 +21,7 @@ interface MapProps {
 }
 
 const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
+    const isFollowModeAnimationRef = useRef(false)
     const mapRef = useRef<MapRef | null>(null)
     const visualPosition: VisualPosition = useDeadReckoning({
         latitude,
@@ -42,19 +43,20 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
         setViewState(evt.viewState)
     }, [])
 
-    const handleMoveStart = () => {
-        if (isFollowMode) {
+    const handleMoveStart = (evt: ViewStateChangeEvent) => {
+        if (isFollowMode && evt.originalEvent) {
             setIsFollowMode(false)
         }
     }
 
     const enableFollowMode = () => {
-        mapRef.current?.flyTo({
+        isFollowModeAnimationRef.current = true
+        mapRef.current?.easeTo({
             center: [visualPosition.lng ?? viewState.longitude, visualPosition.lat ?? viewState.latitude],
             bearing: visualPosition.heading ?? viewState.bearing,
             pitch: PITCH,
             zoom: DEFAULT_ZOOM,
-            duration: 1000,
+            duration: 500,
         })
 
         setIsFollowMode(true)
@@ -65,6 +67,9 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
     }
 
     useEffect(() => {
+        if (isFollowModeAnimationRef.current) {
+            return
+        }
         if (isFollowMode && visualPosition.lat !== null && visualPosition.lng !== null) {
             const nextLatitude = visualPosition.lat
             const nextLongitude = visualPosition.lng
@@ -85,6 +90,9 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
                 ref={mapRef}
                 {...viewState}
                 onMove={handleMove}
+                onMoveEnd={() => {
+                    isFollowModeAnimationRef.current = false
+                }}
                 onMoveStart={handleMoveStart}
                 style={{ width: '100%', height: '100%' }}
                 mapStyle={MAP_STYLE}
