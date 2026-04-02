@@ -37,7 +37,8 @@ export const AppMapsContent = () => {
                         className='rounded-full bg-black/75 px-4 py-1.5 text-[2.5rem] leading-[1.05] font-bold
                             text-white'
                     >
-                        <span>{data.speed ?? 'N/A'}</span> <span className='text-4xl'>km/h</span>
+                        <span>{data.speed ? data.speed.toFixed(0) : 'N/A'}</span>{' '}
+                        <span className='text-4xl'>km/h</span>
                     </div>
                 </div>
             )}
