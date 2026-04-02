@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import MapGL, { type MapRef } from 'react-map-gl/maplibre'
 
+import CompassButton from '@renderer/features/appMaps/components/CompassButton'
 import FollowModeButton from '@renderer/features/appMaps/components/FollowModeButton'
 import MapMarker from '@renderer/features/appMaps/components/MapMarker'
 import useDeadReckoning, { type VisualPosition } from '../hooks/useDeadReckoning'
@@ -69,6 +70,9 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
             return isFollowModeEnabled
         })
     }
+    const resetBearingToNorth = () => {
+        mapRef.current?.rotateTo(0, { duration: 500 })
+    }
 
     useEffect(() => {
         if (isFollowMode && visualPosition.lat !== null && visualPosition.lng !== null) {
@@ -105,10 +109,17 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
                 )}
             </MapGL>
 
-            <FollowModeButton
-                followMode={isFollowMode}
-                toggleFollowMode={toggleFollowMode}
-            />
+            {isFollowMode || (
+                <div className='absolute right-0 bottom-0 flex'>
+                    {viewState.bearing === 0 || (
+                        <CompassButton
+                            bearing={viewState.bearing}
+                            resetBearing={resetBearingToNorth}
+                        />
+                    )}
+                    <FollowModeButton toggleFollowMode={toggleFollowMode} />
+                </div>
+            )}
         </div>
     )
 }
