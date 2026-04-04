@@ -19,7 +19,7 @@ int lastRightLevel = -1;
 
 
 void setup() {
-    SerialCommunication::begin(9600);
+    SerialCommunication::begin(115200);
 }
 
 
