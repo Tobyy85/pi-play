@@ -1,8 +1,9 @@
-import { app, ipcMain, protocol } from 'electron'
+import { ipcMain, protocol } from 'electron'
 import fs from 'fs'
 import path from 'path'
 
 import { tileServerUrl } from '@shared/config/maps'
+import { STORAGE_PATH } from '@shared/config/storage'
 
 import type { MapDownloadRequest } from '@shared/types/maps'
 
@@ -59,7 +60,7 @@ class MapService {
 
     // eslint-disable-next-line id-denylist
     private static getTilePath(x: number, y: number, z: number): string {
-        return path.join(app.getPath('userData'), 'map-tiles', `${z}`, `${x}`, `${y}.pbf`) // eslint-disable-line id-denylist
+        return path.join(STORAGE_PATH, 'map-tiles', `${z}`, `${x}`, `${y}.pbf`) // eslint-disable-line id-denylist
     }
 
     // eslint-disable-next-line id-denylist
