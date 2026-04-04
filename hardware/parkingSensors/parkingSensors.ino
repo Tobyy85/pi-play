@@ -13,6 +13,11 @@ const int SAMPLE_DELAY_MS = 50;
 const int MAX_DISTANCE = 200;
 
 
+int lastLeftLevel = -1;
+int lastMidLevel = -1;
+int lastRightLevel = -1;
+
+
 void setup() {
     SerialCommunication::begin(9600);
 }
@@ -22,18 +27,27 @@ void loop() {
     int leftSensorValue = 0;
     int midSensorValue = 0;
     int rightSensorValue = 0;
-
     getTrimmedAverageDistances(leftSensorValue, midSensorValue, rightSensorValue);
 
     int leftLevel = getSensorLevel(leftSensorValue);
     int midLevel = getSensorLevel(midSensorValue);
     int rightLevel = getSensorLevel(rightSensorValue);
 
-    SerialCommunication::sendJson("left", (float)leftLevel);
-    SerialCommunication::sendJson("mid", (float)midLevel);
-    SerialCommunication::sendJson("right", (float)rightLevel);
 
+    if (leftLevel != lastLeftLevel) {
+        SerialCommunication::sendJson("parkingSensorLeft", (float)leftLevel);
+        lastLeftLevel = leftLevel;
+    }
 
+    if (midLevel != lastMidLevel) {
+        SerialCommunication::sendJson("parkingSensorMid", (float)midLevel);
+        lastMidLevel = midLevel;
+    }
+
+    if (rightLevel != lastRightLevel) {
+        SerialCommunication::sendJson("parkingSensorRight", (float)rightLevel);
+        lastRightLevel = rightLevel;
+    }
 }
 
 
@@ -53,6 +67,7 @@ unsigned int getSensorLevel(int distance) {
 
     return 0;
 }
+
 
 void getTrimmedAverageDistances(int& leftDistance, int& midDistance, int& rightDistance) {
     if (SAMPLE <= 0) {
