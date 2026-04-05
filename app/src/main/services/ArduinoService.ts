@@ -10,30 +10,17 @@ interface PendingRequest {
     timeout: NodeJS.Timeout
 }
 
-const REQUEST_TIMEOUT = 5000
-
-const parseJson = (line: string): unknown => {
-    try {
-        return JSON.parse(line.trim())
-    } catch {
-        return null
-    }
-}
-
-const findArduinoPath = async (boardInfo: Readonly<BoardInfo>): Promise<string | null> => {
-    const ports = await SerialPort.list()
-    const arduinoPort = ports.find(
-        port =>
-            port.vendorId?.toLowerCase() === boardInfo.vendorId.toLowerCase() &&
-            port.productId?.toLowerCase() === boardInfo.productId.toLowerCase()
-    )
-    return arduinoPort?.path ?? null
+interface SerialConnection {
+    port: SerialPort
+    parser: ReadlineParser
 }
 
 class ArduinoService {
-    private port: SerialPort | null = null
-    private parser: ReadlineParser | null = null
+    private static readonly REQUEST_TIMEOUT = 5000
+
     private readonly getWindow: () => BrowserWindow | null
+
+    private serialConnections: SerialConnection[] = []
     private readonly pendingRequests: Map<string, PendingRequest[]> = new Map()
 
     constructor(getWindow: () => BrowserWindow | null) {
@@ -42,21 +29,31 @@ class ArduinoService {
 
     /**
      * Connect to the Arduino board with the given BoardInfo and baud rate.
-     * @param boardInfo - The BoardInfo containing vendorId and productId.
+     * @param boards - An array of BoardInfo objects representing the Arduino boards to connect to.
      * @param baudRate - The baud rate for the serial connection.
      */
-    public async connect(boardInfo: Readonly<BoardInfo>, baudRate: number): Promise<void> {
+    public async connect(boards: readonly Readonly<BoardInfo>[], baudRate: number): Promise<void> {
         try {
-            const path = await findArduinoPath(boardInfo)
-            if (!path) {
-                console.error('Arduino not found')
+            const paths = await ArduinoService.findArduinoPaths(boards)
+
+            if (paths.length === 0) {
+                console.error('No Arduino boards found')
                 return
             }
-            this.port = new SerialPort({ path, baudRate })
-            this.parser = this.port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+            if (paths.length !== boards.length) {
+                console.warn(
+                    `Not all Arduino boards found. Connected ${paths.length} of ${boards.length} configured boards.`
+                )
+            }
+
+            for (const path of paths) {
+                const port = new SerialPort({ path, baudRate })
+                const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }))
+                this.serialConnections.push({ port, parser })
+            }
             this.initListeners()
         } catch (error) {
-            console.error('Error while connecting to Arduino: ', error)
+            console.error('Error while connecting to Arduinos: ', error)
         }
     }
 
@@ -73,13 +70,13 @@ class ArduinoService {
         }
         this.pendingRequests.clear()
 
-        this.parser?.removeAllListeners()
-        this.parser = null
-
-        if (this.port?.isOpen) {
-            this.port.close()
+        for (const { port, parser } of this.serialConnections) {
+            parser.removeAllListeners()
+            if (port.isOpen) {
+                port.close()
+            }
         }
-        this.port = null
+        this.serialConnections = []
     }
 
     /**
@@ -92,31 +89,58 @@ class ArduinoService {
     }
 
     /**
+     * Find the serial port paths for the given Arduino boards.
+     * @param boards - An array of BoardInfo objects representing the Arduino boards to find.
+     * @returns A promise that resolves with an array of serial port paths for the found boards.
+     */
+    private static async findArduinoPaths(boards: readonly Readonly<BoardInfo>[]): Promise<string[]> {
+        const usedPaths: Set<string> = new Set()
+        const ports = await SerialPort.list()
+        const foundPaths: string[] = []
+
+        for (const board of boards) {
+            const foundPort = ports.find(
+                port =>
+                    !usedPaths.has(port.path) &&
+                    port.vendorId?.toLowerCase() === board.vendorId.toLowerCase() &&
+                    port.productId?.toLowerCase() === board.productId.toLowerCase()
+            )
+            if (foundPort) {
+                foundPaths.push(foundPort.path)
+                usedPaths.add(foundPort.path)
+            }
+        }
+        return foundPaths
+    }
+
+    /**
      * Initialize event listeners for the serial port and parser.
      */
     private initListeners(): void {
-        if (!this.parser) return
-
-        this.parser.on('data', (line: string) => {
-            const data = parseJson(line) as ArduinoData | null // eslint-disable-line @typescript-eslint/no-unsafe-type-assertion
-            if (data) {
-                const pendingRequests = this.pendingRequests.get(data.sensorId)
-                if (pendingRequests && pendingRequests.length > 0) {
-                    // Fulfill all pending requests for this sensorId
-                    this.pendingRequests.delete(data.sensorId)
-                    pendingRequests.forEach(request => {
-                        clearTimeout(request.timeout)
-                        request.resolve(data)
-                    })
+        for (const { port, parser } of this.serialConnections) {
+            parser.on('data', (line: string) => {
+                const data = ArduinoService.parseJson(line) as ArduinoData | null // eslint-disable-line @typescript-eslint/no-unsafe-type-assertion
+                if (data) {
+                    const pendingRequests = this.pendingRequests.get(data.sensorId)
+                    if (pendingRequests && pendingRequests.length > 0) {
+                        // Fulfill all pending requests for this sensorId
+                        this.pendingRequests.delete(data.sensorId)
+                        pendingRequests.forEach(request => {
+                            clearTimeout(request.timeout)
+                            request.resolve(data)
+                        })
+                    } else {
+                        this.getWindow()?.webContents.send('arduino:change', data)
+                    }
                 } else {
-                    this.getWindow()?.webContents.send('arduino:change', data)
+                    console.warn(`Ignored non-JSON line: ${line}`)
                 }
-            }
-        })
+            })
 
-        this.port?.on('error', (err: Readonly<Error>) => {
-            console.error('SerialPort Error: ', err.message)
-        })
+            port.on('error', (err: Readonly<Error>) => {
+                console.error(`SerialPort Error: ${err.message}`)
+            })
+        }
     }
 
     /**
@@ -126,8 +150,8 @@ class ArduinoService {
      */
     public async requestSensorValue(sensorId: string): Promise<ArduinoData> {
         return await new Promise((resolve, reject) => {
-            if (!this.port?.isOpen) {
-                reject(new Error('Serial port is not connected'))
+            if (this.serialConnections.length === 0) {
+                reject(new Error('No serial connections available'))
                 return
             }
 
@@ -137,7 +161,7 @@ class ArduinoService {
                 timeout: setTimeout(() => {
                     this.removePendingRequest(sensorId, pendingRequest)
                     reject(new Error(`Request timeout for sensor: ${sensorId}`))
-                }, REQUEST_TIMEOUT),
+                }, ArduinoService.REQUEST_TIMEOUT),
             }
 
             const existingRequests = this.pendingRequests.get(sensorId)
@@ -147,13 +171,16 @@ class ArduinoService {
             }
 
             this.pendingRequests.set(sensorId, [pendingRequest])
-            this.port.write(`${sensorId}\n`, err => {
-                if (err) {
-                    this.removePendingRequest(sensorId, pendingRequest)
-                    clearTimeout(pendingRequest.timeout)
-                    reject(new Error(`Failed to send request: ${err.message}`))
-                }
-            })
+            // Send the request to all connected boards (could be optimized to target specific boards if needed)
+            for (const { port } of this.serialConnections) {
+                port.write(`${sensorId}\n`, err => {
+                    if (err) {
+                        this.removePendingRequest(sensorId, pendingRequest)
+                        clearTimeout(pendingRequest.timeout)
+                        reject(new Error(`Failed to send request: ${err.message}`))
+                    }
+                })
+            }
         })
     }
 
@@ -172,6 +199,14 @@ class ArduinoService {
             if (requests.length === 0) {
                 this.pendingRequests.delete(sensorId)
             }
+        }
+    }
+
+    private static parseJson(line: string): unknown {
+        try {
+            return JSON.parse(line.trim())
+        } catch {
+            return null
         }
     }
 }

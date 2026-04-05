@@ -36,7 +36,7 @@ app.whenReady().then(() => {
     windowManager.createWindow()
 
     arduinoService.registerIpcHandlers()
-    arduinoService.connect(ARDUINO_CONFIG.boardInfo, ARDUINO_CONFIG.baudRate)
+    arduinoService.connect(ARDUINO_CONFIG.boards, ARDUINO_CONFIG.baudRate)
 
     gpsService.registerIpcHandlers()
     gpsService.connect()
