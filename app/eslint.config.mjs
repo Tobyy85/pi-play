@@ -195,6 +195,10 @@ export default defineConfig([
                     format: ['camelCase', 'UPPER_CASE', 'PascalCase'], // allow PascalCase for React components
                 },
                 {
+                    selector: 'classProperty',
+                    format: ['camelCase', 'UPPER_CASE'],
+                },
+                {
                     selector: 'parameter',
                     format: ['camelCase'],
                     leadingUnderscore: 'allow',
