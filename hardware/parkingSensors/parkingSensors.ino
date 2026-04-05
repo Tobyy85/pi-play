@@ -8,6 +8,10 @@ UltrasonicSensor sensorLeft(3, 2);
 UltrasonicSensor sensorMid(6, 5);
 UltrasonicSensor sensorRight(10, 9);
 
+const String sensorLeftId = "parkingSensorLeft";
+const String sensorMidId = "parkingSensorMid";
+const String sensorRightId = "parkingSensorRight";
+
 const int SAMPLE = 5;
 const int SAMPLE_DELAY_MS = 50;
 const int MAX_DISTANCE = 200;
@@ -35,18 +39,32 @@ void loop() {
 
 
     if (leftLevel != lastLeftLevel) {
-        SerialCommunication::sendJson("parkingSensorLeft", (float)leftLevel);
+        SerialCommunication::sendJson(sensorLeftId, (float)leftLevel);
         lastLeftLevel = leftLevel;
     }
 
     if (midLevel != lastMidLevel) {
-        SerialCommunication::sendJson("parkingSensorMid", (float)midLevel);
+        SerialCommunication::sendJson(sensorMidId, (float)midLevel);
         lastMidLevel = midLevel;
     }
 
     if (rightLevel != lastRightLevel) {
-        SerialCommunication::sendJson("parkingSensorRight", (float)rightLevel);
+        SerialCommunication::sendJson(sensorRightId, (float)rightLevel);
         lastRightLevel = rightLevel;
+    }
+
+    if (Serial.available() > 0) {
+        String request = Serial.readStringUntil('\n');
+        request.trim();
+        if (request.length() > 0) {
+            if (request == sensorLeftId) {
+                SerialCommunication::sendJson(sensorLeftId, (float)leftLevel);
+            } else if (request == sensorMidId) {
+                SerialCommunication::sendJson(sensorMidId, (float)midLevel);
+            } else if (request == sensorRightId) {
+                SerialCommunication::sendJson(sensorRightId, (float)rightLevel);
+            }
+        }
     }
 }
 
