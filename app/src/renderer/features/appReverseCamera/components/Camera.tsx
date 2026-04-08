@@ -1,45 +1,44 @@
 import { useEffect, useRef, useState } from 'react'
 
-interface CameraProps extends Omit<React.VideoHTMLAttributes<HTMLVideoElement>, 'onError'> {
-    deviceId: string
+interface CameraProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'onError' | 'src'> {
+    cameraName: string
     isMirrored?: boolean
     setError?: (error: string | null) => void
 }
 
-const Camera = ({ deviceId, isMirrored, setError, ...videoProps }: CameraProps) => {
-    const videoRef = useRef<HTMLVideoElement>(null)
-    const streamRef = useRef<MediaStream | null>(null)
+const Camera = ({ cameraName, isMirrored, setError, ...imageProps }: CameraProps) => {
+    const unsubscribeRef = useRef<(() => void) | null>(null)
 
     const [isError, setIsError] = useState<boolean>(false)
+    const [frameDataUrl, setFrameDataUrl] = useState<string | null>(null)
 
     useEffect(() => {
         let isMounted = true
 
-        const startCamera = async () => {
+        const startCamera = async (): Promise<void> => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: false,
-                    video: {
-                        deviceId: deviceId ? { exact: deviceId } : undefined, // eslint-disable-line no-undefined
-                    },
-                })
+                const latestFrame = await window.api.camera.getLatestFrame(cameraName)
 
                 if (!isMounted) {
-                    stream.getTracks().forEach(track => track.stop())
                     return
                 }
 
-                streamRef.current = stream
-
-                if (videoRef.current) {
-                    videoRef.current.srcObject = stream
+                if (latestFrame) {
+                    setFrameDataUrl(latestFrame)
                 }
+
+                unsubscribeRef.current = window.api.camera.subscribeToFrame(cameraName, frame => {
+                    setFrameDataUrl(frame)
+                    setError?.(null)
+                    setIsError(false)
+                })
+
                 setError?.(null)
                 setIsError(false)
             } catch (err) {
-                console.error('Error accessing camera:', err)
+                console.error('Error starting camera stream:', err)
                 if (isMounted) {
-                    setError?.('Failed to load camera.')
+                    setError?.('Failed to load camera stream.')
                     setIsError(true)
                 }
             }
@@ -49,32 +48,27 @@ const Camera = ({ deviceId, isMirrored, setError, ...videoProps }: CameraProps) 
 
         return () => {
             isMounted = false
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach(track => track.stop())
-                streamRef.current = null
-            }
-            if (videoRef.current) {
-                videoRef.current.srcObject = null // eslint-disable-line react-hooks/exhaustive-deps
-            }
+            unsubscribeRef.current?.()
+            unsubscribeRef.current = null
         }
-    }, [deviceId, setError])
+    }, [cameraName, setError])
 
     if (isError) return null
 
     return (
-        <>
-            <div className='flex size-full items-center justify-center overflow-hidden'>
-                <video
-                    autoPlay
-                    playsInline
-                    muted
-                    {...videoProps}
-                    ref={videoRef}
+        <div className='flex size-full items-center justify-center overflow-hidden'>
+            {frameDataUrl ? (
+                <img
+                    {...imageProps}
+                    alt={imageProps.alt ?? `${cameraName} camera stream`}
+                    src={frameDataUrl}
                     className={`size-full object-contain ${isMirrored ? 'scale-x-[-1]' : ''}
-                        ${videoProps.className ?? ''}`}
+                        ${imageProps.className ?? ''}`}
                 />
-            </div>
-        </>
+            ) : (
+                <div className='text-lg text-white/70'>Loading camera stream...</div>
+            )}
+        </div>
     )
 }
 export default Camera
