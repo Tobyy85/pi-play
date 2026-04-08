@@ -41,7 +41,7 @@ export const usePhoneBookStore = create<PhoneBookStore>((set, get) => ({
 
             set({ contacts, contactsByPhone, initialized: true })
         } catch (err) {
-            console.error('Failed to load contacts:', err)
+            console.error('[usePhoneBookStore]: Failed to load contacts: ', err)
         } finally {
             set({ isLoading: false })
         }

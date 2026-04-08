@@ -37,12 +37,12 @@ class ArduinoService {
             const paths = await ArduinoService.findArduinoPaths(boards)
 
             if (paths.length === 0) {
-                console.error('No Arduino boards found')
+                console.error('[ArduinoService]: No Arduino boards found')
                 return
             }
             if (paths.length !== boards.length) {
                 console.warn(
-                    `Not all Arduino boards found. Connected ${paths.length} of ${boards.length} configured boards.`
+                    `[ArduinoService]: Not all Arduino boards found. Connected ${paths.length} of ${boards.length} configured boards.`
                 )
             }
 
@@ -53,7 +53,7 @@ class ArduinoService {
             }
             this.initListeners()
         } catch (error) {
-            console.error('Error while connecting to Arduinos: ', error)
+            console.error('[ArduinoService]: Error while connecting to Arduinos: ', error, '\n\n')
         }
     }
 
@@ -133,12 +133,12 @@ class ArduinoService {
                         this.getWindow()?.webContents.send('arduino:change', data)
                     }
                 } else {
-                    console.warn(`Ignored non-JSON line: ${line}`)
+                    console.warn(`[ArduinoService]: Ignored non-JSON line: ${line}`)
                 }
             })
 
             port.on('error', (err: Readonly<Error>) => {
-                console.error(`SerialPort Error: ${err.message}`)
+                console.error(`[ArduinoService]: SerialPort Error: ${err.message}`)
             })
         }
     }

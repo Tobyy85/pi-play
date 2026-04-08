@@ -36,7 +36,7 @@ const Camera = ({ cameraName, isMirrored, setError, ...imageProps }: CameraProps
                 setError?.(null)
                 setIsError(false)
             } catch (err) {
-                console.error('Error starting camera stream:', err)
+                console.error('[Camera]: Error starting camera stream: ', err)
                 if (isMounted) {
                     setError?.('Failed to load camera stream.')
                     setIsError(true)

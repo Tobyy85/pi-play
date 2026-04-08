@@ -58,7 +58,7 @@ class GPSService {
                 this.isConnected = true
             })
         } catch (error) {
-            console.error('GPS: Error while connecting:', error)
+            console.error('[GpsService]: GPS: Error while connecting: ', error, '\n\n')
             this.isConnected = false
         }
     }
@@ -109,7 +109,7 @@ class GPSService {
         })
 
         this.port.on('error', (err: Readonly<Error>) => {
-            console.error('GPS: SerialPort Error:', err.message)
+            console.error('[GpsService]: GPS: SerialPort Error: ', err.message, '\n\n')
             this.isConnected = false
         })
 
@@ -134,7 +134,11 @@ class GPSService {
             }
         } catch (error) {
             // Invalid NMEA sentence - silently ignore
-            console.warn('GPS: Failed to parse NMEA sentence:', sentence, error)
+            console.warn(
+                `[GpsService]: GPS: Failed to parse NMEA sentence: ${sentence}, error: `,
+                error,
+                '\n\n'
+            )
         }
     }
 

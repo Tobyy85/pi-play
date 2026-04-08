@@ -45,7 +45,11 @@ class CameraRecordingService {
             try {
                 this.startRecording(camera.name)
             } catch (error) {
-                console.error(`Failed to start camera "${camera.name}":`, error)
+                console.error(
+                    `[CameraRecordingService]: Failed to start camera "${camera.name}": `,
+                    error,
+                    '\n\n'
+                )
             }
         }
     }
@@ -85,12 +89,16 @@ class CameraRecordingService {
                 return
             }
 
-            console.error(`Camera ${cameraName} ffmpeg error:`, errorMessage)
+            console.error(
+                `[CameraRecordingService]: Camera ${cameraName} ffmpeg error: `,
+                errorMessage,
+                '\n\n'
+            )
         })
 
         ffmpegProcess.on('error', error => {
             runtime.ffmpegProcess = null
-            console.error(`Camera ${cameraName} process error:`, error)
+            console.error(`[CameraRecordingService]: Camera ${cameraName} process error: `, error, '\n\n')
         })
 
         ffmpegProcess.on('exit', (code, signal) => {
@@ -99,7 +107,7 @@ class CameraRecordingService {
 
             if (code !== 0 && signal !== 'SIGTERM') {
                 console.error(
-                    `Camera ${cameraName} ffmpeg exited with code ${String(code)} and signal ${signal ?? 'none'}`
+                    `[CameraRecordingService]: Camera ${cameraName} ffmpeg exited with code ${code} and signal ${signal ?? 'none'}`
                 )
             }
         })

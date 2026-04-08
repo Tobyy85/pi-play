@@ -108,7 +108,11 @@ class MediaPlayerService {
         this.objManager.on('InterfacesAdded', (path: string, interfaces: any) => {
             if (interfaces['org.bluez.MediaPlayer1']) {
                 this.mediaPlayerHandler(path).catch((err: unknown) => {
-                    console.error('Failed to handle MediaPlayer interface addition:', err)
+                    console.error(
+                        '[MediaPlayerService]: Failed to handle MediaPlayer interface addition: ',
+                        err,
+                        '\n\n'
+                    )
                 })
             }
         })
@@ -116,7 +120,7 @@ class MediaPlayerService {
         this.objManager.on('InterfacesRemoved', (_path: string, interfaces: readonly string[]) => {
             if (interfaces.includes('org.bluez.MediaPlayer1')) {
                 this.reload().catch((err: unknown) => {
-                    console.error('Failed to reload MediaPlayerService:', err)
+                    console.error('[MediaPlayerService]: Failed to reload MediaPlayerService: ', err, '\n\n')
                 })
             }
         })

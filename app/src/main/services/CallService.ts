@@ -31,7 +31,7 @@ class CallService {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 this.ofonoManager.on('ModemAdded', (path: string, properties: any) => {
                     this.handleModem(path, properties).catch((err: unknown) => {
-                        console.error('Failed to handle added modem:', err)
+                        console.error('[CallService]: Failed to handle added modem: ', err, '\n\n')
                     })
                 })
                 this.isInitialized = true
@@ -39,7 +39,7 @@ class CallService {
 
             await this.reload()
         } catch (err) {
-            console.error('Failed to initialize CallService:', err)
+            console.error('[CallService]: Failed to initialize CallService: ', err, '\n\n')
         }
     }
 
@@ -62,7 +62,7 @@ class CallService {
                 await this.handleModem(path, properties)
             }
         } catch (err) {
-            console.error('Failed to reload CallService:', err)
+            console.error('[CallService]: Failed to reload CallService: ', err, '\n\n')
         }
     }
 
@@ -148,7 +148,11 @@ class CallService {
                 })()
             })
         } catch (err) {
-            console.warn(`org.ofono.Modem signal watcher unavailable on ${path}:`, err)
+            console.error(
+                `[CallService]: org.ofono.Modem signal watcher unavailable on ${path}: `,
+                err,
+                '\n\n'
+            )
         }
 
         try {
@@ -164,7 +168,7 @@ class CallService {
                 })()
             })
         } catch (err) {
-            console.warn(`No modem property watcher available for ${path}:`, err)
+            console.error(`[CallService]: No modem property watcher available for ${path}: `, err, '\n\n')
         }
     }
 

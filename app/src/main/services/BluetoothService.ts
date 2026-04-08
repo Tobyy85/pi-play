@@ -65,7 +65,7 @@ class BluetoothService {
 
     private async getConnectedDevice(): Promise<BluetoothDevice | null> {
         if (!this.objectManager) {
-            console.error('ObjectManager not initialized')
+            console.error('[BluetoothService]: ObjectManager not initialized')
             return null
         }
 
@@ -88,7 +88,7 @@ class BluetoothService {
 
     private async watchConnectedDevices(): Promise<void> {
         if (!this.objectManager) {
-            console.error('ObjectManager not initialized')
+            console.error('[BluetoothService]: ObjectManager not initialized')
             return
         }
         const managedObjects = await this.objectManager.GetManagedObjects()
@@ -146,7 +146,7 @@ class BluetoothService {
         this.connectedDevice = connectedDevice
         this.getWindow()?.webContents.send('bluetooth:connectedDevice', connectedDevice)
         this.notifyConnectedDeviceChanged(connectedDevice, previousDevice).catch((err: unknown) => {
-            console.error('Failed to notify connected device change:', err)
+            console.error('[BluetoothService]: Failed to notify connected device change: ', err, '\n\n')
         })
     }
 
@@ -158,7 +158,7 @@ class BluetoothService {
             try {
                 await listener(connectedDevice, previousDevice)
             } catch (err) {
-                console.error('Bluetooth device change listener failed:', err)
+                console.error('[BluetoothService]: Bluetooth device change listener failed: ', err, '\n\n')
             }
         }
     }

@@ -24,7 +24,7 @@ export const useCallHistoryStore = create<CallHistoryStore>((set, get) => ({
             const callHistory = await window.api.phoneBook.callHistory.get()
             set({ callHistory, initialized: true })
         } catch (err) {
-            console.error('Failed to load call history: ', err)
+            console.error('[useCallHistoryStore]: Failed to load call history: ', err)
         } finally {
             set({ isLoading: false })
         }

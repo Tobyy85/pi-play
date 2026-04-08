@@ -12,7 +12,7 @@ const DisplayTemperature = ({ sensorId }: DisplayTemperatureProps) => {
     }
 
     if (error || temperature === null) {
-        console.error('DisplayTemperature error:', error)
+        console.error('[DisplayTemperature]: DisplayTemperature error: ', error)
         return <>ERR</>
     }
 
