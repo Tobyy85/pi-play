@@ -108,7 +108,7 @@ class GPSService {
             this.parseNMEA(line)
         })
 
-        this.port.on('error', (err: Readonly<Error>) => {
+        this.port.on('error', (err: Error) => {
             console.error('[GpsService]: GPS: SerialPort Error: ', err.message, '\n\n')
             this.isConnected = false
         })
@@ -147,7 +147,6 @@ class GPSService {
      * @param parsed - The parsed NMEA packet.
      * @returns True if data changed, false otherwise.
      */
-    // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
     private handleParsedSentence(parsed: nmea.Packet): boolean {
         // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
         switch (parsed.sentenceId) {
@@ -164,7 +163,7 @@ class GPSService {
      * Handle GGA (Global Positioning System Fix Data) sentence.
      * @return True if data changed, false otherwise.
      */
-    private handleGGA(gga: Readonly<nmea.GGAPacket>): boolean {
+    private handleGGA(gga: nmea.GGAPacket): boolean {
         if (gga.fixType === 'none') {
             this.currentData.fix = false
             this.currentData.satellites = gga.satellitesInView
@@ -184,7 +183,7 @@ class GPSService {
      * Handle RMC (Recommended Minimum Navigation Information) sentence.
      * @return True if data changed, false otherwise.
      */
-    private handleRMC(rmc: Readonly<nmea.RMCPacket>): boolean {
+    private handleRMC(rmc: nmea.RMCPacket): boolean {
         if (rmc.status !== 'valid') {
             this.currentData.fix = false
             return false

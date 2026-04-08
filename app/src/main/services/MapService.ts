@@ -24,7 +24,7 @@ class MapService {
     }
 
     public static registerIpcHandlers(): void {
-        ipcMain.handle('maps:downloadArea', async (event, request: Readonly<MapDownloadRequest>) => {
+        ipcMain.handle('maps:downloadArea', async (event, request: MapDownloadRequest) => {
             await MapService.downloadArea(request)
         })
     }
@@ -119,7 +119,7 @@ class MapService {
         )
     }
 
-    private static async downloadArea(request: Readonly<MapDownloadRequest>): Promise<void> {
+    private static async downloadArea(request: MapDownloadRequest): Promise<void> {
         const { minLat, minLon, maxLat, maxLon, minZoom, maxZoom } = request
 
         // eslint-disable-next-line id-denylist

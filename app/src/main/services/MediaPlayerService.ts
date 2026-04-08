@@ -117,7 +117,7 @@ class MediaPlayerService {
             }
         })
 
-        this.objManager.on('InterfacesRemoved', (_path: string, interfaces: readonly string[]) => {
+        this.objManager.on('InterfacesRemoved', (_path: string, interfaces: string[]) => {
             if (interfaces.includes('org.bluez.MediaPlayer1')) {
                 this.reload().catch((err: unknown) => {
                     console.error('[MediaPlayerService]: Failed to reload MediaPlayerService: ', err, '\n\n')
@@ -196,7 +196,7 @@ class MediaPlayerService {
     /**
      * This is a hack to handle weird track info formats from certain players (like Spotify's "Listening on ...").
      */
-    private static cleanTrackInfo(trackInfo: Readonly<TrackInfo>): TrackInfo {
+    private static cleanTrackInfo(trackInfo: TrackInfo): TrackInfo {
         const cleanTrackInfo = { ...trackInfo }
 
         if (trackInfo.artist?.toLowerCase().includes('listening on')) {

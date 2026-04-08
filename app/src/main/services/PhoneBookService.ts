@@ -268,12 +268,12 @@ class PhoneBookService {
         this.getWindow()?.webContents.send('phoneBook:connectionStatus', isConnected)
     }
 
-    private updateContacts(contacts: readonly Readonly<Contact>[] | null): void {
+    private updateContacts(contacts: Contact[] | null): void {
         this.contacts = contacts ? [...contacts] : null
         this.getWindow()?.webContents.send('phoneBook:contacts', contacts)
     }
 
-    private updateCallHistory(callHistory: readonly Readonly<CallHistoryEntry>[] | null): void {
+    private updateCallHistory(callHistory: CallHistoryEntry[] | null): void {
         this.callHistory = callHistory ? [...callHistory] : null
         this.getWindow()?.webContents.send('phoneBook:callHistory', callHistory)
     }

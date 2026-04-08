@@ -9,7 +9,7 @@ import { STORAGE_PATH } from '@shared/config/storage'
 import type { CameraDefinition } from '@shared/types/camera'
 
 interface CameraRuntime {
-    definition: Readonly<CameraDefinition>
+    definition: CameraDefinition
     ffmpegProcess: ChildProcessByStdio<null, Readable, Readable> | null
     streamBuffer: Buffer
     latestFrame: string | null
@@ -79,11 +79,11 @@ class CameraRecordingService {
         runtime.ffmpegProcess = ffmpegProcess
         runtime.streamBuffer = Buffer.alloc(0)
 
-        ffmpegProcess.stdout.on('data', (chunk: Readonly<Buffer>) => {
+        ffmpegProcess.stdout.on('data', (chunk: Buffer) => {
             this.processFrameChunk(cameraName, chunk)
         })
 
-        ffmpegProcess.stderr.on('data', (data: Readonly<Buffer>) => {
+        ffmpegProcess.stderr.on('data', (data: Buffer) => {
             const errorMessage = data.toString().trim()
             if (!errorMessage) {
                 return
@@ -136,7 +136,7 @@ class CameraRecordingService {
         })
     }
 
-    private processFrameChunk(cameraName: string, chunk: Readonly<Buffer>): void {
+    private processFrameChunk(cameraName: string, chunk: Buffer): void {
         const JPEG_MARKER_SIZE = 2
         const JPEG_START_MARKER = Buffer.from('ffd8', 'hex')
         const JPEG_END_MARKER = Buffer.from('ffd9', 'hex')
@@ -172,7 +172,7 @@ class CameraRecordingService {
         }
     }
 
-    private publishFrame(cameraName: string, frameBuffer: Readonly<Buffer>): void {
+    private publishFrame(cameraName: string, frameBuffer: Buffer): void {
         const runtime = this.getRuntime(cameraName)
         runtime.latestFrame = `data:image/jpeg;base64,${frameBuffer.toString('base64')}`
 
@@ -182,10 +182,7 @@ class CameraRecordingService {
         )
     }
 
-    private static createFfmpegArgs(
-        definition: Readonly<CameraDefinition>,
-        outputDirectory: string
-    ): string[] {
+    private static createFfmpegArgs(definition: CameraDefinition, outputDirectory: string): string[] {
         const segmentPattern = path.join(outputDirectory, '%Y%m%d-%H%M%S.mp4')
         return [
             ...CameraRecordingService.createInputArgs(definition),
@@ -194,7 +191,7 @@ class CameraRecordingService {
         ]
     }
 
-    private static createInputArgs(definition: Readonly<CameraDefinition>): string[] {
+    private static createInputArgs(definition: CameraDefinition): string[] {
         return [
             '-hide_banner',
             '-loglevel',

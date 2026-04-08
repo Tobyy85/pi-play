@@ -5,7 +5,7 @@ export const reverseCameraName = 'rear'
 interface CameraConfig {
     ffmpegBinary: string
     recordingSegmentSeconds: number // Duration of each recorded segment in seconds
-    cameras: readonly Readonly<CameraDefinition>[]
+    cameras: CameraDefinition[]
 }
 
 export const CAMERA_CONFIG: CameraConfig = {

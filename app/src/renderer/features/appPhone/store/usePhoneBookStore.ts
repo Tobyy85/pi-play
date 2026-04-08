@@ -20,7 +20,7 @@ interface PhoneBookStore {
 let contactsUnsubscribe: (() => void) | null = null
 let initializePromise: Promise<void> | null = null
 
-const indexContactsByPhoneNumber = (contacts: readonly Readonly<Contact>[]): ContactsByPhone => {
+const indexContactsByPhoneNumber = (contacts: Contact[]): ContactsByPhone => {
     return contacts.reduce<ContactsByPhone>((index, contact) => {
         index[normalizePhoneNumber(contact.phoneNumber)] = contact
         return index

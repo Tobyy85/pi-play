@@ -5,8 +5,8 @@ import { SerialPort } from 'serialport'
 import type { ArduinoData, BoardInfo } from '@shared/types/arduino'
 
 interface PendingRequest {
-    resolve: (data: Readonly<ArduinoData>) => void
-    reject: (error: Readonly<Error>) => void
+    resolve: (data: ArduinoData) => void
+    reject: (error: Error) => void
     timeout: NodeJS.Timeout
 }
 
@@ -32,7 +32,7 @@ class ArduinoService {
      * @param boards - An array of BoardInfo objects representing the Arduino boards to connect to.
      * @param baudRate - The baud rate for the serial connection.
      */
-    public async connect(boards: readonly Readonly<BoardInfo>[], baudRate: number): Promise<void> {
+    public async connect(boards: BoardInfo[], baudRate: number): Promise<void> {
         try {
             const paths = await ArduinoService.findArduinoPaths(boards)
 
@@ -93,7 +93,7 @@ class ArduinoService {
      * @param boards - An array of BoardInfo objects representing the Arduino boards to find.
      * @returns A promise that resolves with an array of serial port paths for the found boards.
      */
-    private static async findArduinoPaths(boards: readonly Readonly<BoardInfo>[]): Promise<string[]> {
+    private static async findArduinoPaths(boards: BoardInfo[]): Promise<string[]> {
         const usedPaths: Set<string> = new Set()
         const ports = await SerialPort.list()
         const foundPaths: string[] = []
@@ -137,7 +137,7 @@ class ArduinoService {
                 }
             })
 
-            port.on('error', (err: Readonly<Error>) => {
+            port.on('error', (err: Error) => {
                 console.error(`[ArduinoService]: SerialPort Error: ${err.message}`)
             })
         }
@@ -189,7 +189,7 @@ class ArduinoService {
      * @param sensorId - The ID of the sensor.
      * @param request - The pending request to remove.
      */
-    private removePendingRequest(sensorId: string, request: Readonly<PendingRequest>): void {
+    private removePendingRequest(sensorId: string, request: PendingRequest): void {
         const requests = this.pendingRequests.get(sensorId)
         if (!requests) return
 

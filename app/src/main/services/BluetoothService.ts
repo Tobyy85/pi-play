@@ -5,8 +5,8 @@ import * as dbus from 'dbus-next'
 import type { BluetoothDevice } from '@shared/types/bluetooth'
 
 type ConnectedDeviceListener = (
-    connectedDevice: Readonly<BluetoothDevice> | null,
-    previousDevice: Readonly<BluetoothDevice> | null
+    connectedDevice: BluetoothDevice | null,
+    previousDevice: BluetoothDevice | null
 ) => void | Promise<void>
 
 /* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
@@ -128,7 +128,7 @@ class BluetoothService {
             }
         })
 
-        this.objectManager.on('InterfacesRemoved', (_path: string, interfaces: readonly string[]) => {
+        this.objectManager.on('InterfacesRemoved', (_path: string, interfaces: string[]) => {
             if (interfaces.includes('org.bluez.Device1')) {
                 void (async () => {
                     this.updateConnectedDevice(await this.getConnectedDevice())
@@ -137,7 +137,7 @@ class BluetoothService {
         })
     }
 
-    private updateConnectedDevice(connectedDevice: Readonly<BluetoothDevice> | null): void {
+    private updateConnectedDevice(connectedDevice: BluetoothDevice | null): void {
         const previousDevice = this.connectedDevice
         if (BluetoothService.areDevicesEqual(previousDevice, connectedDevice)) {
             return
@@ -151,8 +151,8 @@ class BluetoothService {
     }
 
     private async notifyConnectedDeviceChanged(
-        connectedDevice: Readonly<BluetoothDevice> | null,
-        previousDevice: Readonly<BluetoothDevice> | null
+        connectedDevice: BluetoothDevice | null,
+        previousDevice: BluetoothDevice | null
     ): Promise<void> {
         for (const listener of this.deviceChangeListeners) {
             try {
@@ -164,8 +164,8 @@ class BluetoothService {
     }
 
     private static areDevicesEqual(
-        deviceA: Readonly<BluetoothDevice> | null,
-        deviceB: Readonly<BluetoothDevice> | null
+        deviceA: BluetoothDevice | null,
+        deviceB: BluetoothDevice | null
     ): boolean {
         if (!deviceA || !deviceB) {
             return false
