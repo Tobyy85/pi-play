@@ -133,6 +133,14 @@ const electronApi = {
             'phoneBook:loadingCallHistory'
         ),
     },
+    camera: {
+        getLatestFrame: async (cameraName: string): Promise<string | null> => {
+            return await ipcRenderer.invoke('camera:getLatestFrame', cameraName) // eslint-disable-line @typescript-eslint/no-unsafe-return
+        },
+        subscribeToFrame: (cameraName: string, callback: (frameDataUrl: string) => void): (() => void) => {
+            return subscribeToChannel(`camera:frame:${cameraName}`, callback)
+        },
+    },
     maps: {
         downloadArea: async (request: Readonly<MapDownloadRequest>) => {
             await ipcRenderer.invoke('maps:downloadArea', request)
