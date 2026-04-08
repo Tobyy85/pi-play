@@ -1,7 +1,24 @@
+import type { CameraDefinition } from '@shared/types/camera'
+
+export const reverseCameraName = 'rear'
+
 interface CameraConfig {
-    reverseCameraId: string
+    ffmpegBinary: string
+    recordingSegmentSeconds: number // Duration of each recorded segment in seconds
+    cameras: readonly Readonly<CameraDefinition>[]
 }
 
 export const CAMERA_CONFIG: CameraConfig = {
-    reverseCameraId: 'aee3140a5374e75e4830d3c243fa5bfe3abf9f1e848f92868da5f139d88a71a3',
+    ffmpegBinary: 'ffmpeg',
+    recordingSegmentSeconds: 300,
+    cameras: [
+        {
+            name: reverseCameraName,
+            devicePath: '/dev/video0',
+            width: 1280,
+            height: 720,
+            fps: 20,
+            isMirrored: true,
+        },
+    ],
 }
