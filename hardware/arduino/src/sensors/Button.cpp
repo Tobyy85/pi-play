@@ -1,10 +1,10 @@
 #include "Button.h"
 
 
-Button::Button(int pin, bool input_pullup) {
-    _pin = pin;
-    _input_pullup = input_pullup;
-    pinMode(pin, input_pullup ? INPUT_PULLUP : INPUT);
+Button::Button(ButtonConfig config) {
+    _pin = config.pin;
+    _input_pullup = config.inputPullup;
+    pinMode(_pin, _input_pullup ? INPUT_PULLUP : INPUT);
 }
 
 bool Button::getState() {

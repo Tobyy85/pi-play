@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+#include "../../SensorTypes.h"
+
 /**
  * @brief Class for reading temperature from NTC thermistor using Steinhart-Hart equation
  */
@@ -16,11 +18,7 @@ public:
      * @param betaCoefficient Beta coefficient of the thermistor (K), typically 3950
      */
     Thermistor(
-        uint8_t analogPin,
-        float seriesResistor = 10000.0f,
-        float nominalResistance = 10000.0f,
-        float nominalTemperature = 25.0f,
-        float betaCoefficient = 3950.0f
+        ThermistorConfig config
     );
 
     /**

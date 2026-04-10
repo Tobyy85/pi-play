@@ -12,12 +12,7 @@ SensorManager sensorManager;
 
 
 // Main Thermistor Sensor Setup
-Thermistor thermistor(thermCfg.hw.pin,
-    thermCfg.hw.seriesResistor,
-    thermCfg.hw.nominalResistance,
-    thermCfg.hw.nominalTemperature,
-    thermCfg.hw.bCoefficient
-);
+Thermistor thermistor(thermCfg.hw);
 float readTemperature() {
     return thermistor.readTemperatureCelsiusAvg();
 }
@@ -25,7 +20,7 @@ SensorHandler tempHandler(thermCfg.id, readTemperature, thermCfg.changeThreshold
 
 
 // Reverse Signal Button Setup
-Button reverseSignal(reverseSignalCfg.hw.pin, reverseSignalCfg.hw.inputPullup);
+Button reverseSignal(reverseSignalCfg.hw);
 bool readReverseSignal() {
     return reverseSignal.getState();
 }
