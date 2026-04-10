@@ -14,7 +14,7 @@ SensorConfig<ThermistorConfig> thermCfg = {
         seriesResistor : 100000.0f,
         nominalResistance : 100000.0f,
         nominalTemperature : 25.0f,
-        bCoefficient : 3950.0f,
+        betaCoefficient : 3950.0f,
     }
 };
 

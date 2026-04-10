@@ -39,7 +39,7 @@ public:
 private:
     const float _KELVIN_CONVERSION_OFFSET = 273.15f;
 
-    uint8_t _analogPin;
+    uint8_t _pin;
     float _seriesResistor;
     float _nominalResistance;
     float _nominalTemperature;  // in Celsius

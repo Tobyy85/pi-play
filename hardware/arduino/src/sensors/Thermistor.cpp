@@ -4,18 +4,18 @@
 
 Thermistor::Thermistor(
     ThermistorConfig config
-) : _analogPin(config.pin),
+) : _pin(config.pin),
 _seriesResistor(config.seriesResistor),
 _nominalResistance(config.nominalResistance),
 _nominalTemperature(config.nominalTemperature),
-_betaCoefficient(config.bCoefficient) {
-    pinMode(_analogPin, INPUT);
+_betaCoefficient(config.betaCoefficient) {
+    pinMode(_pin, INPUT);
 }
 
 
 
 int Thermistor::readRawADC() {
-    return analogRead(_analogPin);
+    return analogRead(_pin);
 }
 
 float Thermistor::readResistance() {

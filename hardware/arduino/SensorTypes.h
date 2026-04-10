@@ -22,7 +22,7 @@ struct ThermistorConfig {
     float seriesResistor;   ///< Series resistor value in Ohms
     float nominalResistance;///< Thermistor resistance at nominal temperature (Ohms)
     float nominalTemperature;///< Nominal temperature in Celsius (typically 25°C)
-    float bCoefficient;     ///< Beta coefficient of thermistor (K)
+    float betaCoefficient;     ///< Beta coefficient of thermistor (K)
 };
 
 /**
