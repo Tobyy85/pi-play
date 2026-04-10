@@ -35,12 +35,15 @@ SensorHandler reverseHandler(reverseSignalCfg.id, readReverseSignal, reverseSign
 void setup() {
     SerialCommunication::begin(115200);
 
+    beginVolumeEncoder();
+
     sensorManager.addSensor(&tempHandler);
     sensorManager.addSensor(&reverseHandler);
 }
 
 void loop() {
-    sensorManager.updateAll();
+    checkVolumeEncoderButton();
 
+    sensorManager.updateAll();
     sensorManager.checkSerialRequests();
 }
