@@ -36,4 +36,49 @@ static const SensorConfig<RotaryEncoderConfig> volumeEncoderCfg = {
     }
 };
 
+static const SensorConfig<ButtonConfig> playPauseButtonCfg = {
+    id: "playPause",
+    changeThreshold : 0.0f,
+    hw : {
+        pin: 6,
+        inputPullup : true,
+    }
+};
+
+static const SensorConfig<ButtonConfig> previousTrackButtonCfg = {
+    id: "previousTrack",
+    changeThreshold : 0.0f,
+    hw : {
+        pin: 7,
+        inputPullup : true,
+    }
+};
+
+static const SensorConfig<ButtonConfig> nextTrackButtonCfg = {
+    id: "nextTrack",
+    changeThreshold : 0.0f,
+    hw : {
+        pin: 8,
+        inputPullup : true,
+    }
+};
+
+static const SensorConfig<ButtonConfig> answerCallButtonCfg = {
+    id: "answerCall",
+    changeThreshold : 0.0f,
+    hw : {
+        pin: 9,
+        inputPullup : true,
+    }
+};
+
+static const SensorConfig<ButtonConfig> hangupButtonCfg = {
+    id: "hangup",
+    changeThreshold : 0.0f,
+    hw : {
+        pin: 10,
+        inputPullup : true,
+    }
+};
+
 #endif
