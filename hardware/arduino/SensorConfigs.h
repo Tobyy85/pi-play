@@ -7,23 +7,23 @@
 
 
 SensorConfig<ThermistorConfig> thermCfg = {
-    "temperatureSensor",
-    0.5f,
-    {
-        A0,
-        100000.0f,
-        100000.0f,
-        25.0f,
-        3950.0f,
+    id: "temperatureSensor",
+    changeThreshold : 0.5f,
+    hw : {
+        pin: A0,
+        seriesResistor : 100000.0f,
+        nominalResistance : 100000.0f,
+        nominalTemperature : 25.0f,
+        bCoefficient : 3950.0f,
     }
 };
 
 SensorConfig<ButtonConfig> reverseSignalCfg = {
-    "reverseSignal",
-    0.0f,
-    {
-        2,
-        true,
+    id: "reverseSignal",
+    changeThreshold : 0.0f,
+    hw : {
+        pin: 2,
+        inputPullup : true,
     }
 };
 
