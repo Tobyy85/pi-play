@@ -1,4 +1,4 @@
-#include "src/serialCommunication.h"
+#include "src/SerialCommunication.h"
 
 
 namespace {

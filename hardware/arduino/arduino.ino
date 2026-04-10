@@ -3,7 +3,7 @@
 #include "volumeEncoder.h"
 #include "sensors.h"
 
-#include "src/serialCommunication.h"
+#include "src/SerialCommunication.h"
 
 
 void setup() {

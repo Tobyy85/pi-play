@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "SensorTypes.h"
+#include "sensorTypes.h"
 
 
 SensorConfig<ThermistorConfig> temperatureCfg = {

@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "../../SensorTypes.h"
+#include "../../sensorTypes.h"
 
 /**
  * @brief Class for handling digital button/switch inputs

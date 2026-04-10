@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "../../SensorTypes.h"
+#include "../../sensorTypes.h"
 
 /**
  * @brief Class for reading temperature from NTC thermistor using Steinhart-Hart equation
