@@ -4,6 +4,7 @@
 #include "src/SensorHandler.h"
 #include "src/SensorManager.h"
 #include "SensorConfigs.h"  
+#include "volumeEncoder.h"
 
 #include "src/sensors/Thermistor.h"
 #include "src/sensors/Button.h"

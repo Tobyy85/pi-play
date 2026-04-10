@@ -1,16 +1,20 @@
-/**
- * Volume Encoder
- * Sends 1.0f for clockwise rotation, -1.0f for counterclockwise rotation, and 0.0f when the button is pressed.
- */
-
 #include "src/serialCommunication.h"
 
-const uint8_t pinA = 3;
-const uint8_t pinB = 2;
-const uint8_t pinButton = 4;
-const char* encoderId = "volumeEncoder";
 
-bool lastButtonState = false;
+namespace {
+    const uint8_t pinA = 3;
+    const uint8_t pinB = 2;
+    const uint8_t pinButton = 4;
+    const char* encoderId = "volumeEncoder";
+
+    bool lastButtonState = false;
+}
+
+
+void sendVolumeUpdate() {
+    int b = digitalRead(pinB);
+    SerialCommunication::sendJson(encoderId, b ? -1.0f : 1.0f);
+}
 
 void beginVolumeEncoder() {
     pinMode(pinA, INPUT_PULLUP);
@@ -19,12 +23,6 @@ void beginVolumeEncoder() {
     attachInterrupt(digitalPinToInterrupt(pinA), sendVolumeUpdate, RISING);
 
     lastButtonState = digitalRead(pinButton);
-}
-
-
-void sendVolumeUpdate() {
-    int b = digitalRead(pinB);
-    SerialCommunication::sendJson(encoderId, b ? -1.0f : 1.0f);
 }
 
 void checkVolumeEncoderButton() {
