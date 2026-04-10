@@ -27,4 +27,14 @@ SensorConfig<ButtonConfig> reverseSignalCfg = {
     }
 };
 
+SensorConfig<RotaryEncoderConfig> volumeEncoderCfg = {
+    id: "volumeEncoder",
+    changeThreshold : 0.0f,
+    hw : {
+        pinA: 3,
+        pinB : 4,
+        pinButton : 5,
+    }
+};
+
 #endif

@@ -35,4 +35,15 @@ struct ButtonConfig
 };
 
 
+/**
+ * @brief Configuration structure for rotary encoder sensors
+ */
+struct RotaryEncoderConfig
+{
+    uint8_t pinA;     ///< Pin number for encoder channel A
+    uint8_t pinB;     ///< Pin number for encoder channel B
+    uint8_t pinButton;///< Pin number for encoder button (if applicable)
+};
+
+
 #endif
