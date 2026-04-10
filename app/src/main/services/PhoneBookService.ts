@@ -45,7 +45,7 @@ class PhoneBookService {
             await this.pullContacts()
             await this.pullHistory()
         } catch (err) {
-            console.error('Failed to initialize PhoneBookService:', err)
+            console.error('[PhoneBookService]: Failed to initialize PhoneBookService: ', err, '\n\n')
         } finally {
             await this.removeSession()
         }
@@ -107,7 +107,7 @@ class PhoneBookService {
         try {
             unlinkSync(filename)
         } catch (err) {
-            console.error('Failed to remove temporary file:', err)
+            console.error('[PhoneBookService]: Failed to remove temporary file: ', err, '\n\n')
         }
     }
 
@@ -138,7 +138,7 @@ class PhoneBookService {
         try {
             unlinkSync(filename)
         } catch (err) {
-            console.error('Failed to remove temporary file:', err)
+            console.error('[PhoneBookService]: Failed to remove temporary file: ', err, '\n\n')
         }
     }
 
@@ -185,7 +185,7 @@ class PhoneBookService {
 
             return sessionPath
         } catch (err) {
-            console.error('Failed to create OBEX session:', err)
+            console.error('[PhoneBookService]: Failed to create OBEX session: ', err, '\n\n')
             return null
         }
     }
@@ -198,7 +198,7 @@ class PhoneBookService {
             const obexClient = client.getInterface('org.bluez.obex.Client1')
             await obexClient.RemoveSession(this.sessionPath)
         } catch (err) {
-            console.error('Failed to remove OBEX session:', err)
+            console.error('[PhoneBookService]: Failed to remove OBEX session: ', err, '\n\n')
         } finally {
             this.sessionPath = null
         }
@@ -268,12 +268,12 @@ class PhoneBookService {
         this.getWindow()?.webContents.send('phoneBook:connectionStatus', isConnected)
     }
 
-    private updateContacts(contacts: readonly Readonly<Contact>[] | null): void {
+    private updateContacts(contacts: Contact[] | null): void {
         this.contacts = contacts ? [...contacts] : null
         this.getWindow()?.webContents.send('phoneBook:contacts', contacts)
     }
 
-    private updateCallHistory(callHistory: readonly Readonly<CallHistoryEntry>[] | null): void {
+    private updateCallHistory(callHistory: CallHistoryEntry[] | null): void {
         this.callHistory = callHistory ? [...callHistory] : null
         this.getWindow()?.webContents.send('phoneBook:callHistory', callHistory)
     }
@@ -294,7 +294,7 @@ class PhoneBookService {
         const cards = parseVCards(vCardsData)
 
         if (!cards.vCards || cards.vCards.length === 0) {
-            console.warn('No vCard objects found in data')
+            console.warn('[PhoneBookService]: No vCard objects found in contacts data')
             return []
         }
 
@@ -316,7 +316,7 @@ class PhoneBookService {
         const cards = parseVCards(vCardsData)
 
         if (!cards.vCards || cards.vCards.length === 0) {
-            console.warn('No vCard objects found in data')
+            console.warn('[PhoneBookService]: No vCard objects found in call history data')
             return []
         }
 

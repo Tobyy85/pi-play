@@ -24,7 +24,7 @@ class MapService {
     }
 
     public static registerIpcHandlers(): void {
-        ipcMain.handle('maps:downloadArea', async (event, request: Readonly<MapDownloadRequest>) => {
+        ipcMain.handle('maps:downloadArea', async (event, request: MapDownloadRequest) => {
             await MapService.downloadArea(request)
         })
     }
@@ -47,7 +47,7 @@ class MapService {
                         }
                         return new Response('Tile not found', { status: 404 })
                     } catch (error) {
-                        console.error('Failed to serve tile from protocol:', error)
+                        console.error('[MapService]: Failed to serve tile from protocol: ', error, '\n\n')
                         return new Response('Failed to serve tile', { status: 500 })
                     }
                 }
@@ -102,7 +102,7 @@ class MapService {
 
             return tileData
         } catch (error) {
-            console.error(`Failed to download tile ${z}/${x}/${y}:`, error) // eslint-disable-line id-denylist
+            console.error(`[MapService]: Failed to download tile ${z}/${x}/${y}: `, error, '\n\n') // eslint-disable-line id-denylist
             return null
         }
     }
@@ -119,7 +119,7 @@ class MapService {
         )
     }
 
-    private static async downloadArea(request: Readonly<MapDownloadRequest>): Promise<void> {
+    private static async downloadArea(request: MapDownloadRequest): Promise<void> {
         const { minLat, minLon, maxLat, maxLon, minZoom, maxZoom } = request
 
         // eslint-disable-next-line id-denylist
@@ -143,7 +143,7 @@ class MapService {
         const apiKey = process.env.STADIAMAPS_KEY
 
         if (!apiKey) {
-            console.error('Missing STADIAMAPS_KEY in environment variables')
+            console.error('[MapService]: Missing STADIAMAPS_KEY in environment variables')
             return null
         }
 

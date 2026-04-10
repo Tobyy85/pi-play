@@ -5,8 +5,8 @@ import * as dbus from 'dbus-next'
 import type { BluetoothDevice } from '@shared/types/bluetooth'
 
 type ConnectedDeviceListener = (
-    connectedDevice: Readonly<BluetoothDevice> | null,
-    previousDevice: Readonly<BluetoothDevice> | null
+    connectedDevice: BluetoothDevice | null,
+    previousDevice: BluetoothDevice | null
 ) => void | Promise<void>
 
 /* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
@@ -65,7 +65,7 @@ class BluetoothService {
 
     private async getConnectedDevice(): Promise<BluetoothDevice | null> {
         if (!this.objectManager) {
-            console.error('ObjectManager not initialized')
+            console.error('[BluetoothService]: ObjectManager not initialized')
             return null
         }
 
@@ -88,7 +88,7 @@ class BluetoothService {
 
     private async watchConnectedDevices(): Promise<void> {
         if (!this.objectManager) {
-            console.error('ObjectManager not initialized')
+            console.error('[BluetoothService]: ObjectManager not initialized')
             return
         }
         const managedObjects = await this.objectManager.GetManagedObjects()
@@ -128,7 +128,7 @@ class BluetoothService {
             }
         })
 
-        this.objectManager.on('InterfacesRemoved', (_path: string, interfaces: readonly string[]) => {
+        this.objectManager.on('InterfacesRemoved', (_path: string, interfaces: string[]) => {
             if (interfaces.includes('org.bluez.Device1')) {
                 void (async () => {
                     this.updateConnectedDevice(await this.getConnectedDevice())
@@ -137,7 +137,7 @@ class BluetoothService {
         })
     }
 
-    private updateConnectedDevice(connectedDevice: Readonly<BluetoothDevice> | null): void {
+    private updateConnectedDevice(connectedDevice: BluetoothDevice | null): void {
         const previousDevice = this.connectedDevice
         if (BluetoothService.areDevicesEqual(previousDevice, connectedDevice)) {
             return
@@ -146,26 +146,26 @@ class BluetoothService {
         this.connectedDevice = connectedDevice
         this.getWindow()?.webContents.send('bluetooth:connectedDevice', connectedDevice)
         this.notifyConnectedDeviceChanged(connectedDevice, previousDevice).catch((err: unknown) => {
-            console.error('Failed to notify connected device change:', err)
+            console.error('[BluetoothService]: Failed to notify connected device change: ', err, '\n\n')
         })
     }
 
     private async notifyConnectedDeviceChanged(
-        connectedDevice: Readonly<BluetoothDevice> | null,
-        previousDevice: Readonly<BluetoothDevice> | null
+        connectedDevice: BluetoothDevice | null,
+        previousDevice: BluetoothDevice | null
     ): Promise<void> {
         for (const listener of this.deviceChangeListeners) {
             try {
                 await listener(connectedDevice, previousDevice)
             } catch (err) {
-                console.error('Bluetooth device change listener failed:', err)
+                console.error('[BluetoothService]: Bluetooth device change listener failed: ', err, '\n\n')
             }
         }
     }
 
     private static areDevicesEqual(
-        deviceA: Readonly<BluetoothDevice> | null,
-        deviceB: Readonly<BluetoothDevice> | null
+        deviceA: BluetoothDevice | null,
+        deviceB: BluetoothDevice | null
     ): boolean {
         if (!deviceA || !deviceB) {
             return false

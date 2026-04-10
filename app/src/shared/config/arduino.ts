@@ -1,14 +1,20 @@
 import type { BoardInfo } from '@shared/types/arduino'
 
 interface ArduinoConfig {
-    boardInfo: BoardInfo
+    boards: BoardInfo[]
     baudRate: number
 }
 
 export const ARDUINO_CONFIG: ArduinoConfig = {
-    boardInfo: {
-        vendorId: '1A86',
-        productId: '7523',
-    },
+    boards: [
+        {
+            vendorId: '1A86',
+            productId: '7523',
+        },
+        {
+            vendorId: '1A86',
+            productId: '7523',
+        },
+    ],
     baudRate: 115200,
 }

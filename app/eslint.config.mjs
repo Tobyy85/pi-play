@@ -195,6 +195,10 @@ export default defineConfig([
                     format: ['camelCase', 'UPPER_CASE', 'PascalCase'], // allow PascalCase for React components
                 },
                 {
+                    selector: 'classProperty',
+                    format: ['camelCase', 'UPPER_CASE'],
+                },
+                {
                     selector: 'parameter',
                     format: ['camelCase'],
                     leadingUnderscore: 'allow',
@@ -410,13 +414,6 @@ export default defineConfig([
             '@typescript-eslint/prefer-nullish-coalescing': 'warn',
             '@typescript-eslint/prefer-optional-chain': 'warn',
             '@typescript-eslint/prefer-readonly': 'warn',
-            '@typescript-eslint/prefer-readonly-parameter-types': [
-                'warn',
-                {
-                    ignoreInferredTypes: true,
-                    treatMethodsAsReadonly: true,
-                },
-            ],
             '@typescript-eslint/prefer-reduce-type-parameter': 'warn',
             '@typescript-eslint/prefer-regexp-exec': 'warn',
             '@typescript-eslint/prefer-return-this-type': 'warn',
@@ -444,7 +441,6 @@ export default defineConfig([
         files: ['**/*.tsx'],
         rules: {
             '@typescript-eslint/explicit-function-return-type': 'off', // No need to explicitly type React components' return types
-            '@typescript-eslint/prefer-readonly-parameter-types': 'off', // No need to explicitly type readonly for React components' props
             '@typescript-eslint/strict-void-return': 'off', // Allow Promise-returning callbacks in React props
         },
     },

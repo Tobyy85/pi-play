@@ -4,11 +4,12 @@ import { app, BrowserWindow } from 'electron'
 import WindowManager from '@main/managers/windowManager'
 
 import ArduinoService from '@main/services/ArduinoService'
+import CameraRecordingService from '@main/services/CameraRecordingService'
 import GPSService from '@main/services/GpsService'
+import MapService from '@main/services/MapService'
 
 import BluetoothService from '@main/services/BluetoothService'
 import CallService from '@main/services/CallService'
-import MapService from '@main/services/MapService'
 import MediaPlayerService from '@main/services/MediaPlayerService'
 import PhoneBookService from '@main/services/PhoneBookService'
 
@@ -19,6 +20,7 @@ const getWindow = (): BrowserWindow | null => windowManager.getWindow()
 
 const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
+const cameraRecordingService = new CameraRecordingService(getWindow)
 
 MapService.initialize()
 
@@ -36,7 +38,7 @@ app.whenReady().then(() => {
     windowManager.createWindow()
 
     arduinoService.registerIpcHandlers()
-    arduinoService.connect(ARDUINO_CONFIG.boardInfo, ARDUINO_CONFIG.baudRate)
+    arduinoService.connect(ARDUINO_CONFIG.boards, ARDUINO_CONFIG.baudRate)
 
     gpsService.registerIpcHandlers()
     gpsService.connect()
@@ -53,6 +55,9 @@ app.whenReady().then(() => {
     phoneBookService.registerIpcHandlers()
     phoneBookService.initialize()
 
+    cameraRecordingService.registerIpcHandlers()
+    cameraRecordingService.initialize()
+
     MapService.registerIpcHandlers()
     MapService.initializeProtocol()
 
@@ -64,6 +69,7 @@ app.whenReady().then(() => {
 })
 
 app.on('before-quit', () => {
+    cameraRecordingService.disconnect()
     arduinoService.disconnect()
     gpsService.disconnect()
     mediaPlayerService.disconnect()

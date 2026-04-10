@@ -20,7 +20,7 @@ interface PhoneBookStore {
 let contactsUnsubscribe: (() => void) | null = null
 let initializePromise: Promise<void> | null = null
 
-const indexContactsByPhoneNumber = (contacts: readonly Readonly<Contact>[]): ContactsByPhone => {
+const indexContactsByPhoneNumber = (contacts: Contact[]): ContactsByPhone => {
     return contacts.reduce<ContactsByPhone>((index, contact) => {
         index[normalizePhoneNumber(contact.phoneNumber)] = contact
         return index
@@ -41,7 +41,7 @@ export const usePhoneBookStore = create<PhoneBookStore>((set, get) => ({
 
             set({ contacts, contactsByPhone, initialized: true })
         } catch (err) {
-            console.error('Failed to load contacts:', err)
+            console.error('[usePhoneBookStore]: Failed to load contacts: ', err)
         } finally {
             set({ isLoading: false })
         }

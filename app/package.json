@@ -11,6 +11,7 @@
     },
     "scripts": {
         "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
         "preview": "vite preview",
         "format": "prettier --write .",
         "dev": "npm run build:electron && concurrently -n \"Vite,TSC, \" -c \"green,blue,reset\" \"npm:vite:dev\" \"npm:electron:watch\" \"npm:electron:start\"",

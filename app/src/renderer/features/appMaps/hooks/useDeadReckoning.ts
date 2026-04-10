@@ -107,7 +107,7 @@ const useDeadReckoning = ({
     speedMps,
     heading,
     catchUpDurationMs = DEFAULT_CATCH_UP_DURATION_MS,
-}: Readonly<DeadReckoningInput>): VisualPosition => {
+}: DeadReckoningInput): VisualPosition => {
     const [visualPosition, setVisualPosition] = useState<VisualPosition>({
         lat: latitude,
         lng: longitude,

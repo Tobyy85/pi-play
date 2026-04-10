@@ -10,8 +10,7 @@ import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 const subscribeToChannel = <T>(channel: string, callback: (data: T) => void) => {
-    // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-    const cb = (_event: Readonly<IpcRendererEvent>, data: T): void => {
+    const cb = (_event: IpcRendererEvent, data: T): void => {
         callback(data)
     }
     ipcRenderer.on(channel, cb)
@@ -37,15 +36,14 @@ const generateDataHandler = <T>(getChannel: string, subscribeChannel: string): D
 
 const electronApi = {
     arduino: {
-        subscribeToData: (callback: (arduinoData: Readonly<ArduinoData>) => void): (() => void) => {
+        subscribeToData: (callback: (arduinoData: ArduinoData) => void): (() => void) => {
             return subscribeToChannel('arduino:change', callback)
         },
         subscribeToSensorId: (
             sensorId: ArduinoData['sensorId'],
             callback: (value: ArduinoData['value']) => void
         ): (() => void) => {
-            // eslint-disable-next-line @typescript-eslint/prefer-readonly-parameter-types
-            const handler = (_event: Readonly<IpcRendererEvent>, data: Readonly<ArduinoData>): void => {
+            const handler = (_event: IpcRendererEvent, data: ArduinoData): void => {
                 if (data.sensorId === sensorId) {
                     callback(data.value)
                 }
@@ -60,7 +58,7 @@ const electronApi = {
         },
     },
     gps: {
-        subscribe: (callback: (gpsData: Readonly<GPSData>) => void): (() => void) => {
+        subscribe: (callback: (gpsData: GPSData) => void): (() => void) => {
             return subscribeToChannel('gps:change', callback)
         },
         getData: async (): Promise<GPSData> => {
@@ -133,8 +131,16 @@ const electronApi = {
             'phoneBook:loadingCallHistory'
         ),
     },
+    camera: {
+        getLatestFrame: async (cameraName: string): Promise<string | null> => {
+            return await ipcRenderer.invoke('camera:getLatestFrame', cameraName) // eslint-disable-line @typescript-eslint/no-unsafe-return
+        },
+        subscribeToFrame: (cameraName: string, callback: (frameDataUrl: string) => void): (() => void) => {
+            return subscribeToChannel(`camera:frame:${cameraName}`, callback)
+        },
+    },
     maps: {
-        downloadArea: async (request: Readonly<MapDownloadRequest>) => {
+        downloadArea: async (request: MapDownloadRequest) => {
             await ipcRenderer.invoke('maps:downloadArea', request)
         },
     },

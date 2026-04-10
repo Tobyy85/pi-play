@@ -8,13 +8,22 @@ UltrasonicSensor sensorLeft(3, 2);
 UltrasonicSensor sensorMid(6, 5);
 UltrasonicSensor sensorRight(10, 9);
 
+const String sensorLeftId = "parkingSensorLeft";
+const String sensorMidId = "parkingSensorMid";
+const String sensorRightId = "parkingSensorRight";
+
 const int SAMPLE = 5;
 const int SAMPLE_DELAY_MS = 50;
 const int MAX_DISTANCE = 200;
 
 
+int lastLeftLevel = -1;
+int lastMidLevel = -1;
+int lastRightLevel = -1;
+
+
 void setup() {
-    SerialCommunication::begin(9600);
+    SerialCommunication::begin(115200);
 }
 
 
@@ -22,18 +31,41 @@ void loop() {
     int leftSensorValue = 0;
     int midSensorValue = 0;
     int rightSensorValue = 0;
-
     getTrimmedAverageDistances(leftSensorValue, midSensorValue, rightSensorValue);
 
     int leftLevel = getSensorLevel(leftSensorValue);
     int midLevel = getSensorLevel(midSensorValue);
     int rightLevel = getSensorLevel(rightSensorValue);
 
-    SerialCommunication::sendJson("left", (float)leftLevel);
-    SerialCommunication::sendJson("mid", (float)midLevel);
-    SerialCommunication::sendJson("right", (float)rightLevel);
 
+    if (leftLevel != lastLeftLevel) {
+        SerialCommunication::sendJson(sensorLeftId, (float)leftLevel);
+        lastLeftLevel = leftLevel;
+    }
 
+    if (midLevel != lastMidLevel) {
+        SerialCommunication::sendJson(sensorMidId, (float)midLevel);
+        lastMidLevel = midLevel;
+    }
+
+    if (rightLevel != lastRightLevel) {
+        SerialCommunication::sendJson(sensorRightId, (float)rightLevel);
+        lastRightLevel = rightLevel;
+    }
+
+    if (Serial.available() > 0) {
+        String request = Serial.readStringUntil('\n');
+        request.trim();
+        if (request.length() > 0) {
+            if (request == sensorLeftId) {
+                SerialCommunication::sendJson(sensorLeftId, (float)leftLevel);
+            } else if (request == sensorMidId) {
+                SerialCommunication::sendJson(sensorMidId, (float)midLevel);
+            } else if (request == sensorRightId) {
+                SerialCommunication::sendJson(sensorRightId, (float)rightLevel);
+            }
+        }
+    }
 }
 
 
@@ -53,6 +85,7 @@ unsigned int getSensorLevel(int distance) {
 
     return 0;
 }
+
 
 void getTrimmedAverageDistances(int& leftDistance, int& midDistance, int& rightDistance) {
     if (SAMPLE <= 0) {

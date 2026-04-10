@@ -34,7 +34,6 @@ SensorHandler reverseHandler(reverseSignalCfg.id, readReverseSignal, reverseSign
 
 void setup() {
     SerialCommunication::begin(115200);
-    Serial.begin(115200);
 
     sensorManager.addSensor(&tempHandler);
     sensorManager.addSensor(&reverseHandler);
