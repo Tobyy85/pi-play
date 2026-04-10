@@ -1,34 +1,54 @@
 #include "src/SerialCommunication.h"
+#include "sensorConfigs.h"
 
 
 namespace {
-    const uint8_t pinA = 3;
-    const uint8_t pinB = 2;
-    const uint8_t pinButton = 4;
-    const char* encoderId = "volumeEncoder";
-
     bool lastButtonState = false;
+    volatile int8_t encoderDelta = 0;
+
+    unsigned long lastUpdateMillis = 0;
 }
 
 
-void sendVolumeUpdate() {
-    int b = digitalRead(pinB);
-    SerialCommunication::sendJson(encoderId, b ? -1.0f : 1.0f);
+void updateEncoderDelta() {
+    unsigned long now = millis();
+
+    if (digitalRead(volumeEncoderCfg.hw.pinA) && now - lastUpdateMillis >= 5) {
+        if (digitalRead(volumeEncoderCfg.hw.pinB)) {
+            encoderDelta++;
+        } else {
+            encoderDelta--;
+        }
+        lastUpdateMillis = now;
+    }
 }
 
 void beginVolumeEncoder() {
-    pinMode(pinA, INPUT_PULLUP);
-    pinMode(pinB, INPUT);
-    pinMode(pinButton, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(pinA), sendVolumeUpdate, RISING);
+    pinMode(volumeEncoderCfg.hw.pinA, INPUT_PULLUP);
+    pinMode(volumeEncoderCfg.hw.pinB, INPUT_PULLUP);
+    pinMode(volumeEncoderCfg.hw.pinButton, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(volumeEncoderCfg.hw.pinA), updateEncoderDelta, RISING);
 
-    lastButtonState = digitalRead(pinButton);
+    lastButtonState = digitalRead(volumeEncoderCfg.hw.pinButton);
+}
+
+void sendVolumeUpdate() {
+    int8_t delta;
+
+    noInterrupts();
+    delta = encoderDelta;
+    encoderDelta = 0;
+    interrupts();
+
+    if (delta != 0) {
+        SerialCommunication::sendJson(volumeEncoderCfg.id, delta > 0 ? 1.0f : -1.0f);
+    }
 }
 
 void checkVolumeEncoderButton() {
-    const bool buttonValue = digitalRead(pinButton);
+    const bool buttonValue = digitalRead(volumeEncoderCfg.hw.pinButton);
     if (!buttonValue && lastButtonState) {
-        SerialCommunication::sendJson(encoderId, 0.0f);
+        SerialCommunication::sendJson(volumeEncoderCfg.id, 0.0f);
     }
     lastButtonState = buttonValue;
 }

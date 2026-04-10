@@ -11,6 +11,7 @@
 
 void beginVolumeEncoder();
 void checkVolumeEncoderButton();
+void sendVolumeUpdate();
 
 
 #endif
