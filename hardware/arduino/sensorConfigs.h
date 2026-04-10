@@ -5,8 +5,7 @@
 
 #include "sensorTypes.h"
 
-
-SensorConfig<ThermistorConfig> temperatureCfg = {
+static const SensorConfig<ThermistorConfig> temperatureCfg = {
     id: "temperatureSensor",
     changeThreshold : 0.5f,
     hw : {
@@ -18,7 +17,7 @@ SensorConfig<ThermistorConfig> temperatureCfg = {
     }
 };
 
-SensorConfig<ButtonConfig> reverseSignalCfg = {
+static const SensorConfig<ButtonConfig> reverseSignalCfg = {
     id: "reverseSignal",
     changeThreshold : 0.0f,
     hw : {
@@ -27,7 +26,7 @@ SensorConfig<ButtonConfig> reverseSignalCfg = {
     }
 };
 
-SensorConfig<RotaryEncoderConfig> volumeEncoderCfg = {
+static const SensorConfig<RotaryEncoderConfig> volumeEncoderCfg = {
     id: "volumeEncoder",
     changeThreshold : 0.0f,
     hw : {
