@@ -6,7 +6,7 @@
 #include "SensorTypes.h"
 
 
-SensorConfig<ThermistorConfig> thermCfg = {
+SensorConfig<ThermistorConfig> temperatureCfg = {
     id: "temperatureSensor",
     changeThreshold : 0.5f,
     hw : {

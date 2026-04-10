@@ -12,11 +12,11 @@ SensorManager sensorManager;
 
 
 // Main Thermistor Sensor Setup
-Thermistor thermistor(thermCfg.hw);
+Thermistor thermistor(temperatureCfg.hw);
 float readTemperature() {
     return thermistor.readTemperatureCelsiusAvg();
 }
-SensorHandler tempHandler(thermCfg.id, readTemperature, thermCfg.changeThreshold);
+SensorHandler tempHandler(temperatureCfg.id, readTemperature, temperatureCfg.changeThreshold);
 
 
 // Reverse Signal Button Setup
