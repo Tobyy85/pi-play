@@ -75,16 +75,26 @@ class CallService {
             return callInfo
         })
         ipcMain.handle('call:answer', async () => {
-            await this.callInterface?.Answer()
-            const properties = await this.callInterface?.GetProperties()
-            this.getWindow()?.webContents.send('call:info', CallService.extractCallInfo(properties))
+            await this.answer()
         })
         ipcMain.handle('call:hangup', async () => {
-            await this.callInterface?.Hangup()
+            await this.hangup()
         })
         ipcMain.handle('call:dial', async (event, phoneNumber: string) => {
             await this.voiceCallManager?.Dial(phoneNumber, 'default')
         })
+    }
+
+    public async answer(): Promise<void> {
+        await this.callInterface?.Answer()
+        const properties = await this.callInterface?.GetProperties()
+
+        if (!properties) return
+        this.getWindow()?.webContents.send('call:info', CallService.extractCallInfo(properties))
+    }
+
+    public async hangup(): Promise<void> {
+        await this.callInterface?.Hangup()
     }
 
     public disconnect(): void {
