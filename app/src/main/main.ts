@@ -6,6 +6,7 @@ import WindowManager from '@main/managers/windowManager'
 import ArduinoService from '@main/services/ArduinoService'
 import CameraRecordingService from '@main/services/CameraRecordingService'
 import GPSService from '@main/services/GpsService'
+import HardwareControlsService from '@main/services/HardwareControlsService'
 import MapService from '@main/services/MapService'
 
 import BluetoothService from '@main/services/BluetoothService'
@@ -13,12 +14,12 @@ import CallService from '@main/services/CallService'
 import MediaPlayerService from '@main/services/MediaPlayerService'
 import PhoneBookService from '@main/services/PhoneBookService'
 
+import { getHardwareControlActions } from '@main/utils/hardwareControlActions'
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
 
 const windowManager = new WindowManager()
 const getWindow = (): BrowserWindow | null => windowManager.getWindow()
 
-const arduinoService = new ArduinoService(getWindow)
 const gpsService = new GPSService(getWindow)
 const cameraRecordingService = new CameraRecordingService(getWindow)
 
@@ -28,6 +29,13 @@ const bluetoothService = new BluetoothService(getWindow)
 const mediaPlayerService = new MediaPlayerService(getWindow)
 const callService = new CallService(getWindow)
 const phoneBookService = new PhoneBookService(getWindow)
+
+const hardwareControlsService = new HardwareControlsService(
+    getHardwareControlActions(mediaPlayerService, callService)
+)
+const arduinoService = new ArduinoService(getWindow, data => {
+    hardwareControlsService.handleArduinoData(data)
+})
 
 bluetoothService.onConnectedDeviceChanged(async () => {
     await Promise.allSettled([mediaPlayerService.reload(), callService.reload(), phoneBookService.reload()])
@@ -76,6 +84,7 @@ app.on('before-quit', () => {
     callService.disconnect()
     phoneBookService.disconnect()
     bluetoothService.disconnect()
+    hardwareControlsService.disconnect()
 })
 /* eslint-enable @typescript-eslint/no-floating-promises */
 
