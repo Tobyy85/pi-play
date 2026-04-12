@@ -4,6 +4,8 @@ import { SerialPort } from 'serialport'
 
 import type { ArduinoData, BoardInfo } from '@shared/types/arduino'
 
+type ArduinoDataListener = (data: ArduinoData) => void | Promise<void>
+
 interface PendingRequest {
     resolve: (data: ArduinoData) => void
     reject: (error: Error) => void
@@ -19,12 +21,14 @@ class ArduinoService {
     private static readonly REQUEST_TIMEOUT = 5000
 
     private readonly getWindow: () => BrowserWindow | null
+    private readonly onData?: ArduinoDataListener
 
     private serialConnections: SerialConnection[] = []
     private readonly pendingRequests: Map<string, PendingRequest[]> = new Map()
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: () => BrowserWindow | null, onData?: ArduinoDataListener) {
         this.getWindow = getWindow
+        this.onData = onData
     }
 
     /**
@@ -130,6 +134,7 @@ class ArduinoService {
                             request.resolve(data)
                         })
                     } else {
+                        this.notifyDataListener(data)
                         this.getWindow()?.webContents.send('arduino:change', data)
                     }
                 } else {
@@ -141,6 +146,16 @@ class ArduinoService {
                 console.error(`[ArduinoService]: SerialPort Error: ${err.message}`)
             })
         }
+    }
+
+    private notifyDataListener(data: ArduinoData): void {
+        if (!this.onData) {
+            return
+        }
+
+        Promise.resolve(this.onData(data)).catch((error: unknown) => {
+            console.error('[ArduinoService]: Data listener failed: ', error, '\n\n')
+        })
     }
 
     /**
