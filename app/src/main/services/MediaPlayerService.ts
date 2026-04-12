@@ -74,20 +74,47 @@ class MediaPlayerService {
         })
 
         ipcMain.handle('mediaPlayer:play', async () => {
-            await this.mediaPlayerInterface?.Play()
+            await this.play()
         })
 
         ipcMain.handle('mediaPlayer:pause', async () => {
-            await this.mediaPlayerInterface?.Pause()
+            await this.pause()
         })
 
         ipcMain.handle('mediaPlayer:next', async () => {
-            await this.mediaPlayerInterface?.Next()
+            await this.next()
         })
 
         ipcMain.handle('mediaPlayer:previous', async () => {
-            await this.mediaPlayerInterface?.Previous()
+            await this.previous()
         })
+    }
+
+    public async play(): Promise<void> {
+        await this.mediaPlayerInterface?.Play()
+    }
+
+    public async pause(): Promise<void> {
+        await this.mediaPlayerInterface?.Pause()
+    }
+
+    public async next(): Promise<void> {
+        await this.mediaPlayerInterface?.Next()
+    }
+
+    public async previous(): Promise<void> {
+        await this.mediaPlayerInterface?.Previous()
+    }
+
+    public async togglePlayPause(): Promise<void> {
+        const status = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Status')
+        const value: string | undefined = status?.value
+
+        if (value === 'playing') {
+            await this.pause()
+        } else {
+            await this.play()
+        }
     }
 
     public disconnect(): void {
