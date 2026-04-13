@@ -3,6 +3,7 @@ import { createBrowserRouter, createHashRouter, RouterProvider } from 'react-rou
 import { routes } from './routes'
 
 import CallOverlay from '@renderer/features/call/components/CallOverlay'
+import VolumeOverlay from '@renderer/features/volume/components/VolumeOverlay'
 
 const createAppRouter = () => {
     const isDev = import.meta.env.DEV
@@ -20,6 +21,7 @@ export const AppRouter = () => {
         <>
             <RouterProvider router={router} />
             <CallOverlay />
+            <VolumeOverlay />
         </>
     )
 }
