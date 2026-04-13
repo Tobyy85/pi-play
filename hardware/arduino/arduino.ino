@@ -14,6 +14,8 @@ void setup() {
 }
 
 void loop() {
+    sendVolumeUpdate();
     checkVolumeEncoderButton();
+
     updateSensors();
 }
