@@ -41,7 +41,11 @@ class HardwareControlsService {
                 return
             }
 
-            await this.actions.onVolumeEncoder(value)
+            if (value === 0) {
+                await this.actions.onMuteToggle()
+            } else {
+                await this.actions.onVolumeChange(value)
+            }
         })
 
         this.registerButtonHandler('playPause', async () => {
