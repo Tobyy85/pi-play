@@ -8,6 +8,7 @@ import CameraRecordingService from '@main/services/CameraRecordingService'
 import GPSService from '@main/services/GpsService'
 import HardwareControlsService from '@main/services/HardwareControlsService'
 import MapService from '@main/services/MapService'
+import SystemAudioService from '@main/services/SystemAudioService'
 
 import BluetoothService from '@main/services/BluetoothService'
 import CallService from '@main/services/CallService'
@@ -22,6 +23,7 @@ const getWindow = (): BrowserWindow | null => windowManager.getWindow()
 
 const gpsService = new GPSService(getWindow)
 const cameraRecordingService = new CameraRecordingService(getWindow)
+const systemAudioService = new SystemAudioService(getWindow)
 
 MapService.initialize()
 
@@ -31,7 +33,7 @@ const callService = new CallService(getWindow)
 const phoneBookService = new PhoneBookService(getWindow)
 
 const hardwareControlsService = new HardwareControlsService(
-    getHardwareControlActions(mediaPlayerService, callService)
+    getHardwareControlActions(mediaPlayerService, callService, systemAudioService)
 )
 const arduinoService = new ArduinoService(getWindow, data => {
     hardwareControlsService.handleArduinoData(data)
@@ -68,6 +70,8 @@ app.whenReady().then(() => {
 
     MapService.registerIpcHandlers()
     MapService.initializeProtocol()
+
+    SystemAudioService.registerIpcHandlers()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {

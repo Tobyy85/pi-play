@@ -1,6 +1,6 @@
 import type CallService from '@main/services/CallService'
 import type MediaPlayerService from '@main/services/MediaPlayerService'
-import SystemAudioService from '@main/services/SystemAudioService'
+import type SystemAudioService from '@main/services/SystemAudioService'
 
 export interface HardwareControlActions {
     onVolumeChange: (step: number) => Promise<void>
@@ -14,13 +14,14 @@ export interface HardwareControlActions {
 
 export const getHardwareControlActions = (
     mediaPlayerService: MediaPlayerService,
-    callService: CallService
+    callService: CallService,
+    systemAudioService: SystemAudioService
 ): HardwareControlActions => ({
     onVolumeChange: async step => {
-        await SystemAudioService.stepVolume(step)
+        await systemAudioService.stepVolume(step)
     },
     onMuteToggle: async () => {
-        await SystemAudioService.toggleMute()
+        await systemAudioService.toggleMute()
     },
     onPlayPause: async () => {
         await mediaPlayerService.togglePlayPause()
