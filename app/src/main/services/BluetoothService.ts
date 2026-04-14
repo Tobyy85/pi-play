@@ -1,7 +1,8 @@
-import { ipcMain, type BrowserWindow } from 'electron'
+import { ipcMain } from 'electron'
 
 import * as dbus from 'dbus-next'
 
+import type { WindowProvider } from '@main/types/window'
 import type { BluetoothDevice } from '@shared/types/bluetooth'
 
 type ConnectedDeviceListener = (
@@ -11,7 +12,7 @@ type ConnectedDeviceListener = (
 
 /* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 class BluetoothService {
-    private readonly getWindow: () => BrowserWindow | null
+    private readonly getWindow: WindowProvider
 
     private readonly systemBus: dbus.MessageBus
     private objectManager: dbus.ClientInterface | null = null
@@ -20,7 +21,7 @@ class BluetoothService {
     private readonly watchedDevicePaths: Set<string> = new Set()
     private readonly deviceChangeListeners: Set<ConnectedDeviceListener> = new Set()
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
         this.systemBus = dbus.systemBus()
     }

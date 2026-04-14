@@ -1,12 +1,13 @@
-import { ipcMain, type BrowserWindow } from 'electron'
-
-import type { TrackInfo } from '@shared/types/mediaPlayer'
+import { ipcMain } from 'electron'
 
 import * as dbus from 'dbus-next'
 
+import type { WindowProvider } from '@main/types/window'
+import type { TrackInfo } from '@shared/types/mediaPlayer'
+
 /* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 class MediaPlayerService {
-    private readonly getWindow: () => BrowserWindow | null
+    private readonly getWindow: WindowProvider
     private connectionStatus = false
 
     private readonly systemBus: dbus.MessageBus
@@ -19,7 +20,7 @@ class MediaPlayerService {
 
     private isInitialized = false
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
         this.systemBus = dbus.systemBus()
     }

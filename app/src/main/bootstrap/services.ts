@@ -1,4 +1,4 @@
-import type { BrowserWindow } from 'electron'
+import type { WindowProvider } from '@main/types/window'
 
 import { getHardwareControlActions } from '@main/utils/hardwareControlActions'
 import { ARDUINO_CONFIG } from '@shared/config/arduino'
@@ -26,7 +26,7 @@ export interface Services {
     phoneBookService: PhoneBookService
 }
 
-export const createServices = (getWindow: () => BrowserWindow | null): Services => {
+export const createServices = (getWindow: WindowProvider): Services => {
     const gpsService = new GPSService(getWindow)
     const cameraRecordingService = new CameraRecordingService(getWindow)
     const systemAudioService = new SystemAudioService(getWindow)

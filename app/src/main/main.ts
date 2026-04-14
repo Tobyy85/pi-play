@@ -2,11 +2,12 @@ import 'dotenv/config'
 import { app, BrowserWindow } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
+import type { WindowProvider } from '@main/types/window'
 
 import { createServices, disconnectServices, setupServices } from '@main/bootstrap/services'
 
 const windowManager = new WindowManager()
-const getWindow = (): BrowserWindow | null => windowManager.getWindow()
+const getWindow: WindowProvider = () => windowManager.getWindow()
 
 const services = createServices(getWindow)
 

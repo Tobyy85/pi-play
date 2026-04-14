@@ -1,7 +1,8 @@
-import { type BrowserWindow, ipcMain } from 'electron'
+import { ipcMain } from 'electron'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 
+import type { WindowProvider } from '@main/types/window'
 import type { Volume } from '@shared/types/systemAudio'
 
 const execFileAsync = promisify(execFile) // eslint-disable-line @typescript-eslint/strict-void-return
@@ -10,9 +11,9 @@ class SystemAudioService {
     private static readonly STEP_SIZE = 5
     private static readonly DEFAULT_AUDIO_SINK = '@DEFAULT_AUDIO_SINK@'
 
-    private readonly getWindow: () => BrowserWindow | null
+    private readonly getWindow: WindowProvider
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
     }
 

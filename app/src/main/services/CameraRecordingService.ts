@@ -1,9 +1,11 @@
 import { spawn, type ChildProcessByStdio } from 'child_process'
-import { ipcMain, type BrowserWindow } from 'electron'
+import { ipcMain } from 'electron'
 import fs from 'fs'
 import path from 'path'
+
 import type { Readable } from 'stream'
 
+import type { WindowProvider } from '@main/types/window'
 import { CAMERA_CONFIG } from '@shared/config/camera'
 import { STORAGE_PATH } from '@shared/config/storage'
 import type { CameraDefinition } from '@shared/types/camera'
@@ -18,10 +20,10 @@ interface CameraRuntime {
 const FORCE_KILL_TIMEOUT_MS = 3000
 
 class CameraRecordingService {
-    private readonly getWindow: () => BrowserWindow | null
+    private readonly getWindow: WindowProvider
     private readonly cameraRuntimes: Map<string, CameraRuntime> = new Map()
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
 
         for (const camera of CAMERA_CONFIG.cameras) {

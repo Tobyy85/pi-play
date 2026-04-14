@@ -1,8 +1,10 @@
+import { ipcMain } from 'electron'
+
 import { ReadlineParser } from '@serialport/parser-readline'
-import { ipcMain, type BrowserWindow } from 'electron'
 import * as nmea from 'nmea-simple'
 import { SerialPort } from 'serialport'
 
+import type { WindowProvider } from '@main/types/window'
 import { GPS_CONFIG } from '@shared/config/gps'
 import type { GPSData } from '@shared/types/gps'
 
@@ -33,11 +35,11 @@ const DEFAULT_GPS_DATA: GPSData = {
 class GPSService {
     private port: SerialPort | null = null
     private parser: ReadlineParser | null = null
-    private readonly getWindow: () => BrowserWindow | null
+    private readonly getWindow: WindowProvider
     private isConnected = false
     private readonly currentData: GPSData = { ...DEFAULT_GPS_DATA }
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
     }
 
