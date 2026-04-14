@@ -1,11 +1,13 @@
-import type { CallInfo } from '@shared/types/call'
-import { ipcMain, type BrowserWindow } from 'electron'
+import { ipcMain } from 'electron'
 
 import * as dbus from 'dbus-next'
 
+import type { WindowProvider } from '@main/types/window'
+import type { CallInfo } from '@shared/types/call'
+
 /* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 class CallService {
-    private readonly getWindow: () => BrowserWindow | null
+    private readonly getWindow: WindowProvider
 
     private readonly systemBus: dbus.MessageBus
     private ofonoManager: any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -15,7 +17,7 @@ class CallService {
     private isInitialized = false
     private readonly watchedModemPaths: Set<string> = new Set()
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
         this.systemBus = dbus.systemBus()
     }
@@ -75,16 +77,26 @@ class CallService {
             return callInfo
         })
         ipcMain.handle('call:answer', async () => {
-            await this.callInterface?.Answer()
-            const properties = await this.callInterface?.GetProperties()
-            this.getWindow()?.webContents.send('call:info', CallService.extractCallInfo(properties))
+            await this.answer()
         })
         ipcMain.handle('call:hangup', async () => {
-            await this.callInterface?.Hangup()
+            await this.hangup()
         })
         ipcMain.handle('call:dial', async (event, phoneNumber: string) => {
             await this.voiceCallManager?.Dial(phoneNumber, 'default')
         })
+    }
+
+    public async answer(): Promise<void> {
+        await this.callInterface?.Answer()
+        const properties = await this.callInterface?.GetProperties()
+
+        if (!properties) return
+        this.getWindow()?.webContents.send('call:info', CallService.extractCallInfo(properties))
+    }
+
+    public async hangup(): Promise<void> {
+        await this.callInterface?.Hangup()
     }
 
     public disconnect(): void {

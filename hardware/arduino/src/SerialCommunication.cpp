@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-#include "serialCommunication.h"
+#include "SerialCommunication.h"
 
 
 

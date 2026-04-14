@@ -3,23 +3,19 @@
 #include <math.h>
 
 Thermistor::Thermistor(
-    uint8_t analogPin,
-    float seriesResistor,
-    float nominalResistance,
-    float nominalTemperature,
-    float betaCoefficient
-) : _analogPin(analogPin),
-_seriesResistor(seriesResistor),
-_nominalResistance(nominalResistance),
-_nominalTemperature(nominalTemperature),
-_betaCoefficient(betaCoefficient) {
-    pinMode(_analogPin, INPUT);
+    ThermistorConfig config
+) : _pin(config.pin),
+_seriesResistor(config.seriesResistor),
+_nominalResistance(config.nominalResistance),
+_nominalTemperature(config.nominalTemperature),
+_betaCoefficient(config.betaCoefficient) {
+    pinMode(_pin, INPUT);
 }
 
 
 
 int Thermistor::readRawADC() {
-    return analogRead(_analogPin);
+    return analogRead(_pin);
 }
 
 float Thermistor::readResistance() {

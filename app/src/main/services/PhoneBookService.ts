@@ -1,15 +1,16 @@
-import { ipcMain, type BrowserWindow } from 'electron'
+import { ipcMain } from 'electron'
 import { readFileSync, unlinkSync } from 'fs'
 
 import * as dbus from 'dbus-next'
 import { parseVCards } from 'vcard4-ts'
 
+import type { WindowProvider } from '@main/types/window'
 import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
 import { formatPhoneNumber, normalizePhoneNumber } from '@shared/utils/phoneBook'
 
 /* eslint-disable new-cap, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 class PhoneBookService {
-    private readonly getWindow: () => BrowserWindow | null
+    private readonly getWindow: WindowProvider
     private connectionStatus = false
 
     private readonly sessionBus: dbus.MessageBus
@@ -22,7 +23,7 @@ class PhoneBookService {
     private callHistory: CallHistoryEntry[] | null = null
     private loadingCallHistory = false
 
-    constructor(getWindow: () => BrowserWindow | null) {
+    constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
         this.sessionBus = dbus.sessionBus()
         this.systemBus = dbus.systemBus()

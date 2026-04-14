@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 
+#include "../../sensorTypes.h"
+
 /**
  * @brief Class for handling digital button/switch inputs
  */
@@ -12,7 +14,7 @@ public:
      * @param pin Digital pin number where button is connected
      * @param input_pullup If true, enables internal pull-up resistor (active LOW)
      */
-    Button(int pin, bool input_pullup = false);
+    Button(ButtonConfig config);
 
     /**
      * @brief Read current button state

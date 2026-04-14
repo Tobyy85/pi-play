@@ -1,5 +1,5 @@
 #include "SensorHandler.h"
-#include "serialCommunication.h"
+#include "SerialCommunication.h"
 
 SensorHandler::SensorHandler(const String& id, FloatSensorReadCallback callback, float changeThreshold)
     : _sensorId(id),

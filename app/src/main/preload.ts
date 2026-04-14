@@ -7,6 +7,7 @@ import type { GPSData } from '@shared/types/gps'
 import type { MapDownloadRequest } from '@shared/types/maps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
 import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
+import type { Volume } from '@shared/types/systemAudio'
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
 const subscribeToChannel = <T>(channel: string, callback: (data: T) => void) => {
@@ -143,6 +144,9 @@ const electronApi = {
         downloadArea: async (request: MapDownloadRequest) => {
             await ipcRenderer.invoke('maps:downloadArea', request)
         },
+    },
+    systemAudio: {
+        volume: generateDataHandler<Volume>('systemAudio:getVolume', 'systemAudio:volume'),
     },
 }
 
