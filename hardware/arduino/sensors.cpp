@@ -6,6 +6,7 @@
 
 #include "src/sensors/Thermistor.h"
 #include "src/sensors/Button.h"
+#include "src/sensors/Photoresistor.h"
 
 
 
@@ -13,13 +14,16 @@ namespace {
     SensorManager sensorManager;
 
     Thermistor thermistor(temperatureCfg.hw);
-    float readTemperature() { return thermistor.readTemperatureCelsiusAvg(); }
+    float readTemperature() { return thermistor.readTemperatureCelsiusAvg(10, 2); }
     SensorHandler tempHandler(temperatureCfg.id, readTemperature, temperatureCfg.changeThreshold);
 
     Button reverseSignal(reverseSignalCfg.hw);
     bool readReverseSignal() { return reverseSignal.getState(); }
     SensorHandler reverseHandler(reverseSignalCfg.id, readReverseSignal, reverseSignalCfg.changeThreshold);
 
+    Photoresistor lightSensor(lightSensorCfg.hw.pin);
+    float readLightLevel() { return lightSensor.readPercentageAvg(10, 2); }
+    SensorHandler lightSensorHandler(lightSensorCfg.id, readLightLevel, lightSensorCfg.changeThreshold);
 
     Button playPauseButton(playPauseButtonCfg.hw);
     bool readPlayPause() { return playPauseButton.getState(); }
@@ -46,6 +50,8 @@ namespace {
 void beginSensors() {
     sensorManager.addSensor(&tempHandler);
     sensorManager.addSensor(&reverseHandler);
+    sensorManager.addSensor(&lightSensorHandler);
+
     sensorManager.addSensor(&playPauseHandler);
     sensorManager.addSensor(&previousTrackHandler);
     sensorManager.addSensor(&nextTrackHandler);

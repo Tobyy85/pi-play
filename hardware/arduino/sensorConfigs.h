@@ -26,6 +26,14 @@ static const SensorConfig<ButtonConfig> reverseSignalCfg = {
     }
 };
 
+static const SensorConfig<PhotoresistorConfig> lightSensorCfg = {
+    id: "lightSensor",
+    changeThreshold : 5.0f,
+    hw : {
+        pin: A1,
+    }
+};
+
 static const SensorConfig<RotaryEncoderConfig> volumeEncoderCfg = {
     id: "volumeEncoder",
     changeThreshold : 0.0f,
