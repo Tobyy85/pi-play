@@ -8,11 +8,12 @@ const FADEOUT_DURATION_MS = 1500
 
 const VolumeOverlay = () => {
     const [show, setShow] = useState<boolean>(false)
-    const { data: volume } = useVolume()
+    const { data: volume, isLoading } = useVolume()
 
     const isFirstRender = useRef(true)
 
     useEffect(() => {
+        if (isLoading) return
         if (isFirstRender.current) {
             isFirstRender.current = false
             return
@@ -21,7 +22,7 @@ const VolumeOverlay = () => {
         setShow(true)
         const timeout = setTimeout(() => setShow(false), FADEOUT_DURATION_MS)
         return () => clearTimeout(timeout)
-    }, [volume?.isMuted, volume?.value])
+    }, [volume?.isMuted, volume?.value, isLoading])
 
     return (
         <>
