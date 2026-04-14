@@ -26,7 +26,10 @@ const VolumeOverlay = () => {
 
     return (
         <>
-            <div className='fixed right-0 z-50 flex h-full items-center [&_*]:pointer-events-auto'>
+            <div
+                className='pointer-events-none fixed right-0 z-50 flex h-full items-center
+                    [&_*]:pointer-events-auto'
+            >
                 <div
                     onClick={() => setShow(false)}
                     className={`relative flex h-1/2 w-10 flex-col items-center justify-end gap-3
