@@ -2,6 +2,7 @@ import { createBrowserRouter, createHashRouter, RouterProvider } from 'react-rou
 
 import { routes } from './routes'
 
+import BrightnessOverlay from '@renderer/features/brightness/components/BrightnessOverlay'
 import CallOverlay from '@renderer/features/call/components/CallOverlay'
 import VolumeOverlay from '@renderer/features/volume/components/VolumeOverlay'
 
@@ -22,6 +23,7 @@ export const AppRouter = () => {
             <RouterProvider router={router} />
             <CallOverlay />
             <VolumeOverlay />
+            <BrightnessOverlay />
         </>
     )
 }
