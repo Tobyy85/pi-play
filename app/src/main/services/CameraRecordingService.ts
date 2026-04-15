@@ -7,7 +7,7 @@ import type { Readable } from 'stream'
 
 import type { WindowProvider } from '@main/types/window'
 import { CAMERA_CONFIG } from '@shared/config/camera'
-import { STORAGE_PATH } from '@shared/config/storage'
+import { DASHCAM_RECORDINGS_PATH } from '@shared/config/storage'
 import type { CameraDefinition } from '@shared/types/camera'
 
 interface CameraRuntime {
@@ -251,7 +251,7 @@ class CameraRecordingService {
     }
 
     private static getOutputDirectory(cameraName: string): string {
-        return path.join(STORAGE_PATH, 'dashcams', CameraRecordingService.sanitizeCameraName(cameraName))
+        return path.join(DASHCAM_RECORDINGS_PATH, CameraRecordingService.sanitizeCameraName(cameraName))
     }
 
     private static getFrameChannel(cameraName: string): string {
