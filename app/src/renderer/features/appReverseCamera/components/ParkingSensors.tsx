@@ -1,5 +1,6 @@
 import SensorSector from '@renderer/features/appReverseCamera/components/SensorSector'
 
+import { PARKING_SENSOR_IDS } from '@renderer/features/arduino/constants/arduinoSensorIds'
 import useArduinoSensor from '@renderer/features/arduino/hooks/useArduinoSensor'
 
 const SIDE_SENSOR_ANGLE = 20
@@ -11,9 +12,9 @@ const HEIGHT = 170
 const SECTOR_HEIGHT = 70
 
 const ParkingSensors = () => {
-    const { value: leftSensorValue } = useArduinoSensor<number>('parkingSensorLeft', 0)
-    const { value: midSensorValue } = useArduinoSensor<number>('parkingSensorMid', 0)
-    const { value: rightSensorValue } = useArduinoSensor<number>('parkingSensorRight', 0)
+    const { value: leftSensorValue } = useArduinoSensor<number>(PARKING_SENSOR_IDS.left, 0)
+    const { value: midSensorValue } = useArduinoSensor<number>(PARKING_SENSOR_IDS.mid, 0)
+    const { value: rightSensorValue } = useArduinoSensor<number>(PARKING_SENSOR_IDS.right, 0)
 
     return (
         <div>
