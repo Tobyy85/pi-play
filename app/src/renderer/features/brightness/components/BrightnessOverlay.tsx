@@ -1,5 +1,5 @@
-import { LIGHT_SENSOR_ID } from '@renderer/features/arduino/constants/arduinoSensorIds'
 import useArduinoSensor from '@renderer/features/arduino/hooks/useArduinoSensor'
+import { LIGHT_SENSOR_ID } from '@shared/config/arduinoSensorIds'
 
 import { getOpacityFromLightLevel } from '@renderer/features/brightness/utils/brightness'
 

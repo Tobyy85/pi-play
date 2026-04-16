@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-import { IS_REVERSE_SENSOR_ID } from '@renderer/features/arduino/constants/arduinoSensorIds'
 import useArduinoSensor from '@renderer/features/arduino/hooks/useArduinoSensor'
+import { IS_REVERSE_SENSOR_ID } from '@shared/config/arduinoSensorIds'
 
 const ReverseTriggerLayout = () => {
     const { value: isReversing } = useArduinoSensor<boolean>(IS_REVERSE_SENSOR_ID, null)

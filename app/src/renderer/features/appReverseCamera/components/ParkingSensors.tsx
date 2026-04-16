@@ -1,7 +1,7 @@
 import SensorSector from '@renderer/features/appReverseCamera/components/SensorSector'
 
-import { PARKING_SENSOR_IDS } from '@renderer/features/arduino/constants/arduinoSensorIds'
 import useArduinoSensor from '@renderer/features/arduino/hooks/useArduinoSensor'
+import { PARKING_SENSOR_IDS } from '@shared/config/arduinoSensorIds'
 
 const SIDE_SENSOR_ANGLE = 20
 const MID_SENSOR_ANGLE = 60
