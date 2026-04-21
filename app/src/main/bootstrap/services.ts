@@ -30,7 +30,7 @@ export interface Services {
 
 export const createServices = (getWindow: WindowProvider): Services => {
     const gpsService = new GPSService(getWindow)
-    const cameraRecordingService = new CameraRecordingService(getWindow)
+    const cameraRecordingService = new CameraRecordingService()
     const systemAudioService = new SystemAudioService(getWindow)
     const nasBackupService = new NasBackupService()
 
@@ -98,8 +98,8 @@ export const setupServices = (services: Services): void => {
     SystemAudioService.registerIpcHandlers()
 }
 
-export const disconnectServices = (services: Services): void => {
-    services.cameraRecordingService.disconnect()
+export const disconnectServices = async (services: Services): Promise<void> => {
+    await services.cameraRecordingService.disconnect()
     services.arduinoService.disconnect()
     services.gpsService.disconnect()
     services.mediaPlayerService.disconnect()

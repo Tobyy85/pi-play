@@ -1,71 +1,95 @@
-import { spawn, type ChildProcessByStdio } from 'child_process'
+import { spawn, type ChildProcess } from 'child_process'
 import { ipcMain } from 'electron'
 import fs from 'fs'
 import path from 'path'
 
-import type { Readable } from 'stream'
-
-import type { WindowProvider } from '@main/types/window'
 import { CAMERA_CONFIG } from '@shared/config/camera'
 import { DASHCAM_RECORDINGS_PATH } from '@shared/config/storage'
 import type { CameraDefinition } from '@shared/types/camera'
 
 interface CameraRuntime {
     definition: CameraDefinition
-    ffmpegProcess: ChildProcessByStdio<null, Readable, Readable> | null
-    streamBuffer: Buffer
-    latestFrame: string | null
+    ffmpegProcess: ChildProcess | null
+    pauseLocks: number
+    shouldRecord: boolean
+    isStopping: boolean
+    operationQueue: Promise<void>
 }
 
 const FORCE_KILL_TIMEOUT_MS = 3000
+const RESTART_DELAY_MS = 800
 
 class CameraRecordingService {
-    private readonly getWindow: WindowProvider
     private readonly cameraRuntimes: Map<string, CameraRuntime> = new Map()
 
-    constructor(getWindow: WindowProvider) {
-        this.getWindow = getWindow
-
+    constructor() {
         for (const camera of CAMERA_CONFIG.cameras) {
             this.cameraRuntimes.set(camera.name, {
                 definition: camera,
                 ffmpegProcess: null,
-                streamBuffer: Buffer.alloc(0),
-                latestFrame: null,
+                pauseLocks: 0,
+                shouldRecord: false,
+                isStopping: false,
+                operationQueue: Promise.resolve(),
             })
         }
     }
 
     public registerIpcHandlers(): void {
-        ipcMain.handle('camera:getLatestFrame', (_event, cameraName: string) => {
-            return this.getRuntime(cameraName).latestFrame
+        ipcMain.handle('camera:pauseRecording', async (_event, cameraName: string) => {
+            await this.enqueueOperation(cameraName, async runtime => {
+                runtime.pauseLocks += 1
+                runtime.shouldRecord = false
+                await CameraRecordingService.stopRecording(runtime)
+            })
+        })
+
+        ipcMain.handle('camera:resumeRecording', async (_event, cameraName: string) => {
+            await this.enqueueOperation(cameraName, runtime => {
+                if (runtime.pauseLocks > 0) {
+                    runtime.pauseLocks -= 1
+                } else {
+                    console.warn(
+                        `[CameraRecordingService]: Resume called for camera ${cameraName} without active pause lock.`
+                    )
+                }
+
+                if (runtime.pauseLocks > 0) {
+                    return
+                }
+
+                runtime.shouldRecord = true
+                this.startRecording(cameraName, runtime)
+            })
         })
     }
 
     public initialize(): void {
         for (const camera of CAMERA_CONFIG.cameras) {
-            try {
-                this.startRecording(camera.name)
-            } catch (error) {
-                console.error(
-                    `[CameraRecordingService]: Failed to start camera "${camera.name}": `,
-                    error,
-                    '\n\n'
-                )
-            }
+            void this.enqueueOperation(camera.name, runtime => {
+                runtime.shouldRecord = true
+                this.startRecording(camera.name, runtime)
+            })
         }
     }
 
-    public disconnect(): void {
+    public async disconnect(): Promise<void> {
         const stopTasks = Array.from(this.cameraRuntimes.keys()).map(async cameraName => {
-            await this.stopRecording(cameraName)
+            await this.enqueueOperation(cameraName, async runtime => {
+                runtime.shouldRecord = false
+                runtime.pauseLocks = 0
+                await CameraRecordingService.stopRecording(runtime)
+            })
         })
 
-        void Promise.allSettled(stopTasks)
+        await Promise.allSettled(stopTasks)
     }
 
-    private startRecording(cameraName: string): void {
-        const runtime = this.getRuntime(cameraName)
+    private startRecording(cameraName: string, runtime: CameraRuntime): void {
+        if (!runtime.shouldRecord || runtime.pauseLocks > 0) {
+            return
+        }
+
         if (runtime.ffmpegProcess && !runtime.ffmpegProcess.killed) {
             return
         }
@@ -75,15 +99,11 @@ class CameraRecordingService {
 
         const ffmpegArgs = CameraRecordingService.createFfmpegArgs(runtime.definition, outputDirectory)
         const ffmpegProcess = spawn(CAMERA_CONFIG.ffmpegBinary, ffmpegArgs, {
-            stdio: ['ignore', 'pipe', 'pipe'],
+            stdio: ['ignore', 'ignore', 'pipe'],
         })
 
         runtime.ffmpegProcess = ffmpegProcess
-        runtime.streamBuffer = Buffer.alloc(0)
-
-        ffmpegProcess.stdout.on('data', (chunk: Buffer) => {
-            this.processFrameChunk(cameraName, chunk)
-        })
+        runtime.isStopping = false
 
         ffmpegProcess.stderr.on('data', (data: Buffer) => {
             const errorMessage = data.toString().trim()
@@ -105,21 +125,34 @@ class CameraRecordingService {
 
         ffmpegProcess.on('exit', (code, signal) => {
             runtime.ffmpegProcess = null
-            runtime.streamBuffer = Buffer.alloc(0)
+            const isStoppingExit = runtime.isStopping
+            runtime.isStopping = false
 
-            if (code !== 0 && signal !== 'SIGTERM') {
+            if (code !== 0 && signal !== 'SIGTERM' && !isStoppingExit) {
                 console.error(
                     `[CameraRecordingService]: Camera ${cameraName} ffmpeg exited with code ${code} and signal ${signal ?? 'none'}`
                 )
             }
+
+            if (!isStoppingExit && runtime.shouldRecord && runtime.pauseLocks === 0) {
+                setTimeout(() => {
+                    void this.enqueueOperation(cameraName, queuedRuntime => {
+                        this.startRecording(cameraName, queuedRuntime)
+                    })
+                }, RESTART_DELAY_MS)
+            }
         })
     }
 
-    private async stopRecording(cameraName: string): Promise<void> {
-        const { ffmpegProcess } = this.getRuntime(cameraName)
+    private static async stopRecording(runtime: CameraRuntime): Promise<void> {
+        const { ffmpegProcess } = runtime
         if (!ffmpegProcess || ffmpegProcess.killed) {
+            runtime.ffmpegProcess = null
+            runtime.isStopping = false
             return
         }
+
+        runtime.isStopping = true
 
         await new Promise<void>(resolve => {
             const forceKillTimer = setTimeout(() => {
@@ -138,50 +171,24 @@ class CameraRecordingService {
         })
     }
 
-    private processFrameChunk(cameraName: string, chunk: Buffer): void {
-        const JPEG_MARKER_SIZE = 2
-        const JPEG_START_MARKER = Buffer.from('ffd8', 'hex')
-        const JPEG_END_MARKER = Buffer.from('ffd9', 'hex')
-        const MAX_STREAM_BUFFER_SIZE = 5242880
-
+    private async enqueueOperation(
+        cameraName: string,
+        operation: (runtime: CameraRuntime) => Promise<void> | void
+    ): Promise<void> {
         const runtime = this.getRuntime(cameraName)
-        runtime.streamBuffer = Buffer.concat([runtime.streamBuffer, chunk])
+        runtime.operationQueue = runtime.operationQueue
+            .then(async () => {
+                await operation(runtime)
+            })
+            .catch((error: unknown) => {
+                console.error(
+                    `[CameraRecordingService]: Camera ${cameraName} operation failed: `,
+                    error,
+                    '\n\n'
+                )
+            })
 
-        while (runtime.streamBuffer.length > 0) {
-            const frameStartIndex = runtime.streamBuffer.indexOf(JPEG_START_MARKER)
-            if (frameStartIndex === -1) {
-                if (runtime.streamBuffer.length > MAX_STREAM_BUFFER_SIZE) {
-                    runtime.streamBuffer = Buffer.alloc(0)
-                }
-                return
-            }
-
-            const frameEndIndex = runtime.streamBuffer.indexOf(
-                JPEG_END_MARKER,
-                frameStartIndex + JPEG_MARKER_SIZE
-            )
-
-            if (frameEndIndex === -1) {
-                if (frameStartIndex > 0) {
-                    runtime.streamBuffer = runtime.streamBuffer.subarray(frameStartIndex)
-                }
-                return
-            }
-
-            const frame = runtime.streamBuffer.subarray(frameStartIndex, frameEndIndex + JPEG_MARKER_SIZE)
-            runtime.streamBuffer = runtime.streamBuffer.subarray(frameEndIndex + JPEG_MARKER_SIZE)
-            this.publishFrame(cameraName, frame)
-        }
-    }
-
-    private publishFrame(cameraName: string, frameBuffer: Buffer): void {
-        const runtime = this.getRuntime(cameraName)
-        runtime.latestFrame = `data:image/jpeg;base64,${frameBuffer.toString('base64')}`
-
-        this.getWindow()?.webContents.send(
-            CameraRecordingService.getFrameChannel(cameraName),
-            runtime.latestFrame
-        )
+        await runtime.operationQueue
     }
 
     private static createFfmpegArgs(definition: CameraDefinition, outputDirectory: string): string[] {
@@ -189,7 +196,6 @@ class CameraRecordingService {
         return [
             ...CameraRecordingService.createInputArgs(definition),
             ...CameraRecordingService.createRecordingArgs(segmentPattern),
-            ...CameraRecordingService.createStreamingArgs(),
         ]
     }
 
@@ -238,10 +244,6 @@ class CameraRecordingService {
         ]
     }
 
-    private static createStreamingArgs(): string[] {
-        return ['-map', '0:v', '-c:v', 'mjpeg', '-q:v', '6', '-f', 'image2pipe', 'pipe:1']
-    }
-
     private getRuntime(cameraName: string): CameraRuntime {
         const runtime = this.cameraRuntimes.get(cameraName)
         if (!runtime) {
@@ -252,10 +254,6 @@ class CameraRecordingService {
 
     private static getOutputDirectory(cameraName: string): string {
         return path.join(DASHCAM_RECORDINGS_PATH, CameraRecordingService.sanitizeCameraName(cameraName))
-    }
-
-    private static getFrameChannel(cameraName: string): string {
-        return `camera:frame:${cameraName}`
     }
 
     private static sanitizeCameraName(cameraName: string): string {

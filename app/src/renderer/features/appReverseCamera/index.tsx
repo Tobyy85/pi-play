@@ -3,10 +3,9 @@ import { useState } from 'react'
 import Camera from '@renderer/features/appReverseCamera/components/Camera'
 import ParkingSensors from '@renderer/features/appReverseCamera/components/ParkingSensors'
 
-import { CAMERA_CONFIG, reverseCameraName } from '@shared/config/camera'
+import { reverseCamera } from '@shared/config/camera'
 
-const isReverseCameraMirrored =
-    CAMERA_CONFIG.cameras.find(camera => camera.name === reverseCameraName)?.isMirrored ?? false
+const isReverseCameraMirrored = reverseCamera.isMirrored ?? false
 
 export const AppReverseCameraBackground = () => {
     const [error, setError] = useState<string | null>(null)
@@ -15,7 +14,8 @@ export const AppReverseCameraBackground = () => {
         <div className='size-full bg-zinc-700'>
             {error ?? (
                 <Camera
-                    cameraName={reverseCameraName}
+                    cameraName={reverseCamera.name}
+                    cameraDeviceId={reverseCamera.deviceId}
                     isMirrored={isReverseCameraMirrored}
                     setError={setError}
                     className='size-full object-cover'
@@ -33,7 +33,8 @@ export const AppReverseCameraContent = () => {
         <>
             <div className='size-full overflow-hidden'>
                 <Camera
-                    cameraName={reverseCameraName}
+                    cameraName={reverseCamera.name}
+                    cameraDeviceId={reverseCamera.deviceId}
                     isMirrored={isReverseCameraMirrored}
                     setError={setError}
                 />

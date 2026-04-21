@@ -133,11 +133,11 @@ const electronApi = {
         ),
     },
     camera: {
-        getLatestFrame: async (cameraName: string): Promise<string | null> => {
-            return await ipcRenderer.invoke('camera:getLatestFrame', cameraName) // eslint-disable-line @typescript-eslint/no-unsafe-return
+        pauseRecording: async (cameraName: string): Promise<void> => {
+            await ipcRenderer.invoke('camera:pauseRecording', cameraName)
         },
-        subscribeToFrame: (cameraName: string, callback: (frameDataUrl: string) => void): (() => void) => {
-            return subscribeToChannel(`camera:frame:${cameraName}`, callback)
+        resumeRecording: async (cameraName: string): Promise<void> => {
+            await ipcRenderer.invoke('camera:resumeRecording', cameraName)
         },
     },
     maps: {
