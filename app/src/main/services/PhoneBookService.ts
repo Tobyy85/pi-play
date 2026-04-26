@@ -22,6 +22,7 @@ class PhoneBookService {
     private loadingContacts = false
     private callHistory: CallHistoryEntry[] | null = null
     private loadingCallHistory = false
+    private isInitializing = false
 
     constructor(getWindow: WindowProvider) {
         this.getWindow = getWindow
@@ -30,6 +31,9 @@ class PhoneBookService {
     }
 
     public async initialize(): Promise<void> {
+        if (this.isInitializing) return
+        this.isInitializing = true
+
         try {
             const deviceAddress = await this.getDeviceAddress()
             if (!deviceAddress) {
@@ -39,7 +43,18 @@ class PhoneBookService {
                 return
             }
 
-            this.sessionPath = await this.createSession(deviceAddress)
+            let sessionPath: string | null = null
+            for (let i = 0; i < 3; i++) {
+                sessionPath = await this.createSession(deviceAddress)
+                if (sessionPath) break
+                await new Promise(resolve => setTimeout(resolve, 2000))
+            }
+
+            this.sessionPath = sessionPath
+
+            if (!this.sessionPath) {
+                throw new Error('Failed to create OBEX session after multiple attempts')
+            }
 
             this.updateLoadingContacts(true)
             this.updateLoadingCallHistory(true)
@@ -48,7 +63,10 @@ class PhoneBookService {
         } catch (err) {
             console.error('[PhoneBookService]: Failed to initialize PhoneBookService: ', err, '\n\n')
         } finally {
+            this.updateLoadingContacts(false)
+            this.updateLoadingCallHistory(false)
             await this.removeSession()
+            this.isInitializing = false
         }
     }
 
@@ -253,7 +271,10 @@ class PhoneBookService {
                     const isConnected = changed.Connected.value
                     if (isConnected) {
                         this.updateConnectionStatus(true)
-                        await this.initialize()
+                        // Add a small delay before initializing to ensure OBEX profile is ready on the device
+                        setTimeout(() => {
+                            void this.initialize()
+                        }, 2000)
                     } else {
                         this.updateConnectionStatus(false)
                         this.updateContacts(null)
