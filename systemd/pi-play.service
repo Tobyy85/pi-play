@@ -1,0 +1,12 @@
+[Unit]
+Description=Pi Play Electron App
+After=graphical-session.target
+
+[Service]
+WorkingDirectory=/home/piplay/pi-play/app
+ExecStart=/home/piplay/pi-play/app/release/linux-arm64-unpacked/pi-play
+Restart=always
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=default.target
