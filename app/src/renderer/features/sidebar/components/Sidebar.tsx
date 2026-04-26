@@ -1,6 +1,11 @@
+
 import AppList from '@renderer/features/apps/components/AppList'
 import AllAppsButton from '@renderer/features/sidebar/components/AllAppsButton'
 import SidebarInfo from '@renderer/features/sidebar/components/SidebarInfo'
+
+import LongPressWrapper from '@renderer/components/LongPressWrapper'
+
+
 
 const Sidebar = () => {
     return (
@@ -11,7 +16,9 @@ const Sidebar = () => {
             >
                 <SidebarInfo />
                 <AppList />
-                <AllAppsButton />
+                <LongPressWrapper onLongPress={window.api.quitApp} pressDuration={3000}>
+                    <AllAppsButton />
+                </LongPressWrapper>
             </div>
         </>
     )
