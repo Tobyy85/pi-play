@@ -148,6 +148,9 @@ const electronApi = {
     systemAudio: {
         volume: generateDataHandler<Volume>('systemAudio:getVolume', 'systemAudio:volume'),
     },
+    quitApp: async () => {
+        await ipcRenderer.invoke('quit-app')
+    },
 }
 
 export type ElectronApi = typeof electronApi

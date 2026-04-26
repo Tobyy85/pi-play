@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 
 import WindowManager from '@main/managers/windowManager'
 import type { WindowProvider } from '@main/types/window'
@@ -16,6 +16,10 @@ void app.whenReady().then(() => {
     void windowManager.createWindow()
 
     setupServices(services)
+
+    ipcMain.handle('quit-app', () => {
+        app.quit()
+    })
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
