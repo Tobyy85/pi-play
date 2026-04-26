@@ -11,6 +11,7 @@ class WindowManager {
             width: 1024,
             height: 600,
             fullscreen: !isDev,
+            kiosk: !isDev,
             icon: path.join(__dirname, '..', '..', '..', 'assets', 'icon.png'),
             autoHideMenuBar: true,
             webPreferences: {
