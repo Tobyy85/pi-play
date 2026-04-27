@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+
 import { CAMERA_CONFIG } from '@shared/config/camera'
 import { DASHCAM_RECORDINGS_PATH } from '@shared/config/storage'
 import type { CameraDefinition } from '@shared/types/camera'

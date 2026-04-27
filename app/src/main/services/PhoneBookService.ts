@@ -44,10 +44,13 @@ class PhoneBookService {
             }
 
             let sessionPath: string | null = null
+            //eslint-disable-next-line @typescript-eslint/no-magic-numbers
             for (let i = 0; i < 3; i++) {
                 sessionPath = await this.createSession(deviceAddress)
                 if (sessionPath) break
-                await new Promise(resolve => setTimeout(resolve, 2000))
+                await new Promise(resolve => {
+                    setTimeout(resolve, 2000) //eslint-disable-line @typescript-eslint/no-magic-numbers
+                })
             }
 
             this.sessionPath = sessionPath
@@ -266,22 +269,20 @@ class PhoneBookService {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         propertiesInterface.on('PropertiesChanged', (iface: string, changed: any) => {
-            void (async () => {
-                if (iface === 'org.bluez.Device1' && 'Connected' in changed) {
-                    const isConnected = changed.Connected.value
-                    if (isConnected) {
-                        this.updateConnectionStatus(true)
-                        // Add a small delay before initializing to ensure OBEX profile is ready on the device
-                        setTimeout(() => {
-                            void this.initialize()
-                        }, 2000)
-                    } else {
-                        this.updateConnectionStatus(false)
-                        this.updateContacts(null)
-                        this.updateCallHistory(null)
-                    }
+            if (iface === 'org.bluez.Device1' && 'Connected' in changed) {
+                const isConnected = changed.Connected.value
+                if (isConnected) {
+                    this.updateConnectionStatus(true)
+                    // Add a small delay before initializing to ensure OBEX profile is ready on the device
+                    setTimeout(() => {
+                        void this.initialize()
+                    }, 2000) //eslint-disable-line @typescript-eslint/no-magic-numbers
+                } else {
+                    this.updateConnectionStatus(false)
+                    this.updateContacts(null)
+                    this.updateCallHistory(null)
                 }
-            })()
+            }
         })
     }
 

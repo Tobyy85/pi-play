@@ -22,8 +22,11 @@ const useIpcData = <T>(
 
     const getDataRef = useRef(getData)
     const subscribeRef = useRef(subscribe)
-    getDataRef.current = getData
-    subscribeRef.current = subscribe
+
+    useEffect(() => {
+        getDataRef.current = getData
+        subscribeRef.current = subscribe
+    }, [getData, subscribe])
 
     const refresh = useCallback(async () => {
         setIsLoading(true)
