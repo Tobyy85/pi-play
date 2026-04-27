@@ -1,10 +1,11 @@
 import 'dotenv/config'
-import { app, BrowserWindow, ipcMain } from 'electron'
-
-import WindowManager from '@main/managers/windowManager'
-import type { WindowProvider } from '@main/types/window'
+import { app, BrowserWindow } from 'electron'
 
 import { createServices, disconnectServices, setupServices } from '@main/bootstrap/services'
+import WindowManager from '@main/managers/windowManager'
+import { registerQuitAppHandler } from '@main/utils/quitApp'
+
+import type { WindowProvider } from '@main/types/window'
 
 const windowManager = new WindowManager()
 const getWindow: WindowProvider = () => windowManager.getWindow()
@@ -17,9 +18,7 @@ void app.whenReady().then(() => {
 
     setupServices(services)
 
-    ipcMain.handle('quit-app', () => {
-        app.quit()
-    })
+    registerQuitAppHandler()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
