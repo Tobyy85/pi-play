@@ -1,5 +1,4 @@
-import CallIcon from '@renderer/features/appPhone/assets/CallIcon'
-
+import CallButton from '@renderer/features/appPhone/components/CallButton'
 import ContactPhoto from '@renderer/features/appPhone/components/ContactPhoto'
 
 import type { Contact } from '@shared/types/phoneBook'
@@ -21,12 +20,7 @@ const ContactTile = ({ contact }: ContactTileProps) => {
                 />
                 <div className='text-3xl font-bold text-white'>{contact.name}</div>
             </div>
-            <button
-                onClick={async () => await window.api.call.dial(contact.phoneNumber)}
-                className='flex aspect-square h-5/6 items-center justify-center rounded-full bg-zinc-600 p-3'
-            >
-                <CallIcon className='size-full text-blue-500' />
-            </button>
+            <CallButton phoneNumber={contact.phoneNumber} />
         </div>
     )
 }
