@@ -125,22 +125,13 @@ class GPSService {
      * @param sentence - The NMEA sentence to parse.
      */
     private parseNMEA(sentence: string): void {
-        try {
-            if (!sentence.startsWith('$')) return
+        if (!sentence.startsWith('$')) return
 
-            const parsed = nmea.parseNmeaSentence(sentence)
-            const hasDataChanged = this.handleParsedSentence(parsed)
+        const parsed = nmea.parseNmeaSentence(sentence)
+        const hasDataChanged = this.handleParsedSentence(parsed)
 
-            if (hasDataChanged) {
-                this.getWindow()?.webContents.send('gps:change', { ...this.currentData })
-            }
-        } catch (error) {
-            // Invalid NMEA sentence - silently ignore
-            console.warn(
-                `[GpsService]: GPS: Failed to parse NMEA sentence: ${sentence}, error: `,
-                error,
-                '\n\n'
-            )
+        if (hasDataChanged) {
+            this.getWindow()?.webContents.send('gps:change', { ...this.currentData })
         }
     }
 
