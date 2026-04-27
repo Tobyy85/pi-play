@@ -13,6 +13,7 @@ const Sidebar = () => {
             <div
                 className='flex h-full w-24 shrink-0 flex-col items-center gap-3 rounded-4xl bg-black/50 p-2.5
                     pb-4'
+                id='sidebar'
             >
                 <SidebarInfo />
                 <AppList />

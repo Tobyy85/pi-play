@@ -66,6 +66,16 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
         mapRef.current?.rotateTo(0, { duration: 500 })
     }
 
+    const updateMapPadding = useCallback(() => {
+        const sidebar = document.getElementById('sidebar')
+        if (!sidebar || !mapRef.current) return
+
+        const sidebarRect = sidebar.getBoundingClientRect()
+        mapRef.current.setPadding({
+            left: sidebarRect.right,
+        })
+    }, [])
+
     useEffect(() => {
         if (isFollowModeAnimationRef.current) {
             return
@@ -84,11 +94,21 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
         }
     }, [isFollowMode, visualPosition.lat, visualPosition.lng, visualPosition.heading])
 
+    useEffect(() => {
+        updateMapPadding()
+
+        window.addEventListener('resize', updateMapPadding)
+        return () => {
+            window.removeEventListener('resize', updateMapPadding)
+        }
+    }, [updateMapPadding])
+
     return (
         <div className='relative h-full w-full'>
             <MapGL
                 ref={mapRef}
                 {...viewState}
+                onLoad={updateMapPadding}
                 onMove={handleMove}
                 onMoveEnd={() => {
                     isFollowModeAnimationRef.current = false
