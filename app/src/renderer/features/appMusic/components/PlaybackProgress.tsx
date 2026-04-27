@@ -15,20 +15,22 @@ const PlaybackProgress = ({ position, duration, status }: PlaybackProgressProps)
     const [currentPosition, setCurrentPosition] = useState<number | null>(position)
 
     useEffect(() => {
-        setCurrentPosition(position)
+        if (status !== 'playing') return
 
-        if (status === 'playing') {
-            const interval = setInterval(() => {
-                setCurrentPosition(prev => {
-                    if (prev === null || duration === null) return prev
-                    return Math.min(prev + UPDATE_INTERVAL, duration)
-                })
-            }, UPDATE_INTERVAL)
-            return () => clearInterval(interval)
-        }
+        const interval = setInterval(() => {
+            setCurrentPosition(prev => {
+                if (prev === null || duration === null) return prev
 
+                return Math.min(prev + UPDATE_INTERVAL, duration)
+            })
+        }, UPDATE_INTERVAL)
+
+        return () => clearInterval(interval)
+    }, [status, duration])
+
+    useEffect(() => {
         setCurrentPosition(position)
-    }, [position, status, duration])
+    }, [position])
 
     return (
         <div className='flex w-full items-center justify-center gap-4'>
