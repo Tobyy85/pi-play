@@ -9,9 +9,10 @@ const CallButton = ({ phoneNumber }: CallButtonProps) => {
         <>
             <button
                 onClick={async () => await window.api.call.dial(phoneNumber)}
-                className='flex aspect-square h-5/6 items-center justify-center rounded-full bg-zinc-600 p-3'
+                className='flex aspect-square h-5/6 items-center justify-center rounded-full bg-white/20
+                    p-2.5'
             >
-                <CallIcon className='size-full text-blue-500' />
+                <CallIcon className='size-full text-white' />
             </button>
         </>
     )

@@ -10,7 +10,7 @@ interface ContactTileProps {
 const ContactTile = ({ contact }: ContactTileProps) => {
     return (
         <div
-            className='flex h-18 items-center justify-between border-zinc-600 py-2
+            className='flex h-18 items-center justify-between border-white/20 py-2
                 [&:not(:last-child)]:border-b'
         >
             <div className='flex h-full items-center gap-4'>
