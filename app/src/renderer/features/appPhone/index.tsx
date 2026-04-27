@@ -3,11 +3,16 @@ import { useState } from 'react'
 import CallHistory from '@renderer/features/appPhone/components/CallHistory'
 import Contacts from '@renderer/features/appPhone/components/Contacts'
 import Keypad from '@renderer/features/appPhone/components/Keypad'
+import Background from '@renderer/features/background/components/Background'
 
 import useConnectionStatus from '@renderer/features/appPhone/hooks/useConnectionStatus'
 
 export const AppPhoneBackground = () => {
-    return <div className='h-full w-full bg-zinc-700'></div>
+    return (
+        <>
+            <Background />
+        </>
+    )
 }
 
 export const AppPhoneContent = () => {
