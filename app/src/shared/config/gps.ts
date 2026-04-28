@@ -4,6 +4,6 @@ interface GPSConfig {
 }
 
 export const GPS_CONFIG: GPSConfig = {
-    path: '/dev/ttyUSB0',
+    path: '/dev/ttyAMA0',
     baudRate: 9600,
 }

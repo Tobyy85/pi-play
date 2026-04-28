@@ -8,6 +8,7 @@ import CameraRecordingService from '@main/services/CameraRecordingService'
 import GPSService from '@main/services/GpsService'
 import HardwareControlsService from '@main/services/HardwareControlsService'
 import MapService from '@main/services/MapService'
+import NasBackupService from '@main/services/NasBackupService'
 import SystemAudioService from '@main/services/SystemAudioService'
 
 import BluetoothService from '@main/services/BluetoothService'
@@ -24,12 +25,14 @@ export interface Services {
     callService: CallService
     mediaPlayerService: MediaPlayerService
     phoneBookService: PhoneBookService
+    nasBackupService: NasBackupService
 }
 
 export const createServices = (getWindow: WindowProvider): Services => {
     const gpsService = new GPSService(getWindow)
-    const cameraRecordingService = new CameraRecordingService(getWindow)
+    const cameraRecordingService = new CameraRecordingService()
     const systemAudioService = new SystemAudioService(getWindow)
+    const nasBackupService = new NasBackupService()
 
     MapService.initialize()
 
@@ -61,6 +64,7 @@ export const createServices = (getWindow: WindowProvider): Services => {
         callService,
         mediaPlayerService,
         phoneBookService,
+        nasBackupService,
     }
 }
 
@@ -86,14 +90,16 @@ export const setupServices = (services: Services): void => {
     services.cameraRecordingService.registerIpcHandlers()
     services.cameraRecordingService.initialize()
 
+    services.nasBackupService.initialize()
+
     MapService.registerIpcHandlers()
     MapService.initializeProtocol()
 
     SystemAudioService.registerIpcHandlers()
 }
 
-export const disconnectServices = (services: Services): void => {
-    services.cameraRecordingService.disconnect()
+export const disconnectServices = async (services: Services): Promise<void> => {
+    await services.cameraRecordingService.disconnect()
     services.arduinoService.disconnect()
     services.gpsService.disconnect()
     services.mediaPlayerService.disconnect()
@@ -101,4 +107,5 @@ export const disconnectServices = (services: Services): void => {
     void services.phoneBookService.disconnect()
     services.bluetoothService.disconnect()
     services.hardwareControlsService.disconnect()
+    services.nasBackupService.disconnect()
 }

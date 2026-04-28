@@ -1,7 +1,7 @@
-import useIpcData from '@renderer/hooks/useIpcData'
+import useIpcData, { type UseIpcDataReturn } from '@renderer/hooks/useIpcData'
 import type { Volume } from '@shared/types/systemAudio'
 
-const useVolume = () => {
+const useVolume = (): UseIpcDataReturn<Volume> => {
     return useIpcData<Volume>(
         async () => await window.api.systemAudio.volume.get(),
         callback => window.api.systemAudio.volume.subscribe(callback)

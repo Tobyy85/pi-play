@@ -1,11 +1,8 @@
 import { ipcMain } from 'electron'
-import { execFile } from 'node:child_process'
-import { promisify } from 'node:util'
 
 import type { WindowProvider } from '@main/types/window'
+import { runCommand } from '@main/utils/runCommand'
 import type { Volume } from '@shared/types/systemAudio'
-
-const execFileAsync = promisify(execFile) // eslint-disable-line @typescript-eslint/strict-void-return
 
 class SystemAudioService {
     private static readonly STEP_SIZE = 5
@@ -32,37 +29,40 @@ class SystemAudioService {
         }
 
         const direction = roundedStep > 0 ? '+' : '-'
-        await SystemAudioService.runCommand('wpctl', [
+        await runCommand('wpctl', [
             'set-volume',
             SystemAudioService.DEFAULT_AUDIO_SINK,
             `${absoluteStep * SystemAudioService.STEP_SIZE}%${direction}`,
             '--limit=1.0',
         ])
-        await SystemAudioService.runCommand('wpctl', ['set-mute', SystemAudioService.DEFAULT_AUDIO_SINK, '0'])
+        await runCommand('wpctl', ['set-mute', SystemAudioService.DEFAULT_AUDIO_SINK, '0'])
         await this.sendVolumeUpdate()
     }
 
     public async toggleMute(): Promise<void> {
-        await SystemAudioService.runCommand('wpctl', [
-            'set-mute',
-            SystemAudioService.DEFAULT_AUDIO_SINK,
-            'toggle',
-        ])
+        await runCommand('wpctl', ['set-mute', SystemAudioService.DEFAULT_AUDIO_SINK, 'toggle'])
         await this.sendVolumeUpdate()
     }
 
     private static async getVolume(): Promise<Volume | null> {
         try {
-            const { stdout } = await execFileAsync('wpctl', [
+            const commandResult = await runCommand('wpctl', [
                 'get-volume',
                 SystemAudioService.DEFAULT_AUDIO_SINK,
             ])
 
-            const isMuted = stdout.includes('MUTED')
-            const numericValue = /[\d.]+/u.exec(stdout)
+            if (commandResult === null) {
+                console.warn('[SystemAudioService]: No output from wpctl get-volume command')
+                return null
+            }
+
+            const isMuted = commandResult.stdout.includes('MUTED')
+            const numericValue = /[\d.]+/u.exec(commandResult.stdout)
             const volumePercent = numericValue ? parseFloat(numericValue[0]) : NaN
             if (isNaN(volumePercent)) {
-                console.warn(`[SystemAudioService]: Unable to parse volume from output: ${stdout}`)
+                console.warn(
+                    `[SystemAudioService]: Unable to parse volume from output: ${commandResult.stdout}`
+                )
                 return null
             }
 
@@ -80,14 +80,6 @@ class SystemAudioService {
         const volume = await SystemAudioService.getVolume()
         if (volume !== null) {
             this.getWindow()?.webContents.send('systemAudio:volume', volume)
-        }
-    }
-
-    private static async runCommand(command: string, args: string[]): Promise<void> {
-        try {
-            await execFileAsync(command, args)
-        } catch (error: unknown) {
-            console.error(`[SystemAudioService]: Failed to run ${command} ${args.join(' ')}: `, error)
         }
     }
 }

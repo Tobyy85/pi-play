@@ -18,7 +18,7 @@ const Keypad = () => {
                     <button
                         key={key}
                         onClick={() => setDisplay(prev => prev + key)}
-                        className='flex size-16 items-center justify-center rounded-full bg-zinc-600 text-3xl
+                        className='flex size-16 items-center justify-center rounded-full bg-white/20 text-3xl
                             font-bold text-white transition-opacity active:opacity-80'
                     >
                         {key}

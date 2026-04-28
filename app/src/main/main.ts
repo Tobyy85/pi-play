@@ -1,20 +1,24 @@
 import 'dotenv/config'
 import { app, BrowserWindow } from 'electron'
 
-import WindowManager from '@main/managers/windowManager'
-import type { WindowProvider } from '@main/types/window'
-
 import { createServices, disconnectServices, setupServices } from '@main/bootstrap/services'
+import WindowManager from '@main/managers/windowManager'
+import { registerQuitAppHandler } from '@main/utils/quitApp'
+
+import type { WindowProvider } from '@main/types/window'
 
 const windowManager = new WindowManager()
 const getWindow: WindowProvider = () => windowManager.getWindow()
 
 const services = createServices(getWindow)
+let isQuitting = false
 
 void app.whenReady().then(() => {
     void windowManager.createWindow()
 
     setupServices(services)
+
+    registerQuitAppHandler()
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -23,8 +27,21 @@ void app.whenReady().then(() => {
     })
 })
 
-app.on('before-quit', () => {
-    disconnectServices(services)
+app.on('before-quit', event => {
+    if (isQuitting) {
+        return
+    }
+
+    event.preventDefault()
+    isQuitting = true
+
+    void (async () => {
+        try {
+            await disconnectServices(services)
+        } finally {
+            app.quit()
+        }
+    })()
 })
 
 app.on('window-all-closed', () => {

@@ -1,7 +1,8 @@
 import AppGrid from '@renderer/features/apps/components/AppGrid'
+import Background from '@renderer/features/background/components/Background'
 
 export const AllAppsPageBackground = () => {
-    return <div className='size-full bg-zinc-700' />
+    return <Background />
 }
 
 export const AllAppsPageContent = () => {

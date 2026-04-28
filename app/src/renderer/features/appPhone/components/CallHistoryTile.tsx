@@ -1,8 +1,8 @@
 import { GoArrowDownLeft, GoArrowUpRight } from 'react-icons/go'
 
+import CallButton from '@renderer/features/appPhone/components/CallButton'
 import ContactPhoto from '@renderer/features/appPhone/components/ContactPhoto'
 
-import CallIcon from '@renderer/features/appPhone/assets/CallIcon'
 import { useContact } from '@renderer/features/appPhone/store/usePhoneBookStore'
 import { formatRelativeDate } from '@renderer/features/appPhone/utils/datetime'
 import type { CallHistoryEntry } from '@shared/types/phoneBook'
@@ -16,7 +16,7 @@ const CallHistoryTile = ({ callEntry }: CallHistoryTileProps) => {
 
     return (
         <div
-            className='flex h-18 items-center justify-between border-zinc-600 py-2
+            className='flex h-18 items-center justify-between border-white/20 py-2
                 [&:not(:last-child)]:border-b'
         >
             <div className='flex h-full items-center gap-4'>
@@ -42,13 +42,7 @@ const CallHistoryTile = ({ callEntry }: CallHistoryTileProps) => {
             </div>
             <div className='flex h-full items-center gap-3'>
                 <p className='text-white/70'>{formatRelativeDate(callEntry.dateTime)}</p>
-                <button
-                    onClick={async () => await window.api.call.dial(callEntry.phoneNumber)}
-                    className='flex aspect-square h-5/6 items-center justify-center rounded-full bg-zinc-600
-                        p-3'
-                >
-                    <CallIcon className='size-full text-blue-500' />
-                </button>
+                <CallButton phoneNumber={callEntry.phoneNumber} />
             </div>
         </div>
     )

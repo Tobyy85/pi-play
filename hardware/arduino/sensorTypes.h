@@ -45,5 +45,11 @@ struct RotaryEncoderConfig
     uint8_t pinButton;///< Pin number for encoder button (if applicable)
 };
 
+/**
+ * @brief Configuration structure for photoresistor sensors
+ */
+struct PhotoresistorConfig {
+    uint8_t pin;       ///< Analog pin number
+};
 
 #endif
