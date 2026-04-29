@@ -52,4 +52,13 @@ struct PhotoresistorConfig {
     uint8_t pin;       ///< Analog pin number
 };
 
+/**
+ * @brief Configuration structure for Engine Detector sensors
+ */
+struct EngineDetectorConfig {
+    uint8_t detectionPin;    ///< Digital pin for engine state detection
+    uint8_t pinOn;  ///< Digital pin to pulse when engine turns on
+    uint8_t pinOff; ///< Digital pin to pulse when engine turns off
+};
+
 #endif

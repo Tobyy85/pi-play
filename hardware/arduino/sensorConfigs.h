@@ -5,6 +5,13 @@
 
 #include "sensorTypes.h"
 
+
+static const EngineDetectorConfig engineDetectorCfg = {
+    detectionPin: 5,
+    pinOn : A4,
+    pinOff : A5,
+};
+
 static const SensorConfig<ThermistorConfig> temperatureCfg = {
     id: "temperatureSensor",
     changeThreshold : 0.5f,
