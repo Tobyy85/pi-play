@@ -71,8 +71,13 @@ const Map = ({ latitude, longitude, course, speedMps }: MapProps) => {
         if (!sidebar || !mapRef.current) return
 
         const sidebarRect = sidebar.getBoundingClientRect()
+
+        const windowHeight = window.innerHeight
+        const topPadding = windowHeight / 2
+
         mapRef.current.setPadding({
             left: sidebarRect.right,
+            top: topPadding,
         })
     }, [])
 
