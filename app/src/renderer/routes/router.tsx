@@ -2,6 +2,7 @@ import { createBrowserRouter, createHashRouter, RouterProvider } from 'react-rou
 
 import { routes } from './routes'
 
+import GlobalRadioPlayer from '@renderer/features/appRadio/components/GlobalRadioPlayer'
 import BrightnessOverlay from '@renderer/features/brightness/components/BrightnessOverlay'
 import CallOverlay from '@renderer/features/call/components/CallOverlay'
 import VolumeOverlay from '@renderer/features/volume/components/VolumeOverlay'
@@ -24,6 +25,7 @@ export const AppRouter = () => {
             <CallOverlay />
             <VolumeOverlay />
             <BrightnessOverlay />
+            <GlobalRadioPlayer />
         </>
     )
 }
