@@ -9,6 +9,8 @@ import GPSService from '@main/services/GpsService'
 import HardwareControlsService from '@main/services/HardwareControlsService'
 import MapService from '@main/services/MapService'
 import NasBackupService from '@main/services/NasBackupService'
+import RadioService from '@main/services/RadioService'
+import StorageService from '@main/services/StorageService'
 import SystemAudioService from '@main/services/SystemAudioService'
 
 import BluetoothService from '@main/services/BluetoothService'
@@ -26,6 +28,7 @@ export interface Services {
     mediaPlayerService: MediaPlayerService
     phoneBookService: PhoneBookService
     nasBackupService: NasBackupService
+    radioService: RadioService
 }
 
 export const createServices = (getWindow: WindowProvider): Services => {
@@ -33,6 +36,7 @@ export const createServices = (getWindow: WindowProvider): Services => {
     const cameraRecordingService = new CameraRecordingService()
     const systemAudioService = new SystemAudioService(getWindow)
     const nasBackupService = new NasBackupService()
+    const radioService = new RadioService(getWindow)
 
     MapService.initialize()
 
@@ -42,7 +46,7 @@ export const createServices = (getWindow: WindowProvider): Services => {
     const phoneBookService = new PhoneBookService(getWindow)
 
     const hardwareControlsService = new HardwareControlsService(
-        getHardwareControlActions(mediaPlayerService, callService, systemAudioService)
+        getHardwareControlActions(mediaPlayerService, callService, systemAudioService, radioService)
     )
     const arduinoService = new ArduinoService(getWindow, data => {
         hardwareControlsService.handleArduinoData(data)
@@ -65,6 +69,7 @@ export const createServices = (getWindow: WindowProvider): Services => {
         mediaPlayerService,
         phoneBookService,
         nasBackupService,
+        radioService,
     }
 }
 
@@ -92,10 +97,15 @@ export const setupServices = (services: Services): void => {
 
     services.nasBackupService.initialize()
 
+    services.radioService.registerIpcHandlers()
+    void services.radioService.initialize()
+
     MapService.registerIpcHandlers()
     MapService.initializeProtocol()
 
     SystemAudioService.registerIpcHandlers()
+
+    StorageService.registerIpcHandlers()
 }
 
 export const disconnectServices = async (services: Services): Promise<void> => {

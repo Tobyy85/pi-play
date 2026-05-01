@@ -10,6 +10,9 @@ import { AppMusicBackground, AppMusicContent } from '@renderer/features/appMusic
 import PhoneIcon from '@renderer/assets/phone-icon.svg'
 import { AppPhoneBackground, AppPhoneContent } from '@renderer/features/appPhone'
 
+import RadioIcon from '@renderer/assets/radio-icon.svg'
+import { AppRadioBackground, AppRadioContent } from '@renderer/features/appRadio'
+
 interface AppRegistryItem {
     name: string
     id: string
@@ -46,6 +49,13 @@ const APP_REGISTRY: AppRegistryItem[] = [
         icon: ReverseCameraIcon,
         contentComponent: AppReverseCameraContent,
         backgroundComponent: AppReverseCameraBackground,
+    },
+    {
+        name: 'Radio',
+        id: 'radio',
+        icon: RadioIcon,
+        contentComponent: AppRadioContent,
+        backgroundComponent: AppRadioBackground,
     },
 ]
 
