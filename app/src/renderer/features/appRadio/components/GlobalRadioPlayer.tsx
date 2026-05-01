@@ -17,6 +17,7 @@ const GlobalRadioPlayer = () => {
             audio.src = currentStation.streamUrl
             audio.preload = 'auto'
             audio.crossOrigin = 'anonymous'
+            audio.volume = 0.75
 
             if (isPlaying) {
                 const tryPlay = async () => {
