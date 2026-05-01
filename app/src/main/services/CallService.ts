@@ -118,7 +118,7 @@ class CallService {
         const modemObj = await this.systemBus.getProxyObject('org.ofono', path)
         this.voiceCallManager = modemObj.getInterface('org.ofono.VoiceCallManager')
         if (!this.voiceCallManager) {
-            throw new Error('Failed to get VoiceCallManager interface')
+            console.error(`[CallService]: Failed to get VoiceCallManager interface for modem at ${path}`)
         }
 
         await Promise.all([

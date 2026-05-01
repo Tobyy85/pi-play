@@ -102,65 +102,68 @@ class PhoneBookService {
     }
 
     private async pullContacts(): Promise<void> {
-        this.updateLoadingContacts(true)
-        if (!this.sessionPath) throw new Error('No OBEX session established')
-
-        const sessionObj = await this.sessionBus.getProxyObject('org.bluez.obex', this.sessionPath)
-        const pbap = sessionObj.getInterface('org.bluez.obex.PhonebookAccess1')
-
-        await pbap.Select('int', 'pb')
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const [transferPath, properties]: [string, { [key: string]: any }] = await pbap.PullAll('', {})
-        const filename: string = properties.Filename?.value
-
-        if (!filename) {
-            this.updateLoadingContacts(false)
-            throw new Error('No filename in transfer properties')
-        }
-        await this.waitForTransferComplete(transferPath)
-
-        const vcardData = readFileSync(filename, 'utf-8')
-        const contacts = PhoneBookService.parseContactsVCards(vcardData)
-
-        this.updateContacts(contacts)
-        this.updateLoadingContacts(false)
-
         try {
+            if (!this.sessionPath) throw new Error('No OBEX session established')
+
+            this.updateLoadingContacts(true)
+
+            const sessionObj = await this.sessionBus.getProxyObject('org.bluez.obex', this.sessionPath)
+            const pbap = sessionObj.getInterface('org.bluez.obex.PhonebookAccess1')
+
+            await pbap.Select('int', 'pb')
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const [transferPath, properties]: [string, { [key: string]: any }] = await pbap.PullAll('', {})
+            const filename: string = properties.Filename?.value
+
+            if (!filename) {
+                throw new Error('No filename in transfer properties')
+            }
+            await this.waitForTransferComplete(transferPath)
+
+            const vcardData = readFileSync(filename, 'utf-8')
+            const contacts = PhoneBookService.parseContactsVCards(vcardData)
+
+            this.updateContacts(contacts)
+
             unlinkSync(filename)
         } catch (err) {
-            console.error('[PhoneBookService]: Failed to remove temporary file: ', err, '\n\n')
+            console.error('[PhoneBookService]: Failed to pull contacts: ', err, '\n\n')
+        } finally {
+            this.updateLoadingContacts(false)
         }
     }
 
     private async pullHistory(): Promise<void> {
-        if (!this.sessionPath) throw new Error('No OBEX session established')
-        this.updateLoadingCallHistory(true)
-
-        const sessionObj = await this.sessionBus.getProxyObject('org.bluez.obex', this.sessionPath)
-        const pbap = sessionObj.getInterface('org.bluez.obex.PhonebookAccess1')
-
-        await pbap.Select('int', 'cch')
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const [transferPath, properties]: [string, { [key: string]: any }] = await pbap.PullAll('', {})
-        const filename: string = properties.Filename?.value
-
-        if (!filename) {
-            this.updateLoadingCallHistory(false)
-            throw new Error('No filename in transfer properties')
-        }
-        await this.waitForTransferComplete(transferPath)
-
-        const vcardData = readFileSync(filename, 'utf-8')
-        const history = PhoneBookService.parseHistoryVCards(vcardData)
-
-        this.updateCallHistory(history)
-        this.updateLoadingCallHistory(false)
         try {
+            if (!this.sessionPath) throw new Error('No OBEX session established')
+
+            this.updateLoadingCallHistory(true)
+
+            const sessionObj = await this.sessionBus.getProxyObject('org.bluez.obex', this.sessionPath)
+            const pbap = sessionObj.getInterface('org.bluez.obex.PhonebookAccess1')
+
+            await pbap.Select('int', 'cch')
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const [transferPath, properties]: [string, { [key: string]: any }] = await pbap.PullAll('', {})
+            const filename: string = properties.Filename?.value
+
+            if (!filename) {
+                throw new Error('No filename in transfer properties')
+            }
+            await this.waitForTransferComplete(transferPath)
+
+            const vcardData = readFileSync(filename, 'utf-8')
+            const history = PhoneBookService.parseHistoryVCards(vcardData)
+
+            this.updateCallHistory(history)
+
             unlinkSync(filename)
         } catch (err) {
-            console.error('[PhoneBookService]: Failed to remove temporary file: ', err, '\n\n')
+            console.error('[PhoneBookService]: Failed to pull call history: ', err, '\n\n')
+        } finally {
+            this.updateLoadingCallHistory(false)
         }
     }
 

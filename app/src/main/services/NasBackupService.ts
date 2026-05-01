@@ -9,7 +9,7 @@ import type { NasBackupCredentials } from '@shared/types/nasBackup'
 class NasBackupService {
     private static readonly WIFI_CHECK_MS = 30000
 
-    private readonly credentials: NasBackupCredentials
+    private readonly credentials: NasBackupCredentials | null
     private readonly allowedSsids: string[]
 
     private rsyncProcess: ReturnType<typeof spawn> | null = null
@@ -20,13 +20,17 @@ class NasBackupService {
     constructor() {
         const credentials = NasBackupService.getNasCredentials()
         if (!credentials) {
-            throw new Error('NAS credentials are not set. Please check environment variables.')
+            console.warn(
+                '[NasBackupService]: NAS credentials are not set. Please check environment variables.'
+            )
         }
         this.credentials = credentials
 
         const allowedSsids = NasBackupService.getAllowedSsids()
         if (allowedSsids.length === 0) {
-            console.warn('No allowed SSIDs configured. NAS backup over Wi-Fi will be disabled.')
+            console.warn(
+                '[NasBackupService]: No allowed SSIDs configured. NAS backup over Wi-Fi will be disabled.'
+            )
         }
         this.allowedSsids = allowedSsids
     }
@@ -66,7 +70,11 @@ class NasBackupService {
             return
         }
 
-        this.rsyncProcess = spawn('rsync', this.getRsyncArguments())
+        const rsyncArgs = this.getRsyncArguments()
+        if (!rsyncArgs) {
+            return
+        }
+        this.rsyncProcess = spawn('rsync', rsyncArgs)
         this.isBackupActive = true
 
         this.rsyncProcess.on('close', code => {
@@ -86,7 +94,14 @@ class NasBackupService {
         })
     }
 
-    private getRsyncArguments(): string[] {
+    private getRsyncArguments(): string[] | null {
+        if (!this.credentials) {
+            console.error(
+                '[NasBackupService]: Cannot get rsync arguments because NAS credentials are missing.'
+            )
+            return null
+        }
+
         const destination = `${this.credentials.username}@${this.credentials.host}:${NAS_DESTINATION_PATH}`
         return [
             '-avz',

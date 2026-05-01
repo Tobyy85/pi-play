@@ -218,6 +218,9 @@ class CameraRecordingService {
         operation: (runtime: CameraRuntime) => Promise<void> | void
     ): Promise<void> {
         const runtime = this.getRuntime(cameraName)
+        if (!runtime) {
+            return
+        }
         runtime.operationQueue = runtime.operationQueue
             .then(async () => {
                 await operation(runtime)
@@ -344,10 +347,11 @@ class CameraRecordingService {
         ]
     }
 
-    private getRuntime(cameraName: string): CameraRuntime {
+    private getRuntime(cameraName: string): CameraRuntime | null {
         const runtime = this.cameraRuntimes.get(cameraName)
         if (!runtime) {
-            throw new Error(`Unknown camera name "${cameraName}"`)
+            console.error(`[CameraRecordingService]: Unknown camera name "${cameraName}"`)
+            return null
         }
         return runtime
     }
