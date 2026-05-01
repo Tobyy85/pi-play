@@ -148,6 +148,17 @@ const electronApi = {
     systemAudio: {
         volume: generateDataHandler<Volume>('systemAudio:getVolume', 'systemAudio:volume'),
     },
+    storage: {
+        get: async <T>(key: string, defaultValue?: unknown): Promise<T> => {
+            return await ipcRenderer.invoke('storage:get', key, defaultValue) // eslint-disable-line @typescript-eslint/no-unsafe-return
+        },
+        set: async (key: string, value: unknown): Promise<void> => {
+            await ipcRenderer.invoke('storage:set', key, value)
+        },
+        delete: async (key: string): Promise<void> => {
+            await ipcRenderer.invoke('storage:delete', key)
+        },
+    },
     quitApp: async () => {
         await ipcRenderer.invoke('quit-app')
     },
