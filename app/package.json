@@ -69,6 +69,7 @@
         "@tailwindcss/vite": "^4.1.14",
         "dbus-next": "^0.10.2",
         "dotenv": "^17.3.1",
+        "electron-json-storage": "^4.6.0",
         "maplibre-gl": "^5.17.0",
         "nmea-simple": "^3.3.0",
         "react": "^19.2.0",
@@ -84,6 +85,7 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.39.4",
+        "@types/electron-json-storage": "^4.5.4",
         "@types/node": "^24.9.2",
         "@types/react": "^19.2.2",
         "@types/react-dom": "^19.2.1",

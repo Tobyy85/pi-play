@@ -9,6 +9,7 @@ import GPSService from '@main/services/GpsService'
 import HardwareControlsService from '@main/services/HardwareControlsService'
 import MapService from '@main/services/MapService'
 import NasBackupService from '@main/services/NasBackupService'
+import StorageService from '@main/services/StorageService'
 import SystemAudioService from '@main/services/SystemAudioService'
 
 import BluetoothService from '@main/services/BluetoothService'
@@ -96,6 +97,8 @@ export const setupServices = (services: Services): void => {
     MapService.initializeProtocol()
 
     SystemAudioService.registerIpcHandlers()
+
+    StorageService.registerIpcHandlers()
 }
 
 export const disconnectServices = async (services: Services): Promise<void> => {
