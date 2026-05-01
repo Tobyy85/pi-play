@@ -46,7 +46,7 @@ export const createServices = (getWindow: WindowProvider): Services => {
     const phoneBookService = new PhoneBookService(getWindow)
 
     const hardwareControlsService = new HardwareControlsService(
-        getHardwareControlActions(mediaPlayerService, callService, systemAudioService)
+        getHardwareControlActions(mediaPlayerService, callService, systemAudioService, radioService)
     )
     const arduinoService = new ArduinoService(getWindow, data => {
         hardwareControlsService.handleArduinoData(data)

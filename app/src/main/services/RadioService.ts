@@ -61,6 +61,20 @@ class RadioService {
         })
     }
 
+    public play(): void {
+        this.updateIsPlaying(true)
+        this.updateStoredData()
+    }
+
+    public pause(): void {
+        this.updateIsPlaying(false)
+        this.updateStoredData()
+    }
+
+    public getIsPlaying(): boolean {
+        return this.isPlaying
+    }
+
     private readonly fetchStations = async (): Promise<RadioStation[] | null> => {
         try {
             const headers = new Headers({

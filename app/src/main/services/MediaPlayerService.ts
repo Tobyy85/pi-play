@@ -107,15 +107,14 @@ class MediaPlayerService {
         await this.mediaPlayerInterface?.Previous()
     }
 
-    public async togglePlayPause(): Promise<void> {
+    public async getPlaybackStatus(): Promise<string | null> {
         const status = await this.mediaPlayerProps?.Get('org.bluez.MediaPlayer1', 'Status')
         const value: string | undefined = status?.value
+        return value ?? null
+    }
 
-        if (value === 'playing') {
-            await this.pause()
-        } else {
-            await this.play()
-        }
+    public getConnectionStatus(): boolean {
+        return this.connectionStatus
     }
 
     public disconnect(): void {

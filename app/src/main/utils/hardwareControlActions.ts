@@ -1,5 +1,6 @@
 import type CallService from '@main/services/CallService'
 import type MediaPlayerService from '@main/services/MediaPlayerService'
+import type RadioService from '@main/services/RadioService'
 import type SystemAudioService from '@main/services/SystemAudioService'
 
 export interface HardwareControlActions {
@@ -15,7 +16,8 @@ export interface HardwareControlActions {
 export const getHardwareControlActions = (
     mediaPlayerService: MediaPlayerService,
     callService: CallService,
-    systemAudioService: SystemAudioService
+    systemAudioService: SystemAudioService,
+    radioService: RadioService
 ): HardwareControlActions => ({
     onVolumeChange: async step => {
         await systemAudioService.stepVolume(step)
@@ -24,7 +26,20 @@ export const getHardwareControlActions = (
         await systemAudioService.toggleMute()
     },
     onPlayPause: async () => {
-        await mediaPlayerService.togglePlayPause()
+        const mediaPlaybackState = await mediaPlayerService.getPlaybackStatus()
+        const isRadioPlaying = radioService.getIsPlaying()
+
+        if (mediaPlaybackState === 'Playing' || isRadioPlaying) {
+            await mediaPlayerService.pause()
+            radioService.pause()
+        } else {
+            const hasActiveConnection = mediaPlayerService.getConnectionStatus()
+            if (hasActiveConnection) {
+                await mediaPlayerService.play()
+            } else {
+                radioService.play()
+            }
+        }
     },
     onPreviousTrack: async () => {
         await mediaPlayerService.previous()
