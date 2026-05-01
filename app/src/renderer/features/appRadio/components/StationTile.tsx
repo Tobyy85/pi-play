@@ -1,6 +1,6 @@
 import FadeText from '@renderer/components/FadeText'
 
-import type { RadioStation } from '@renderer/features/appRadio/types'
+import type { RadioStation } from '@shared/types/radio'
 
 interface StationTileProps {
     station: RadioStation

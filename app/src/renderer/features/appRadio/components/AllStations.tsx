@@ -1,14 +1,15 @@
 import StationTile from '@renderer/features/appRadio/components/StationTile'
 
-import { useStations } from '@renderer/features/appRadio/store/useRadioStore'
-import type { RadioStation } from '@renderer/features/appRadio/types'
+// import { useStations } from '@renderer/features/appRadio/store/useRadioStore'
+import useStations from '@renderer/features/appRadio/hooks/useStations'
+import type { RadioStation } from '@shared/types/radio'
 
 interface AllStationsProps {
     onStationSelect: (station: RadioStation) => void
 }
 
 const AllStations = ({ onStationSelect }: AllStationsProps) => {
-    const stations = useStations()
+    const { data: stations } = useStations()
 
     if (!stations) {
         return (

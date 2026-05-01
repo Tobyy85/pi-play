@@ -2,8 +2,8 @@ import { FaArrowLeft, FaPause, FaPlay } from 'react-icons/fa6'
 
 import FadeText from '@renderer/components/FadeText'
 
-import { setIsPlaying, useIsPlaying } from '@renderer/features/appRadio/store/useRadioStore'
-import type { RadioStation } from '@renderer/features/appRadio/types'
+import useIsPlaying from '@renderer/features/appRadio/hooks/useIsPlaying'
+import type { RadioStation } from '@shared/types/radio'
 
 interface PlayingStationProps {
     station: RadioStation
@@ -11,7 +11,7 @@ interface PlayingStationProps {
 }
 
 const PlayingStation = ({ station, goBack }: PlayingStationProps) => {
-    const isPlaying = useIsPlaying()
+    const { data: isPlaying } = useIsPlaying()
 
     return (
         <div className='relative size-full'>
@@ -31,7 +31,7 @@ const PlayingStation = ({ station, goBack }: PlayingStationProps) => {
                     )}
                     <button
                         className='absolute top-1/2 left-1/2 size-16 -translate-1/2 rounded-full'
-                        onClick={() => setIsPlaying(!isPlaying)}
+                        onClick={async () => await window.api.radio.isPlaying.set(!isPlaying)}
                     >
                         {isPlaying ? (
                             <FaPause className='size-full text-white' />

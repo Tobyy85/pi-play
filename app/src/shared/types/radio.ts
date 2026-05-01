@@ -4,3 +4,8 @@ export interface RadioStation {
     name: string
     icon: string | null
 }
+
+export interface StoredRadioData {
+    currentStation: RadioStation | null
+    isPlaying: boolean
+}

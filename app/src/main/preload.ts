@@ -7,6 +7,7 @@ import type { GPSData } from '@shared/types/gps'
 import type { MapDownloadRequest } from '@shared/types/maps'
 import type { Position, Status, TrackInfo } from '@shared/types/mediaPlayer'
 import type { CallHistoryEntry, Contact } from '@shared/types/phoneBook'
+import type { RadioStation } from '@shared/types/radio'
 import type { Volume } from '@shared/types/systemAudio'
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
@@ -147,6 +148,21 @@ const electronApi = {
     },
     systemAudio: {
         volume: generateDataHandler<Volume>('systemAudio:getVolume', 'systemAudio:volume'),
+    },
+    radio: {
+        stations: generateDataHandler<RadioStation[] | null>('radio:getStations', 'radio:stations'),
+        currentStation: {
+            ...generateDataHandler<RadioStation | null>('radio:getCurrentStation', 'radio:currentStation'),
+            set: async (station: RadioStation | null): Promise<void> => {
+                await ipcRenderer.invoke('radio:setCurrentStation', station)
+            },
+        },
+        isPlaying: {
+            ...generateDataHandler<boolean>('radio:getIsPlaying', 'radio:isPlaying'),
+            set: async (isPlaying: boolean): Promise<void> => {
+                await ipcRenderer.invoke('radio:setIsPlaying', isPlaying)
+            },
+        },
     },
     storage: {
         get: async <T>(key: string, defaultValue?: unknown): Promise<T> => {

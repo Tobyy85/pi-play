@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react'
 
-import { useCurrentStation, useIsPlaying } from '@renderer/features/appRadio/store/useRadioStore'
+import useCurrentStation from '@renderer/features/appRadio/hooks/useCurrentStation'
+import useIsPlaying from '@renderer/features/appRadio/hooks/useIsPlaying'
 
 const GlobalRadioPlayer = () => {
-    const currentStation = useCurrentStation()
-    const isPlaying = useIsPlaying()
+    const { data: currentStation } = useCurrentStation()
+    const { data: isPlaying } = useIsPlaying()
 
     const audioRef = useRef<HTMLAudioElement | null>(null)
 

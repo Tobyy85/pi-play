@@ -9,6 +9,7 @@ import GPSService from '@main/services/GpsService'
 import HardwareControlsService from '@main/services/HardwareControlsService'
 import MapService from '@main/services/MapService'
 import NasBackupService from '@main/services/NasBackupService'
+import RadioService from '@main/services/RadioService'
 import StorageService from '@main/services/StorageService'
 import SystemAudioService from '@main/services/SystemAudioService'
 
@@ -27,6 +28,7 @@ export interface Services {
     mediaPlayerService: MediaPlayerService
     phoneBookService: PhoneBookService
     nasBackupService: NasBackupService
+    radioService: RadioService
 }
 
 export const createServices = (getWindow: WindowProvider): Services => {
@@ -34,6 +36,7 @@ export const createServices = (getWindow: WindowProvider): Services => {
     const cameraRecordingService = new CameraRecordingService()
     const systemAudioService = new SystemAudioService(getWindow)
     const nasBackupService = new NasBackupService()
+    const radioService = new RadioService(getWindow)
 
     MapService.initialize()
 
@@ -66,6 +69,7 @@ export const createServices = (getWindow: WindowProvider): Services => {
         mediaPlayerService,
         phoneBookService,
         nasBackupService,
+        radioService,
     }
 }
 
@@ -92,6 +96,9 @@ export const setupServices = (services: Services): void => {
     services.cameraRecordingService.initialize()
 
     services.nasBackupService.initialize()
+
+    services.radioService.registerIpcHandlers()
+    void services.radioService.initialize()
 
     MapService.registerIpcHandlers()
     MapService.initializeProtocol()
