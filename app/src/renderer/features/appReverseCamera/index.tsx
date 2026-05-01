@@ -10,17 +10,19 @@ const isReverseCameraMirrored = reverseCamera.isMirrored ?? false
 export const AppReverseCameraBackground = () => {
     const [error, setError] = useState<string | null>(null)
 
+    if (error) {
+        return null
+    }
+
     return (
-        <div className='size-full bg-zinc-700'>
-            {error ?? (
-                <Camera
-                    cameraName={reverseCamera.name}
-                    cameraDeviceId={reverseCamera.deviceId}
-                    isMirrored={isReverseCameraMirrored}
-                    setError={setError}
-                    className='size-full object-cover'
-                />
-            )}
+        <div className='size-full'>
+            <Camera
+                cameraName={reverseCamera.name}
+                cameraDeviceId={reverseCamera.deviceId}
+                isMirrored={isReverseCameraMirrored}
+                setError={setError}
+                className='size-full object-cover'
+            />
             <div className='absolute top-0 left-0 size-full bg-black/10 backdrop-blur-md'></div>
         </div>
     )

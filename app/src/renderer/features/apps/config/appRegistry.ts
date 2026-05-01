@@ -8,17 +8,17 @@ import MusicIcon from '@renderer/assets/music-icon.svg'
 import { AppMusicBackground, AppMusicContent } from '@renderer/features/appMusic'
 
 import PhoneIcon from '@renderer/assets/phone-icon.svg'
-import { AppPhoneBackground, AppPhoneContent } from '@renderer/features/appPhone'
+import { AppPhoneContent } from '@renderer/features/appPhone'
 
 import RadioIcon from '@renderer/assets/radio-icon.svg'
-import { AppRadioBackground, AppRadioContent } from '@renderer/features/appRadio'
+import { AppRadioContent } from '@renderer/features/appRadio'
 
 interface AppRegistryItem {
     name: string
     id: string
     icon: string
     contentComponent: React.ComponentType
-    backgroundComponent: React.ComponentType
+    backgroundComponent?: React.ComponentType
 }
 
 const APP_REGISTRY: AppRegistryItem[] = [
@@ -41,7 +41,6 @@ const APP_REGISTRY: AppRegistryItem[] = [
         id: 'phone',
         icon: PhoneIcon,
         contentComponent: AppPhoneContent,
-        backgroundComponent: AppPhoneBackground,
     },
     {
         name: 'Reverse Camera',
@@ -55,7 +54,6 @@ const APP_REGISTRY: AppRegistryItem[] = [
         id: 'radio',
         icon: RadioIcon,
         contentComponent: AppRadioContent,
-        backgroundComponent: AppRadioBackground,
     },
 ]
 
